@@ -1,0 +1,21 @@
+<form name="%form%">
+	<rowsets>
+		<rowset name="treemenu">
+			<param name="mode.treemenu" value="1"/>
+		</rowset>
+	</rowsets>
+	<panels>
+		<panel>
+			<panel type="treemenu" rowset="treemenu"
+				align="left" 
+				width="20%" 
+				splitter="1" 
+				color="gray" 
+				focus="1"
+				collapse="1"
+				border="1"
+			/>
+			<panel type="form" form="formLogoScreen" tab="1"/>
+		</panel>
+	</panels>
+</form>

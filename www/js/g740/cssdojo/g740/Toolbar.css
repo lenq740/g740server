@@ -1,0 +1,80 @@
+.g740 .dijitToolbar  {
+	background-color: #F3F3F3;
+	border-bottom-style: solid;
+	border-bottom-width: 1px;
+	border-bottom-color: lightgray;
+	margin-bottom: 1px;
+}
+
+/* setting a min-height on ditor toolbar */
+.dj_ie6 .g740 .dijitToolbar {
+	height: 10px;
+}
+
+.g740 .dijitToolbar .dijitButtonNode,
+.g740 .dijitToolbar .dijitComboButton .dijitButtonContents,
+.g740 .dijitToolbar .dijitComboButton .dijitDownArrowButton {
+	background: none;
+	margin: 0;
+	padding: 0;
+	border: none;
+	font-size: 12px;
+}
+
+.g740 .dijitToolbar .dijitButton,
+.g740 .dijitToolbar .dijitToggleButton,
+.g740 .dijitToolbar .dijitDropDownButton,
+.g740 .dijitToolbar .dijitComboButton .dijitButtonContents,
+.g740 .dijitToolbar .dijitComboButton .dijitDownArrowButton  {
+	background: none;
+	padding: 1px;
+}
+
+.g740 .dijitToolbar .dijitButtonChecked,
+.g740 .dijitToolbar .dijitToggleButtonChecked {
+	background-color:#d4dff2;
+	border:1px solid #316ac5;
+	padding: 0;	/* reduce padding to compensate for space taken by border */
+}
+
+.g740 .dijitToolbar .dijitButtonCheckedHover,
+.g740 .dijitToolbar .dijitToggleButtonCheckedHover
+ {
+	background-color:#abc1e5;
+	border:1px solid #316ac5;
+	padding: 0;	/* reduce padding to compensate for space taken by border */
+}
+
+.g740 .dijitToolbar .dijitButtonHover,
+.g740 .dijitToolbar .dijitToggleButtonHover,
+.g740 .dijitToolbar .dijitDropDownButtonHover,
+.g740 .dijitToolbar .dijitComboButton .dijitButtonContentsHover,
+.g740 .dijitToolbar .dijitComboButton .dijitDownArrowButtonHover {
+	/* TODO: change this from Hover to Selected so that button is still highlighted while drop down is being used */
+	background-color:#e1e5f0;
+	outline: 1px solid #869cbf;
+}
+.g740 .dijitToolbar .dijitButtonDisabled .dijitButtonNode {
+	background: none !important;
+}
+
+.g740 .dijitToolbar label {
+	padding: 3px 3px 0 6px;
+}
+
+.dj_ie .g740 .dijitToolbar .dijitComboButton .dijitButtonContentsFocused,
+.dj_ie .g740 .dijitToolbar .dijitComboButton .dijitDownArrowButtonFocused {
+	/* focus border doesn't appear on <td> for IE, so need to add it manually */
+	border: 1px #555 dotted !important;
+	padding: 0;
+}
+
+.g740 .dijitToolbarSeparator {
+	/* separator icon in the editor sprite */
+	background: url('../icons/images/editorIconsEnabled.png');
+}
+
+.g740 .dijitToolbarRtl .dijitToolbarSeparator {
+	/* separator icon in the editor sprite */
+	background-image: url('../icons/images/editorIconsDisabled.png');
+}

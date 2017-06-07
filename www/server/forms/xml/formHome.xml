@@ -1,0 +1,59 @@
+<form name="%form%" caption="Домашняя страница">
+	<rowsets>
+		<rowset datasource="paragraph">
+			<param name="filter.ismag740home" value="1"/>
+			<rowset datasource="ris">
+				<param name="filter.klsparagraph" js_value="get('#parent.id')"/>
+			</rowset>
+		</rowset>
+	</rowsets>
+	<requests>
+		<request name="risload" caption="Загрузить иллюстрацию" icon="append" js_enabled="get('ris.id') &gt; 0">
+			<request name="form" form="formUtilsRisLoader" modal="1">
+				<param name="filter.klsris" js_value="get('ris.id')"/>
+			</request>
+			<request name="refreshrow" rowset="ris"/>
+		</request>
+	</requests>
+	<panels>
+		<panel type="panel">
+			<toolbar default="1"/>
+			<panel caption="Домашняя страница">
+				<panel rowset="paragraph" type="grid" caption="Текстовые блоки" align="top" height="35%" splitter="1" border="1">
+					<field name="parastyle_name"/>
+					<field name="name" len="20"/>
+					<field name="value"/>
+					<field name="url"/>
+					<field name="isnoindex" caption="NoIndex" len="7"/>
+				</panel>
+				<panel rowset="ris" caption="Список иллюстраций" border="1">
+					<panel type="grid" align="left" width="60%" splitter="1" border="1">
+						<field name="risstyle_name" save="1"/>
+						<field name="name" save="1"/>
+						<field name="titlename" save="1"/>
+						<field name="isnormal" len="4" caption="Обыч" save="1"/>
+						<field name="islarge" len="5" caption="Больш" save="1"/>
+						<field name="isicon" len="5" caption="80px" save="1"/>
+						<field name="isfls" len="4" caption="fls" save="1"/>
+					</panel>
+					<panel>
+						<panel type="fields" align="top" border="1">
+							<field name="filename" caption="Файл" stretch="1"/>
+							<field name="fileversion" caption="Версия" stretch="1"/>
+							<field name="isext" caption="Внешняя" stretch="1"/>
+							<field name="extvalue" caption="Видео" stretch="1"/>
+							<field name="url" stretch="1"/>
+						</panel>
+						<panel caption="Иллюстрация" rowset="ris" border="1">
+							<toolbar>
+								<request name="risload"/>
+							</toolbar>
+							<panel type="img" field="risurl">
+							</panel>
+						</panel>
+					</panel>
+				</panel>
+			</panel>
+		</panel>
+	</panels>
+</form>

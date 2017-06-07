@@ -1,0 +1,151 @@
+
+/*****
+		dijit.form.Button
+		dijit.form.DropDownButton
+		dijit.form.ComboButton
+		dijit.form.ComboBox (partial)
+		dijit.form.Spinner (partial) (TODO: create NumberSpinner.css file like claro has)
+ *****/
+
+.g740 .dijitButtonContents {
+	outline: none;
+}
+.g740 .dijitBorderContainer-dijitButton  .dijitButtonContents {
+	min-width: 80px;
+}
+
+ 
+.g740 .dijitButtonNode {
+	/* enabled state - inner */
+	background-image: inherit !important;
+	background-color: #F6F6F6;
+	border: 1px solid #c0c0c0;
+	border-bottom: 1px solid #9b9b9b;
+	padding: 0.1em 0.2em 0.2em 0.2em;
+}
+.g740 .dijitButtonNode:hover {
+	background-color: #E5E5E5 !important;
+}
+
+.g740 .dijitButtonText {
+	text-align: center;
+	padding: 0 0.3em;
+}
+.g740 .dijitInputField {
+	padding: 0; /* set padding:0 for .g740 .dijitSelect .dijitButtonText but with a low priority rule that can be easily trumped by the user */
+}
+
+.g740 .dijitDisabled .dijitButtonText {
+	color: #7F7F7F;
+}
+
+.g740 .dijitArrowButton {
+	color: #111;
+}
+
+.g740 .dijitComboButton .dijitDownArrowButton {
+	padding-right:4px;
+}
+
+.g740 .dijitTextBoxReadOnly,
+.g740 .dijitTextBoxReadOnly .dijitButtonNode,
+.g740 .dijitButtonDisabled .dijitButtonNode,
+.g740 .dijitToggleButtonDisabled .dijitButtonNode,
+.g740 .dijitDropDownButtonDisabled .dijitButtonNode,
+.g740 .dijitComboButtonDisabled .dijitButtonNode,
+.g740 .dijitTextBoxDisabled,
+.g740 .dijitTextBoxDisabled .dijitButtonNode {
+	/* disabled state - inner */
+	border-color: #d5d5d5 #d5d5d5 #bdbdbd #d5d5d5;
+	background:#e4e4e4 url("../images/buttonDisabled.png") top repeat-x;
+}
+
+.g740 .dijitButtonHover .dijitButtonNode,
+.g740 .dijitButtonNodeHover,
+.g740 .dijitToggleButtonHover .dijitButtonNode,
+.g740 .dijitDropDownButtonHover .dijitButtonNode,
+.g740 .dijitComboButton .dijitButtonContentsHover,
+.g740 .dijitComboButton .dijitDownArrowButtonHover {
+	/* hover state - inner */
+	/* TODO: change from Hover to Selected so that button is still highlighted while drop down is being used */
+	border-color: #a5beda;
+	border-bottom-color:#5c7590;
+	color:#243C5F;
+	background:#fcfdff url("../images/buttonHover.png") repeat-x bottom;
+}
+.g740 .dijitDownArrowButtonHover,
+.g740 .dijitUpArrowButtonHover {
+	/* same as above except don't adjust border color (it's controlled by the containing Spinner/ComboBox) */
+	color:#243C5F;
+	background:#fcfdff url("../images/buttonHover.png") repeat-x bottom;
+}
+
+.g740 .dijitUpArrowButtonActive,
+.g740 .dijitDownArrowButtonActive,
+.g740 .dijitButtonActive .dijitButtonNode,
+.g740 .dijitToggleButtonActive .dijitButtonNode,
+.g740 .dijitDropDownButtonActive .dijitButtonNode,
+.g740 .dijitButtonContentsActive,
+.g740 .dijitStackController .dijitToggleButtonChecked .dijitButtonNode {
+	/* active state - inner (for when you are pressing a normal button, or
+	 * when a radio-type button is in a depressed state
+	 */
+	border-color:#366dba;
+	background: #ededed url("../images/buttonActive.png") bottom repeat-x;
+}
+
+.g740 .dijitArrowButtonInner {
+	background:url("../images/spriteArrows.png") no-repeat scroll 0 center;
+	width: 7px;
+	height: 7px;
+	margin: 0 4px 0 4px;
+}
+.g740 .dijitTextBox .dijitArrowButtonInner {
+	background-position: 0 center;
+}
+.dj_ie6 .g740 .dijitArrowButtonInner {
+	background-image:url("../images/spriteArrows.gif");
+}
+.g740 .dijitLeftArrowButton .dijitArrowButtonInner {
+	background-position: -7px center;
+}
+.g740 .dijitRightArrowButton .dijitArrowButtonInner {
+	background-position: -14px center;
+}
+.g740 .dijitUpArrowButton .dijitArrowButtonInner {
+	background-position: -21px center;
+}
+
+.g740 .dijitDisabled .dijitArrowButtonInner {
+	background-position: -28px center;
+}
+.g740 .dijitDisabled .dijitLeftArrowButton .dijitArrowButtonInner {
+	background-position: -35px center;
+}
+.g740 .dijitDisabled .dijitRightArrowButton .dijitArrowButtonInner {
+	background-position: -42px center;
+}
+.g740 .dijitDisabled .dijitUpArrowButton .dijitArrowButtonInner {
+	background-position: -49px center;
+}
+.dj_ie .g740 .dijitSpinner .dijitDownArrowButton .dijitArrowButtonInner {
+	margin-top: -2px; /* image has too many blank pixels on top */
+}
+.dj_webkit .g740 .dijitSpinner .dijitUpArrowButton .dijitArrowButtonInner,
+.dj_iequirks .g740 .dijitSpinner .dijitDownArrowButton .dijitArrowButtonInner,
+.dj_ie8 .g740 .dijitSpinner .dijitDownArrowButton .dijitArrowButtonInner {
+	margin-top: -1px; /* image has too many blank pixels on top */
+}
+.g740 .dijitSpinnerButtonContainer {
+	width: auto;
+	padding: 0;
+}
+.g740 .dijitSpinner .dijitArrowButton {
+	width: 15px;
+}
+.g740 .dijitSpinner .dijitSpinnerButtonInner {
+	width: 15px;
+}
+.g740 .dijitSpinner .dijitArrowButtonInner .dijitInputField {
+	padding: 0;
+}

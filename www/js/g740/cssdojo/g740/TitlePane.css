@@ -1,0 +1,38 @@
+.g740 .dijitTitlePaneTitle {
+	background: #cccccc;
+	background:#fff url("images/titleBar.png") repeat-x bottom left;
+	border:1px solid #bfbfbf;
+	padding:3px 4px;
+}
+.g740 .dijitTitlePaneTitleHover  {
+	background: #f8fafd url("images/accordionItemHover.gif") bottom repeat-x;
+}
+
+.g740 .dijitTitlePane .dijitArrowNode, .g740 .dijitFieldset .dijitArrowNode {
+	background-image: url('images/spriteArrows.png');
+	background-repeat: no-repeat;
+	background-position: 0 0;
+	height: 7px;
+	width: 7px;
+}
+.dj_ie6 .g740 .dijitTitlePane .dijitArrowNode, .dj_ie6 .g740 .dijitFieldset .dijitArrowNode {
+	background-image: url('images/spriteArrows.gif');
+}
+
+.g740 .dijitTitlePane .dijitClosed .dijitArrowNode, .g740 .dijitFieldset .dijitClosed .dijitArrowNode {
+	background-position: -14px 0;
+}
+
+.g740 .dijitTitlePaneContentOuter {
+	background: #ffffff;
+	border:1px solid #bfbfbf;
+	border-top: 0;
+}
+.g740 .dijitTitlePaneContentInner {
+	padding:10px;
+}
+
+.g740 .dijitTitlePaneTextNode, .g740 .dijitFieldsetLegendNode {
+	margin-left: 4px;
+	margin-right: 4px;
+}

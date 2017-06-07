@@ -1,0 +1,329 @@
+.g740 .dijitTabContainerTopNone .dijitTabChecked {
+	font-weight: bold !important;
+}
+
+/* Tabs, shared classes */
+.g740 .dijitTabPaneWrapper {
+	background:#fff;
+	border:1px solid #ccc;
+	margin: 0;
+	padding: 0;
+}
+
+.g740 .dijitTab {
+	background-color: #DDDDDD;
+	margin-top: 3px;
+	padding-top: 0px !important;
+	height: 20px;
+	color: #737373;
+
+	line-height:normal;
+	margin-right:4px;	/* space between one tab and the next in top/bottom mode */
+    padding:2px 8px 2px 9px;
+	border:1px solid #ccc;
+}
+
+.g740 .dijitTabSpacer {
+	display: none;
+}
+
+.g740 .dijitTabContainer .tabStripRBtn {
+	margin-right: 20px;
+}
+.g740 .dijitTabContainer .tabStripLBtn {
+	margin-left: 20px;
+}
+
+.g740 .nowrapTabStrip .dijitTab {
+	top: 2px;
+}
+.g740 .dijitTabContainerBottom .nowrapTabStrip .dijitTab {
+	top: 0;
+	bottom: 2px;
+}
+
+/* selected tab */
+.g740 .dijitTabChecked {
+	/* the selected tab (with or without hover) */
+	background: none !important;
+	background-color: #F3F3F3 !important;
+	color: black !important;
+	border-top-width: 2px !important;
+	border-top-color: #d4464e !important;
+	border-top-style: solid !important;
+
+	border-color: #ccc;
+	background-image:none;
+}
+
+/* hovered tab */
+.g740 .dijitTabHover {
+	color: #243C5F;
+}
+
+.g740 .dijitTabContainerTop .dijitTabHover {
+	border-bottom-color:#ccc;
+}
+
+.g740 .dijitTabContainerBottom .dijitTabHover {
+	border-top-color:#ccc;
+}
+
+.g740 .dijitTabContainerLeft .dijitTabHover {
+	border-right-color:#ccc;
+}
+
+.g740 .dijitTabContainerRight .dijitTabHover {
+	border-left-color:#ccc;
+}
+
+.g740 .dijitTabContainer .dijitTabCheckedHover {
+	color: inherit;
+	border:1px solid #ccc;
+	background:#fff;
+}
+
+.g740 .dijitTab .tabLabel {
+	/* make sure tabs w/close button and w/out close button are same height, even w/small (<12px) font */
+	min-height: 12px;
+	display: inline-block;
+}
+
+/* Nested Tabs */
+
+.g740 .dijitTabContainerNested .dijitTabListWrapper {
+	height: auto;
+}
+
+.g740 .dijitTabContainerNested .dijitTabContainerTop-tabs {
+	border-bottom: 1px solid #CCC;
+}
+
+.g740 .dijitTabContainerTabListNested .dijitTab {
+	background: none;
+	border: none;
+	top: 0;		/* to override top: 1px/-1px for normal tabs */
+}
+
+.g740 .dijitTabContainerTabListNested .dijitTabHover .tabLabel {
+	text-decoration: underline;
+}
+.g740 .dijitTabContainerTabListNested .dijitTabChecked .tabLabel {
+	text-decoration: underline;
+	font-weight: bold;
+	/*background:#f3f3f3;*/
+}
+.g740 .dijitTabContainer .dijitTabPaneWrapperNested {
+	border: none;	/* prevent double border */
+}
+
+/* Close button */
+.g740 .dijitTabCloseButton {
+	margin-top: 1px !important;
+	background: url("../images/tabClose.png") no-repeat right top;
+	width: 12px;
+	height: 12px;
+}
+.dj_ie6 .g740 .dijitTabCloseButton {
+	background-image : url("../images/tabClose.gif");
+}
+
+.g740 .dijitTabCloseButtonHover {
+	background-image : url("../images/tabCloseHover.png");
+}
+.dj_ie6 .g740 .dijitTabCloseButtonHover {
+	background-image : url("../images/tabCloseHover.gif");
+}
+
+/* ================================ */
+/* top tabs */
+
+.g740 .dijitTabContainerTop-tabs {
+	margin-bottom: 0;
+	border-color: #cccccc;
+	padding-left: 3px;
+	background-position: bottom;
+}
+.g740 .dijitTabContainerTop-tabs .dijitTab {
+	top: 0;
+	margin-bottom: -1px;
+}
+
+/* top container */
+.g740 .dijitTabContainerTop-container {
+	border-top: none;
+}
+
+/* selected tab */
+.g740 .dijitTabContainerTop-tabs .dijitTabChecked {
+	border-bottom-color:white;
+}
+
+.g740 .dijitTabContainerTop-tabs,
+.g740 .dijitTabContainerBottom-tabs {
+	padding-left: 3px;
+	padding-right: 3px;
+}
+
+/* strip */
+.g740 .dijitTabContainerTopStrip {
+	border-top: 1px solid #CCC;
+	border-right: 1px solid #CCC;
+	border-left: 1px solid #CCC;
+	padding-top: 2px;
+	background: #f2f2f2;
+}
+
+.g740 .dijitTabContainerTopNone {
+	padding-top: 0;
+}
+
+
+/* ================================ */
+/* bottom tabs */
+.g740 .dijitTabContainerBottom-tabs {
+	margin-top: 0;
+	border-color: #cccccc;
+	background-position: top;
+	padding-left: 3px;
+}
+.g740 .dijitTabContainerBottom-tabs .dijitTab {
+	bottom: 0;
+	margin-top: -1px;
+}
+
+/* bottom container */
+.g740 .dijitTabContainerBottom-container {
+	border-bottom: none;
+}
+
+/* selected tab */
+.g740 .dijitTabContainerBottom-tabs .dijitTabChecked {
+	border-top-color:white;
+}
+
+/* strip */
+.g740 .dijitTabContainerBottomStrip {
+	padding-bottom: 2px;
+	border: 1px solid #ccc;
+	background: #f2f2f2;
+	border-top: none;
+}
+
+/* ================================ */
+/* right tabs */
+.g740 .dijitTabContainerRight-tabs {
+	border-color: #ccc;
+	height: 100%;
+	padding-top: 3px;
+}
+
+.g740 .dijitTabContainerRightStrip {
+	margin-left: -1px;
+}
+
+/* right container */
+.g740 .dijitTabContainerRight-container {
+	border-right: none;
+}
+
+/* selected tab */
+.g740 .dijitTabContainerRight-tabs .dijitTabChecked {
+	border-left-color:white;
+}
+
+/* strip */
+.g740 .dijitTabContainerRightStrip {
+	padding-right: 2px;
+	border: 1px solid #ccc;
+}
+
+.g740 .dijitTabContainerRightStrip {
+	background: #f2f2f2;
+}
+
+/* ================================ */
+/* left tabs */
+.g740 .dijitTabContainerLeft-tabs {
+	border-color: #ccc;
+	padding-top: 3px;
+	height: 100%;
+}
+
+/* left container */
+.g740 .dijitTabContainerLeft-container {
+	border-left: none;
+}
+
+/* selected tab */
+.g740 .dijitTabContainerLeft-tabs .dijitTabChecked {
+	border-right-color:white;
+}
+
+/* strip */
+.g740 .dijitTabContainerLeftStrip {
+	padding-left: 2px;
+	border: 1px solid #ccc;
+	background: #f2f2f2;
+	border-right: none;
+}
+
+/* ================================ */
+/* left/right tabs */
+.g740 .dijitTabContainerLeft-tabs .dijitTab,
+.g740 .dijitTabContainerRight-tabs .dijitTab {
+	margin-right:0;
+	margin-bottom:4px;	/* space between one tab and the next in left/right mode */
+}
+
+/* ================================ */
+
+/* this resets the tabcontainer stripe when within a contentpane */
+.g740 .dijitTabContainerTop-dijitContentPane .dijitTabContainerTop-tabs {
+	border-left: 0 solid #ccc;
+	border-top: 0 solid #ccc;
+	border-right: 0 solid #ccc;
+	padding-top: 0;
+	padding-left: 0;
+}
+
+/* ================================ */
+
+/* Menu and slider control styles */
+.g740 .dijitTabContainer .tabStripButton {
+	margin-right: 0;
+	padding-top: 2px;
+	z-index: 12;
+}
+
+.g740 .dijitTabContainerBottom .tabStripButton {
+	padding-top: 3px;
+}
+
+.g740 .tabStrip-disabled .tabStripButton {
+	padding-bottom: 3px;
+	padding-top: 1px;
+}
+
+.g740 .tabStripButton {
+	padding: 3px 2px 4px 2px;
+}
+
+.g740 .dijitTabStripIcon {
+	height: 14px;
+	width: 14px;
+	background: url(../images/spriteRoundedIconsSmall.png) no-repeat left top ;
+}
+
+.dj_ie6 .g740 .dijitTabStripIcon {
+	background-image: url(../images/spriteRoundedIconsSmall.gif);
+}
+
+.g740 .dijitTabStripSlideRightIcon {
+	background-position: -30px top;
+}
+
+.g740 .dijitTabStripMenuIcon {
+	background-position: -15px top;
+}
+

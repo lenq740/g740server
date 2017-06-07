@@ -1,0 +1,5 @@
+<form name="%form%" caption="Экран заставки">
+	<panels>
+		<panel type="webbrowser" url="resource/logoscreen/"/>
+	</panels>
+</form>

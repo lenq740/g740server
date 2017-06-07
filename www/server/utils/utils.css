@@ -1,0 +1,38 @@
+body {
+	font-family: Myriad,Helvetica,Tahoma,Arial,clean,sans-serif;
+	font-size: 12px;
+}
+h1 {
+	font-size: 30px;
+	color: DarkSlateBlue;
+	padding-bottom: 10px;
+}
+h2 {
+	font-size: 20px;
+	color: DarkSlateBlue;
+	padding-top: 15px;
+	padding-bottom: 5px;
+}
+h3 {
+	font-size: 16px;
+	color: DarkSlateBlue;
+	padding-top: 10px;
+	padding-bottom: 5px;
+}
+.message {
+	font-size: 12px;
+}
+.section {
+	font-size: 12px;
+	padding-top: 5px;
+}
+.section .message {
+	padding-left: 15px;
+}
+.ok {
+	font-size: 16px;
+	padding-top: 15px;
+}
+.error {
+	color: red;
+}

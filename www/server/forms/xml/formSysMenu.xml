@@ -1,0 +1,21 @@
+<form name="%form%" caption="Главное меню системы">
+	<rowsets>
+		<rowset name="treemenu"></rowset>
+	</rowsets>
+	<panels>
+		<panel type="panel">
+			<toolbar default="1"/>
+			<panel type="tree" rowset="treemenu" caption="Структура меню" align="left" width="25%" splitter="1" border="1"/>
+			<panel type="panel" rowset="treemenu" border="1">
+				<panel type="fields" align="top" caption="Анкета элемента меню">
+					<field name="name" stretch="1"/>
+					<field name="form" stretch="1"/>
+					<field name="icon" stretch="1"/>
+					<field name="params" stretch="1"/>
+					<field name="permmode"/>
+					<field name="permoper"/>
+				</panel>
+			</panel>
+		</panel>
+	</panels>
+</form>

@@ -1,0 +1,75 @@
+/* BorderContainer */
+
+.g740 .dijitBorderContainer {
+	width:100%;
+	height:100%; 
+	background-color: transparent;
+	padding:0px;
+}
+
+.g740 .dijitSplitContainer-child,
+.g740 .dijitBorderContainer-child {
+	/* By default put borders on all children of BorderContainer,
+	 *  to give illusion of borders on the splitters themselves.
+	 */
+	border: none;
+}
+
+.g740 .dijitBorderContainer-dijitTabContainerTop,
+.g740 .dijitBorderContainer-dijitTabContainerBottom,
+.g740 .dijitBorderContainer-dijitTabContainerLeft,
+.g740 .dijitBorderContainer-dijitTabContainerRight {
+	/* except that TabContainer defines borders on it's sub-nodes (tablist and dijitTabPaneWrapper),
+	 * so override rule setting border on domNode
+	 */
+	 border: none;
+}
+
+.g740 .dijitBorderContainer-dijitBorderContainer {
+	/* also, make nested BorderContainers look like a single big widget with lots of splitters */
+	border: none;
+	padding: 0;
+}
+
+.g740 .dijitSplitterH {
+	background:#fcfcfc;
+	border:0;
+	height:5px;
+}
+.g740 .dijitGutterH {
+	background:#fcfcfc;
+	border:0;
+	height:0px !important;
+}
+
+.g740 .dijitSplitterH .dijitSplitterThumb {
+	background:#B0B0B0 none;
+	height:1px;
+	top:2px;
+	width:19px;
+}
+
+.g740 .dijitSplitterV,
+.g740 .dijitGutterV {
+	background:#fcfcfc;
+	border:0;
+	width:5px;
+}
+
+.g740 .dijitSplitterV .dijitSplitterThumb {
+	background:#B0B0B0 none;
+	height:19px;
+	left:2px;
+	width:1px;
+}
+
+/* active splitter */
+.g740 .dijitSplitterActive {
+	font-size: 1px;
+	background-image: none;
+	background-color: #aaa;
+	-moz-opacity: 0.6;
+	opacity: 0.6;
+	filter: Alpha(Opacity=60);
+	margin: 0;
+}

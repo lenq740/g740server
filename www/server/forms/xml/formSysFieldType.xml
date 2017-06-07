@@ -1,0 +1,23 @@
+<form name="formSysFieldType" caption="Типы полей базы данных">
+	<rowsets>
+		<rowset name="sysfieldtype"/>
+	</rowsets>
+	<panels>
+		<panel>
+			<toolbar default="1"/>
+			<panel type="grid" caption="Список типов полей" rowset="sysfieldtype">
+				<fields>
+					<field name="name" len="45"/>
+					<field name="isid" />
+					<field name="isref" />
+					<field name="isdec" />
+					<field name="isstr"/>
+					<field name="isdat"/>
+					<field name="defvalue"/>
+					<field name="jstype"/>
+					<field name="g740type"/>
+				</fields>
+			</panel>
+		</panel>
+	</panels>
+</form>
