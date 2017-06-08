@@ -145,9 +145,17 @@ public function getSelectWhere($params=Array()) {
 		}
 		$result.="\n"."and `sysfieldparams`.id='{$value}'";
 	}
+	if ($params['filter.id.tmptable']!='') {
+		$value=$this->php2Sql($params['filter.id.tmptable']);
+		$result.="\n"."and `sysfieldparams`.id in (select value from tmptablelist where tmptablelist.list='{$value}')";
+	}
 	if ($params['filter.klssysfield']!='') {
 		$value=$this->php2Sql($params['filter.klssysfield']);
 		$result.="\n"."and `sysfieldparams`.`klssysfield`='{$value}'";
+	}
+	if ($params['filter.klssysfield.tmptable']!='') {
+		$value=$this->php2Sql($params['filter.klssysfield.tmptable']);
+		$result.="\n"."and `sysfieldparams`.`klssysfield` in (select value from tmptablelist where tmptablelist.list='{$value}')";
 	}
 	return $result;
 }

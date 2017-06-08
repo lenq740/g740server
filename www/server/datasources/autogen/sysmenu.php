@@ -150,9 +150,17 @@ public function getSelectWhere($params=Array()) {
 		}
 		$result.="\n"."and `sysmenu`.id='{$value}'";
 	}
+	if ($params['filter.id.tmptable']!='') {
+		$value=$this->php2Sql($params['filter.id.tmptable']);
+		$result.="\n"."and `sysmenu`.id in (select value from tmptablelist where tmptablelist.list='{$value}')";
+	}
 	if ($params['filter.klsparent']!='') {
 		$value=$this->php2Sql($params['filter.klsparent']);
 		$result.="\n"."and `sysmenu`.`klsparent`='{$value}'";
+	}
+	if ($params['filter.klsparent.tmptable']!='') {
+		$value=$this->php2Sql($params['filter.klsparent.tmptable']);
+		$result.="\n"."and `sysmenu`.`klsparent` in (select value from tmptablelist where tmptablelist.list='{$value}')";
 	}
 	return $result;
 }

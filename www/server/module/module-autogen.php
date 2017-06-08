@@ -4,9 +4,10 @@
 @package module
 @subpackage module-autogen
 */
+require_once('module-dsconnector.php');
 require_once('module-datasource.php');
 
-class AutoGenerator {
+class AutoGenerator extends DSConnector {
 	protected $dataStructure=Array();			// Тут ввиде вложенных массивов описание структуры базы данных, взятое из systable и sysfield
 	protected $dataStructureRef=Array();		// Тут ссылочная целостность
 	protected $isEcho=true;
@@ -14,33 +15,6 @@ class AutoGenerator {
 		if ($params['isEcho']) $this->isEcho=true;
 		$this->initDataStructure();
 	}
-
-	// Доступ к базе данных
-	public function getPDO() {
-		global $pdoDB;
-		return $pdoDB;
-	}
-	public function getDriverName() {
-		$pdoDB=$this->getPDO();
-		return $pdoDB->getDriverName();
-	}
-	public function str2Sql($str) {
-		$pdoDB=$this->getPDO();
-		return $pdoDB->str2Sql($str);
-	}
-	public function php2Sql($value) {
-		$pdoDB=$this->getPDO();
-		return $pdoDB->php2Sql($value);
-	}
-	public function pdo($sql, $errorMessage='', $params=Array()) {
-		$pdoDB=$this->getPDO();
-		return $pdoDB->pdo($sql, $errorMessage, $params);
-	}
-	public function pdoFetch($sql, $errorMessage='', $params=Array()) {
-		$pdoDB=$this->getPDO();
-		return $pdoDB->pdoFetch($sql, $errorMessage, $params);
-	}
-	
 /**
 Инициализировать описание структуры данных
 */

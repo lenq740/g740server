@@ -1,5 +1,6 @@
 <?php
 session_start();
+ini_set('display_errors','On');
 error_reporting((E_ALL | E_STRICT) & ~E_NOTICE & ~E_DEPRECATED & ~E_WARNING);
 header("Content-type: text/xml; charset=utf-8");
 header("Cache-Control: no-store, no-cache, must-revalidate");
@@ -21,6 +22,7 @@ try {
 	); // Устанавливаем соединение с базой данных
 	$pdoDB->beginTransaction();
 	try {
+		$pdoDB->openConnection();
 		for ($xmlRequest=$rootRequest->firstChild; $xmlRequest!=null; $xmlRequest=$xmlRequest->nextSibling) {
 			if ($xmlRequest->nodeName!='request') continue;
 
@@ -126,7 +128,7 @@ try {
 				if ($datasource && $datasource!="filter") {
 					$objDataSource=getDataSource($datasource);
 					if ($objDataSource) {
-						$objDataSource->go($params);
+						$objDataSource->writeXmlExec($params);
 					} else {
 						throw new Exception("Нет обработчика для источника данных '{$datasource}'");
 					}
@@ -140,6 +142,7 @@ try {
 			}
 			throw new Exception("Неизвестный запрос {$requestName}");
 		}
+		$pdoDB->closeConnection();
 		if ($pdoDB->inTransaction()) $pdoDB->commit();
 	}
 	catch (Exception $e) {

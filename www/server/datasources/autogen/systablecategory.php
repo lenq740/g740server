@@ -71,6 +71,10 @@ public function getSelectWhere($params=Array()) {
 		}
 		$result.="\n"."and `systablecategory`.id='{$value}'";
 	}
+	if ($params['filter.id.tmptable']!='') {
+		$value=$this->php2Sql($params['filter.id.tmptable']);
+		$result.="\n"."and `systablecategory`.id in (select value from tmptablelist where tmptablelist.list='{$value}')";
+	}
 	return $result;
 }
 // Этот метод возвращает строку order by для запроса select

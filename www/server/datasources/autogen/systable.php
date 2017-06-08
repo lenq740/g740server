@@ -155,9 +155,17 @@ public function getSelectWhere($params=Array()) {
 		}
 		$result.="\n"."and `systable`.id='{$value}'";
 	}
+	if ($params['filter.id.tmptable']!='') {
+		$value=$this->php2Sql($params['filter.id.tmptable']);
+		$result.="\n"."and `systable`.id in (select value from tmptablelist where tmptablelist.list='{$value}')";
+	}
 	if ($params['filter.klssystablecategory']!='') {
 		$value=$this->php2Sql($params['filter.klssystablecategory']);
 		$result.="\n"."and `systable`.`klssystablecategory`='{$value}'";
+	}
+	if ($params['filter.klssystablecategory.tmptable']!='') {
+		$value=$this->php2Sql($params['filter.klssystablecategory.tmptable']);
+		$result.="\n"."and `systable`.`klssystablecategory` in (select value from tmptablelist where tmptablelist.list='{$value}')";
 	}
 	if (isset($params['filter.isstatic'])) {
 		$value=$this->php2Sql($params['filter.isstatic']);

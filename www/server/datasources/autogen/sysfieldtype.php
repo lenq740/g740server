@@ -138,6 +138,10 @@ public function getSelectWhere($params=Array()) {
 		}
 		$result.="\n"."and `sysfieldtype`.id='{$value}'";
 	}
+	if ($params['filter.id.tmptable']!='') {
+		$value=$this->php2Sql($params['filter.id.tmptable']);
+		$result.="\n"."and `sysfieldtype`.id in (select value from tmptablelist where tmptablelist.list='{$value}')";
+	}
 	if (isset($params['filter.isid'])) {
 		$value=$this->php2Sql($params['filter.isid']);
 		$result.="\n"."and `sysfieldtype`.`isid`='{$value}'";

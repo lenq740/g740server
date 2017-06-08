@@ -287,9 +287,17 @@ public function getSelectWhere($params=Array()) {
 		}
 		$result.="\n"."and `sysfield`.id='{$value}'";
 	}
+	if ($params['filter.id.tmptable']!='') {
+		$value=$this->php2Sql($params['filter.id.tmptable']);
+		$result.="\n"."and `sysfield`.id in (select value from tmptablelist where tmptablelist.list='{$value}')";
+	}
 	if ($params['filter.klssystable']!='') {
 		$value=$this->php2Sql($params['filter.klssystable']);
 		$result.="\n"."and `sysfield`.`klssystable`='{$value}'";
+	}
+	if ($params['filter.klssystable.tmptable']!='') {
+		$value=$this->php2Sql($params['filter.klssystable.tmptable']);
+		$result.="\n"."and `sysfield`.`klssystable` in (select value from tmptablelist where tmptablelist.list='{$value}')";
 	}
 	if (isset($params['filter.isnotempty'])) {
 		$value=$this->php2Sql($params['filter.isnotempty']);
@@ -307,9 +315,17 @@ public function getSelectWhere($params=Array()) {
 		$value=$this->php2Sql($params['filter.klssysfieldtype']);
 		$result.="\n"."and `sysfield`.`klssysfieldtype`='{$value}'";
 	}
+	if ($params['filter.klssysfieldtype.tmptable']!='') {
+		$value=$this->php2Sql($params['filter.klssysfieldtype.tmptable']);
+		$result.="\n"."and `sysfield`.`klssysfieldtype` in (select value from tmptablelist where tmptablelist.list='{$value}')";
+	}
 	if ($params['filter.klsreftable']!='') {
 		$value=$this->php2Sql($params['filter.klsreftable']);
 		$result.="\n"."and `sysfield`.`klsreftable`='{$value}'";
+	}
+	if ($params['filter.klsreftable.tmptable']!='') {
+		$value=$this->php2Sql($params['filter.klsreftable.tmptable']);
+		$result.="\n"."and `sysfield`.`klsreftable` in (select value from tmptablelist where tmptablelist.list='{$value}')";
 	}
 	if (isset($params['filter.isrefrestrict'])) {
 		$value=$this->php2Sql($params['filter.isrefrestrict']);

@@ -69,40 +69,9 @@ header("Cache-Control: post-check=0, pre-check=0", false);
 
 // Расширяем стандартный набор иконок, которые можно использовать в кнопочках и узлах дерева
 				{
-					// стандартный набор иконок размещен в client/dojog740/config.js в объекте g740.icons
-					// имени иконки ставим в соответствие имя css класса
-					// эти классы должны быть объявлены в client/dojog740/icons.css
-					// чтобы имена классов не перемешивались, лучше их именовать по шаблону: g740-icons-<имя файла иконки>
-					// сами файлы иконок лежат в client/dojog740/icons/ в формате png, прозрачный фон, размер 16x16px
 					var icons=g740.icons._items;
-/*
-					icons['disabled']='sportbaby-icons-disabled';
-					icons['sys']='sportbaby-icons-sys';
-					icons['linkgo']='sportbaby-icons-linkgo';
-					
-					icons['geo']='sportbaby-icons-geo';
-					icons['geocountry']='sportbaby-icons-geocountry';
-					icons['georegion']='sportbaby-icons-georegion';
-					icons['geookrug']='sportbaby-icons-geookrug';
-					icons['geotown']='sportbaby-icons-geotown';
-					icons['geotownmain']='sportbaby-icons-geotownmain';
-					icons['geotown-off']='sportbaby-icons-geotown-off';
-					icons['delivery']='sportbaby-icons-delivery';
-					
-					icons['traderubric']='sportbaby-icons-traderubric';
-					icons['tradesection']='sportbaby-icons-tradesection';
-					icons['tradeset']='sportbaby-icons-tradeset';
-					icons['tradesetlost']='sportbaby-icons-tradesetlost';
-					icons['trades2s']='sportbaby-icons-trades2s';
-					icons['trade']='sportbaby-icons-trade';
-					icons['recyclebin']='sportbaby-icons-recyclebin';
-					icons['recalc']='sportbaby-icons-recalc';
-					icons['import']='sportbaby-icons-import';
-					icons['export']='sportbaby-icons-export';
-					icons['load']='sportbaby-icons-load';
-*/
+					icons['disabled']='starter-icons-disabled';
 				}
-
 				g740.application.doG740ShowForm();
 			}
 		);

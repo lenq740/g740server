@@ -4,6 +4,7 @@
 @package module
 @subpackage module-datasource
 */
+require_once('module-dsconnector.php');
 require_once('module-lib.php');
 
 /**
@@ -11,55 +12,23 @@ require_once('module-lib.php');
 @package module
 @subpackage module-datasource
 */
-class DataSource {
+class DataSource extends DSConnector{
 	public $tableName='';			// таблица, обязательно должно быть задано в потомке, автоматически заполняется автогенератором классов
 	public $tableCaption='';		// Название таблицы, обязательно должно быть задано в потомке, автоматически заполняется автогенератором классов
 	public $permMode='';			// Режим прав, если не задан, то tableName
 	public $selectOtherFields='';	// Добавляется к списку полей в select, может быть переопределено в потомке
 	public $isGUID=false;			// В качестве id используется GUID
 	public $isSaveOnAppend=false;	// Сохранять в базе при добавлении
-	// Доступ к базе данных
-	public function getPDO() {
-		global $pdoDB;
-		if (!$pdoDB) throw new Exception('Не установлено соединение с базой данных');
-		return $pdoDB;
-	}
-	public function getDriverName() {
-		$pdoDB=$this->getPDO();
-		$driverName=$pdoDB->getDriverName();
-		if ($driverName!='mysql' && $driverName!='sqlsrv') throw new Exception("Неизвестный драйвер базы данных '{$driverName}'");
-		return $driverName;
-	}
-	public function str2Sql($str) {
-		$pdoDB=$this->getPDO();
-		return $pdoDB->str2Sql($str);
-	}
-	public function guid2Sql($str) {
-		if (!$str) $str='00000000-0000-0000-0000-000000000000';
-		if (mb_strlen($str)!=36) $str='00000000-0000-0000-0000-000000000000';
-		return $this->str2Sql($str);
-	}
-	public function php2Sql($value) {
-		$pdoDB=$this->getPDO();
-		return $pdoDB->php2Sql($value);
-	}
-	public function pdo($sql, $errorMessage='', $params=Array()) {
-		$pdoDB=$this->getPDO();
-		return $pdoDB->pdo($sql, $errorMessage, $params);
-	}
-	public function pdoFetch($sql, $errorMessage='', $params=Array()) {
-		$pdoDB=$this->getPDO();
-		return $pdoDB->pdoFetch($sql, $errorMessage, $params);
-	}
 
 	public function getPerm($permOper='read', $requestName='', $params=Array()) {
 		$permMode=$this->permMode;
 		if (!$permMode) $permMode=$this->tableName;
 		$p=$params;
 		$p['#request.name']=$requestName;
-		return getPerm($permMode, $permOper, $p);
+		return getPerm($permMode, $permOper);
 	}
-	public function go($params=Array()) {
+	
+	public function writeXmlExec($params=Array()) {
 		//$startTime=microtime(true);
 		global $objResponseWriter;
 		$requestName=$params['#request.name'];
@@ -222,11 +191,11 @@ XML;
 		return $result;
 	}
 	
-	protected $_fields=null;
+	protected $fields=null;
 	public function getFields() {
-		if ($this->_fields) return $this->_fields;
-		$this->_fields=Array();
-		return $this->_fields;
+		if ($this->fields) return $this->fields;
+		$this->fields=Array();
+		return $this->fields;
 	}
 	
 	protected $_fieldsByName=null;
@@ -300,17 +269,10 @@ XML;
 		if ($requestName=='refreshrow') {
 			$id=$params['id'];
 			if (!$id) throw new Exception('Не задан id!!!');
-			$params['filter.id']=$id;
-			return $this->execRefresh($params);
+			return $this->execRefresh(Array('filter.id'=>$id));
 		}
 		if ($requestName=='save') return $this->execSave($params);
-		if ($requestName=='append') {
-			foreach($this->getFields() as $key=>$fld) {
-				$name=$fld['name'];
-				if (isset($params["filter.{$name}"]) && !isset($params[$name])) $params[$name]=$params["filter.{$name}"];
-			}
-			return $this->execAppend($params);
-		}
+		if ($requestName=='append') return $this->execAppend($params);
 		if ($requestName=='copy') return $this->execCopy($params);
 		if ($requestName=='delete') return $this->execDelete($params);
 		if ($requestName=='shift') return $this->execShift($params);
@@ -423,6 +385,7 @@ XML;
 				$sqlDelim=',';
 			}
 			else if ($driverName=='sqlsrv') {
+				if ($value=='' && $fld['type']=='date') $value=null;
 				$sqlFields=$sqlFields . $sqlDelim . "[{$sqlName}] = ".((gettype($value)=='NULL')?"null":("'".$this->php2Sql($value)."'"));
 				$sqlDelim=',';
 			}
@@ -480,6 +443,7 @@ XML;
 				$sqlValues.=$sqlDelim . ((gettype($value)=='NULL')?"null":("'".$this->php2Sql($value)."'"));
 				$sqlDelim=',';
 			} else if ($driverName=='sqlsrv') {
+				if ($value=='' && $fld['type']=='date') $value=null;
 				$sqlFields.=$sqlDelim . '[' . $sqlName . ']';
 				$sqlValues.=$sqlDelim . ((gettype($value)=='NULL')?"null":("'".$this->php2Sql($value)."'"));
 				$sqlDelim=',';
@@ -880,7 +844,7 @@ SQL;
 		$recResult['row.new']=1;
 		foreach($this->getFields() as $key=>$fld) {
 			$name=$fld['name'];
-			$recResult[$name]=$params[$name];
+			if ($params[$name]) $recResult[$name]=$params[$name];
 			if ($recResult[$name] && $fld['type']=='ref' && $fld['reftable']) {
 				$dataSourceRef=getDataSource($fld['reftable']);
 				$p=Array();
@@ -1052,6 +1016,119 @@ SQL;
 		}
 		$this->pdo($sql);
 		return true;
+	}
+
+	// Работа с временной таблицей ключей
+	public function saveToTmpTable($params=Array()) {
+		$errorMessage='Ошибка при обращении к DataSource::saveToTmpTable';
+		if (!$this->getPerm('read','refresh',$params)) throw new ExceptionNoReport('У Вас нет прав на чтение из таблицы '.$this->tableCaption);
+		$driverName=$this->getDriverName();
+		if ($driverName=='mysql') return $this->_saveToTmpTableMySql($params);
+		if ($driverName=='sqlsrv') return $this->_saveToTmpTableSqlSrv($params);
+		return '';
+	}
+	protected function _saveToTmpTableMySql($params=Array()) {
+		$errorMessage='Ошибка при обращении к DataSource::_saveToTmpTableMySql';
+		$result=getGUID();
+		if ($paginatorFrom || $paginatorCount) {
+			if (!$paginatorFrom) $paginatorFrom=0;
+			if (!$paginatorCount) $paginatorCount=500;
+			$sql=<<<SQL
+insert into tmptablelist (list, value)
+select 
+	'{$result}' as list,
+	`{$this->tableName}`.id
+from
+{$this->getSelectFrom($params)}
+where 1=1
+{$this->getSelectWhere($params)}
+order by
+{$this->getSelectOrderBy($params)}
+limit {$paginatorFrom}, {$paginatorCount}
+SQL;
+		}
+		else {
+			$sql=<<<SQL
+insert into tmptablelist (list, value)
+select 
+	'{$result}' as list,
+	`{$this->tableName}`.id
+from
+{$this->getSelectFrom($params)}
+where 1=1
+{$this->getSelectWhere($params)}
+SQL;
+		}
+		$this->pdo($sql);
+		return $result;
+	}
+	protected function _saveToTmpTableSqlSrv($params=Array()) {
+		$errorMessage='Ошибка при обращении к DataSource::_saveToTmpTableSqlSrv';
+		$result=getGUID();
+		if ($paginatorFrom || $paginatorCount) {
+			if (!$paginatorFrom) $paginatorFrom=0;
+			if (!$paginatorCount) $paginatorCount=500;
+			$sql=<<<SQL
+insert into ##tmptablelist (list, value)
+select top {$paginatorCount} 
+	'{$result}' as list,
+	a.id
+from
+(
+select 
+	[{$this->tableName}].id,
+	,ROW_NUMBER() over (
+	order by
+{$this->getSelectOrderBy($params)}
+	) as [row_number]
+from
+{$this->getSelectFrom($params)}
+where
+	1=1
+{$this->getSelectWhere($params)}
+) a
+where
+  a.[row_number]>{$paginatorFrom}
+order by a.[row_number]
+SQL;
+		}
+		else {
+			$sql=<<<SQL
+insert into ##tmptablelist (list, value)
+select 
+	'{$result}' as list,
+	[{$this->tableName}].id
+from
+{$this->getSelectFrom($params)}
+where 1=1
+{$this->getSelectWhere($params)}
+SQL;
+		}
+		$this->pdo($sql);
+		return $result;
+	}
+	
+	// Добавляет в список результатов результаты из подчиненного источника данных, полезно для подготовки отчетов
+	public function appendChilds(&$list, &$childs, $childName, $childFieldName) {
+		$rows=Array();
+		$n=count($list);
+		for($i=0; $i<$n; $i++) {
+			unset($row);
+			$row=&$list[$i];
+			$id=$row['id'];
+			$rows[$id]=&$row;
+		}
+		$n=count($childs);
+		for($i=0; $i<$n; $i++) {
+			unset($child);
+			unset($row);
+			$child=&$childs[$i];
+			$klsrow=$child[$childFieldName];
+			$row=&$rows[$klsrow];
+			if (!$row) continue;
+			if (!$row["#child.{$childName}"]) $row["#child.{$childName}"]=Array();
+			$row["#child.{$childName}"][]=&$child;
+		}
 	}
 	public function getSelectCount($params=Array()) {
 		$selectFrom=$this->getSelectFrom($params);
@@ -1312,12 +1389,15 @@ PHP;
 		$D='$';
 		$B='';
 		$E='';
+		$tmpTable='';
 		if ($driverName=='mysql') {
 			$B='`';
 			$E='`';
+			$tmpTable='tmptablelist';
 		} else if ($driverName=='sqlsrv') {
 			$B='[';
 			$E=']';
+			$tmpTable='##tmptablelist';
 		} else {
 			throw new Exception("Неизвестный драйвер базы данных '{$driverName}'");
 		}
@@ -1333,6 +1413,14 @@ PHP;
 		{$D}result.="\\n"."and {$B}{$tableName}{$E}.id='{{$D}value}'";
 	}
 PHP;
+		if ($tmpTable) {
+			$result.="\n".<<<PHP
+	if ({$D}params['filter.id.tmptable']!='') {
+		{$D}value={$D}this->php2Sql({$D}params['filter.id.tmptable']);
+		{$D}result.="\\n"."and {$B}{$tableName}{$E}.id in (select value from {$tmpTable} where {$tmpTable}.list='{{$D}value}')";
+	}
+PHP;
+		}
 		foreach($fields as $key=>$fld) {
 			$table=$tableName;
 			if ($fld['table']) $table=$fld['table'];
@@ -1356,6 +1444,14 @@ PHP;
 		{$D}result.="\\n"."and {$fullFieldName}='{{$D}value}'";
 	}
 PHP;
+				if ($tmpTable) {
+					$result.="\n".<<<PHP
+	if ({$D}params['filter.{$fld['name']}.tmptable']!='') {
+		{$D}value={$D}this->php2Sql({$D}params['filter.{$fld['name']}.tmptable']);
+		{$D}result.="\\n"."and {$fullFieldName} in (select value from {$tmpTable} where {$tmpTable}.list='{{$D}value}')";
+	}
+PHP;
+				}
 			} else if ($filterType=='check') {
 				$result.="\n".<<<PHP
 	if (isset({$D}params['filter.{$fld['name']}'])) {
@@ -1373,28 +1469,27 @@ PHP;
 		if (!$tableName) $tableName=$this->tableName;
 
 		$doc=xmlCreateDoc();
-		$lstFieldsAttr=Array();
-		{
-			$lstFieldsAttr[]='name';
-			$lstFieldsAttr[]='type';
-			$lstFieldsAttr[]='caption';
-			$lstFieldsAttr[]='default';
-			$lstFieldsAttr[]='notnull';
-			$lstFieldsAttr[]='stretch';
-			$lstFieldsAttr[]='list';
-			$lstFieldsAttr[]='basetype';
-			$lstFieldsAttr[]='len';
-			$lstFieldsAttr[]='maxlength';
-			$lstFieldsAttr[]='dec';
-			$lstFieldsAttr[]='width';
-			$lstFieldsAttr[]='dlgwidth';
-			$lstFieldsAttr[]='save';
-			$lstFieldsAttr[]='readonly';
-			$lstFieldsAttr[]='js_readonly';
-			$lstFieldsAttr[]='visible';
-			$lstFieldsAttr[]='js_visible';
-			$lstFieldsAttr[]='rows';
-		}
+		$lstFieldsAttr=Array(
+			'name',
+			'type',
+			'caption',
+			'default',
+			'notnull',
+			'stretch',
+			'list',
+			'basetype',
+			'len',
+			'maxlength',
+			'dec',
+			'width',
+			'dlgwidth',
+			'save',
+			'readonly',
+			'js_readonly',
+			'visible',
+			'js_visible',
+			'rows'
+		);
 		
 		// Строим список подходящих refid
 		$lstRefId=Array();

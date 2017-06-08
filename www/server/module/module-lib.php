@@ -521,6 +521,10 @@ class PDODataConnectorAbstract extends PDO {
 		}
 		return $q->fetch(PDO::FETCH_ASSOC);
 	}
+	public function openConnection() {
+	}
+	public function closeConnection() {
+	}
 }
 /**
 Класс расширения функционала PDO для MySql
@@ -565,6 +569,22 @@ class PDODataConnectorMySql extends PDODataConnectorAbstract {
 			$result=$this->str2Sql($value);
 		}
 		return $result;
+	}
+	public function openConnection() {
+		$sql=<<<SQL
+create temporary table if not exists tmptablelist (
+	list varchar(36) not null,
+	value varchar(36) not null,
+	index (list)
+);
+SQL;
+		$this->pdo($sql);
+	}
+	public function closeConnection() {
+		$sql=<<<SQL
+truncate table tmptablelist;
+SQL;
+		$this->pdo($sql);
 	}
 }
 /**
@@ -646,6 +666,25 @@ class PDODataConnectorMSSql extends PDODataConnectorAbstract {
 			$result=$this->str2Sql($value);
 		}
 		return $result;
+	}
+	public function openConnection() {
+		$sql="select object_id('tempdb..[##tmptablelist]') as objectid";
+		$rec=$this->pdoFetch($sql);
+		if (!$rec['objectid']) {
+			$sql=<<<SQL
+create table ##tmptablelist (
+	list uniqueidentifier not null,
+	value varchar(36) not null
+);
+SQL;
+			$this->pdo($sql);
+		}
+	}
+	public function closeConnection() {
+		$sql=<<<SQL
+delete from ##tmptablelist;
+SQL;
+		$this->pdo($sql);
 	}
 }
 
@@ -771,7 +810,6 @@ function xmlGetText($xml) {
 	}
 	return $result;
 }
-
 /**
 Вернуть первый дочерний узел по $tagName
 @param	Xml		$xml узел
