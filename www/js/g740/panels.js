@@ -523,8 +523,8 @@ define(
 					request.url=g740.xml.getAttrValue(xmlRequest,'url','');
 				}
 				
-				if (g740.xml.isAttr(xmlRequest,'save')) request.save=(g740.xml.isAttr(xmlRequest,'save')==1);
-				if (g740.xml.isAttr(xmlRequest,'close')) request.close=(g740.xml.isAttr(xmlRequest,'close')==1);
+				if (g740.xml.isAttr(xmlRequest,'save')) request.save=(g740.xml.getAttrValue(xmlRequest,'save','')==1);
+				if (g740.xml.isAttr(xmlRequest,'close')) request.close=(g740.xml.getAttrValue(xmlRequest,'close','')==1);
 				
 				if (g740.xml.isAttr(xmlRequest,'confirm')) {
 					request.confirm=g740.xml.getAttrValue(xmlRequest,'confirm','');

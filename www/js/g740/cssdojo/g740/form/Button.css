@@ -17,14 +17,17 @@
  
 .g740 .dijitButtonNode {
 	/* enabled state - inner */
-	background-image: inherit !important;
+	background-image: none !important;
 	background-color: #F6F6F6;
 	border: 1px solid #c0c0c0;
-	border-bottom: 1px solid #9b9b9b;
-	padding: 0.1em 0.2em 0.2em 0.2em;
+	padding-left: 2px;
+	padding-right: 2px;
 }
 .g740 .dijitButtonNode:hover {
 	background-color: #E5E5E5 !important;
+}
+.g740 .g740focused .dijitButtonNode{
+	border-color: #d4464e;
 }
 
 .g740 .dijitButtonText {

@@ -1399,13 +1399,7 @@ define(
 					this.destroyRecursive();
 				},
 				onG740Show: function() {
-					this.set('focused',true);
-					if (this.objBtnOk) {
-						g740.execDelay.go({
-							obj: this.objBtnOk,
-							func: this.objBtnOk.focus
-						});
-					}
+					if (this.objBtnOk) this.objBtnOk.set('focused',true);
 				}
 			}
 		);

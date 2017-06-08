@@ -3,7 +3,12 @@
 	border: 1px solid #7eabcd;
 	margin: 0;
 	padding: 0;
-	background-color: #f7f7f7;
+	background-color: white;
+}
+
+.g740 .dijitMenu {
+	box-shadow:2px 3px 13px rgba(0, 0, 0, 0.3);
+	-webkit-box-shadow:2px 3px 13px rgba(0, 0, 0, 0.3);
 }
 
 .g740 .dijitBorderContainer .dijitMenuBar {
@@ -23,7 +28,7 @@
 	font-style: italic;
 }
 .g740 .dijitMenuItem td {
-	padding: 2px;
+	padding: 4px;
 }
 
 .g740 .dijitMenuPassive .dijitMenuItemHover,

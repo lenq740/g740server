@@ -1001,6 +1001,10 @@ define(
 						if (this.objAction.iconClass) this.set('iconClass',this.objAction.iconClass);
 						return true;
 					}
+					if (name=='focused') {
+						if (value) if (this.focusedNode) this.focusedNode.focus();
+						return true;
+					}
 					this.inherited(arguments);
 				},
 				destroy: function() {
@@ -1016,8 +1020,18 @@ define(
 					}
 				},
 				postCreate: function() {
+					if (this.domNode) {
+						for(var i=0; i<this.domNode.childNodes.length; i++) {
+							var child=this.domNode.childNodes[i];
+							if (child.nodeName=='INPUT') {
+								this.focusedNode=child;
+							}
+						}
+					}
 					this.on('Click', this.onG740Click);
 					this.on('KeyDown', this.onG740KeyDown);
+					this.on('Focus', this.onG740Focus);
+					this.on('Blur', this.onG740Blur);
 					this.inherited(arguments);
 				},
 				doG740Repaint: function(para) {
@@ -1046,7 +1060,10 @@ define(
 				},
 				onG740KeyDown: function(e) {
 					dojo.stopEvent(e);
-					console.log(e);
+				},
+				onG740Focus: function() {
+				},
+				onG740Blur: function() {
 				},
 				_isClickTimeout: false,
 				_setClickTimeoutOff: function() {
@@ -1059,14 +1076,25 @@ define(
 			g740.ToolbarButton,
 			{
 				g740className: 'g740.PanelButton',		// Имя базового класса
-				constructor: function(para, domElement) {
-					var procedureName='g740.PanelButton.constructor';
-					try {
-						this.style+='border-width: 0px';
+				onG740KeyDown: function(e) {
+					if (!e.ctrlKey && e.keyCode==13) {
+						dojo.stopEvent(e);
+						this.onClick();
 					}
-					finally {
+					else {
+						dojo.stopEvent(e);
 					}
-				}
+				},
+				resize: function(size) {
+					if (size && size.h) size.h=parseInt(size.h);
+					this.inherited(arguments);
+				},
+				onG740Focus: function() {
+					if (!dojo.hasClass(this.domNode,'g740focused')) dojo.addClass(this.domNode,'g740focused');
+				},
+				onG740Blur: function() {
+					if (dojo.hasClass(this.domNode,'g740focused')) dojo.removeClass(this.domNode,'g740focused');
+				},
 			}
 		);
 
