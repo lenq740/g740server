@@ -233,6 +233,54 @@ html, body {
 	margin-top:-1px
 }
 
+/* g740._ListAbstract */
+.g740-list {
+	position: relative;
+}
+.g740-list .g740-list-div-input {
+    padding: 2px 6px 2px 2px;
+}
+.g740-list .g740-list-input{
+	width: 100%;
+	border-style: solid;
+	border-width: 1px;
+	border-color: lightgray;
+}
+.g740-list .g740-list-input:focus {
+	border-color: #d4464e;
+}
+.g740-list .g740-list-items{
+	overflow-y: auto;
+	position: absolute;
+	bottom: 0px;
+	left: 0px;
+	width: 100%;
+	height: 0px;
+}
+.g740-list .g740-list-items .g740-list-item{
+	font-size: 12px;
+	cursor: pointer;
+	overflow: hidden;
+	white-space: nowrap;
+	user-select: none;
+	-ms-user-select: none;
+	-moz-user-select: none;
+	-khtml-user-select: none;
+	-webkit-user-select: none;
+	text-align: center;
+}
+.g740-list .g740-list-items .g740-list-item span{
+	width: 95%;
+	text-align: left;
+	display: inline-block;
+    overflow: hidden;
+	line-height: 16px;
+}
+.g740-list .g740-list-items .g740-list-item.selected{
+    background-color: orange;
+	color: white;
+}
+
 
 /* g740.FieldEditor.Icons, g740.FieldEditor.Check */
 .g740-widget-icons {

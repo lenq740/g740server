@@ -1001,8 +1001,140 @@ define(
 				},
 				_setFocusedPanelDisabledToOff: function() {
 					this._isChangeFocusedPanelDisabled=false;
-				}
+				},
 
+				
+				
+				// Передача фокуса ввода
+				canFocused: function() {
+					var result=false;
+					if (this.getChildren) {
+						var lst=this.getChildren();
+						for (var i=0; i<lst.length; i++) {
+							var obj=lst[i];
+							if (!obj) continue;
+							if (!obj.canFocused) continue;
+							if (obj.canFocused()) {
+								result=true;
+								break;
+							}
+						}
+					}
+					return result;
+				},
+				doG740Focus: function() {
+					this.set('focused',true);
+				},
+				doG740FocusChildFirst: function() {
+					var objChild=null;
+					if (this.getChildren) {
+						var lst=this.getChildren();
+						for (var i=0; i<lst.length; i++) {
+							var obj=lst[i];
+							if (!obj) continue;
+							if (!obj.doG740FocusChildNext) continue;
+							if (!obj.canFocused || !obj.canFocused()) continue;
+							objChild=obj;
+							break;
+						}
+					}
+					if (objChild) {
+						if (objChild.doG740FocusChildFirst) objChild.doG740FocusChildFirst();
+						else if (objChild.doG740Focus) objChild.doG740Focus();
+						else {
+							objChild.set('focused',true);
+						}
+					}
+					else {
+						this.doG740Focus();
+					}
+				},
+				doG740FocusChildLast: function() {
+					var objChild=null;
+					if (this.getChildren) {
+						var lst=this.getChildren();
+						for (var i=lst.length-1; i>=0; i--) {
+							var obj=lst[i];
+							if (!obj) continue;
+							if (!obj.doG740FocusChildNext) continue;
+							if (!obj.canFocused || !obj.canFocused()) continue;
+							objChild=obj;
+							break;
+						}
+					}
+					if (objChild) {
+						if (objChild.doG740FocusChildFirst) objChild.doG740FocusChildLast();
+						else if (objChild.doG740Focus) objChild.doG740Focus();
+						else {
+							objChild.set('focused',true);
+						}
+					}
+					else {
+						this.doG740Focus();
+					}
+				},
+				doG740FocusChildNext: function(objChild) {
+					var objChildNext=null;
+					if (this.getChildren) {
+						var lst=this.getChildren();
+						var index=lst.length;
+						for (var i=0; i<lst.length; i++) {
+							if (lst[i]==objChild) {
+								index=i;
+								break;
+							}
+						}
+						for (var i=index+1; i<lst.length; i++) {
+							var obj=lst[i];
+							if (!obj) continue;
+							if (!obj.doG740FocusChildNext) continue;
+							if (!obj.canFocused || !obj.canFocused()) continue;
+							objChildNext=obj;
+							break;
+						}
+					}
+					if (objChildNext) {
+						if (objChildNext.doG740FocusChildFirst) objChildNext.doG740FocusChildFirst();
+						else if (objChildNext.doG740Focus) objChildNext.doG740Focus();
+						else {
+							objChildNext.set('focused',true);
+						}
+					}
+					else {
+						this.doG740FocusChildFirst();
+					}
+				},
+				doG740FocusChildPrev: function(objChild) {
+					var objChildPrev=null;
+					if (this.getChildren) {
+						var lst=this.getChildren();
+						var index=0;
+						for (var i=0; i<lst.length; i++) {
+							if (lst[i]==objChild) {
+								index=i;
+								break;
+							}
+						}
+						for (var i=index-1; i>=0; i--) {
+							var obj=lst[i];
+							if (!obj) continue;
+							if (!obj.doG740FocusChildPrev) continue;
+							if (!obj.canFocused || !obj.canFocused()) continue;
+							objChildPrev=obj;
+							break;
+						}
+					}
+					if (objChildPrev) {
+						if (objChildPrev.doG740FocusChildLast) objChildPrev.doG740FocusChildLast();
+						else if (objChildPrev.doG740Focus) objChildPrev.doG740Focus();
+						else {
+							objChildPrev.set('focused',true);
+						}
+					}
+					else {
+						this.doG740FocusChildLast();
+					}
+				}
 			}
 		);
 		return g740;

@@ -107,6 +107,11 @@ app-color-black
 	background-image: url('icons/close.png') !important;
 }
 
+/* g740._ListAbstract */
+.g740.app-color-black .g740-list .g740-list-items .g740-list-item.selected{
+    background-color: #6e6e6e;
+	color: white;
+}
 
 /*--------------------------------------------------------------------
 app-color-red
@@ -150,4 +155,10 @@ app-color-red
 }
 .g740.app-color-red .g740-dialog .dijitDialogCloseIcon {
 	background-image: url('icons/close.png') !important;
+}
+
+/* g740._ListAbstract */
+.g740.app-color-red .g740-list .g740-list-items .g740-list-item.selected{
+    background-color: #e5525b;
+	color: white;
 }

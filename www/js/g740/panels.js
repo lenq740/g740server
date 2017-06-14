@@ -1212,6 +1212,17 @@ define(
 				isG740CanShowChildsTitle: true,		// Класс умеет показывать заголовки дочерних панелей
 				isG740CanChilds: true,				// Класс может содержать дочерние панели
 
+				destroy: function() {
+					this.tablist.TabContainer=null;
+					this.inherited(arguments);
+				},
+				postCreate: function() {
+					this.tablist.TabContainer=this;
+					this.tablist.on('KeyDown',function(e){
+						if (this.TabContainer && this.TabContainer.onG740KeyDown) this.TabContainer.onG740KeyDown(e);
+					});
+					this.inherited(arguments);
+				},
 				getBestChild: function() {
 					return this._getBestChildStack();
 				},
@@ -1223,6 +1234,16 @@ define(
 							obj: this,
 							func: this.doG740FirstRefreshTabContainer
 						});
+					}
+				},
+				onG740KeyDown: function(e) {
+					if (!e.ctrlKey && (e.keyCode==13 || (e.keyCode==9 && !e.shiftKey))) {
+						// Enter, Tab
+						dojo.stopEvent(e);
+						this.doG740FocusChildFirst();
+					}
+					else {
+						dojo.stopEvent(e);
 					}
 				},
 				doG740FirstRefreshTabContainer: function() {
@@ -1411,6 +1432,7 @@ define(
 				},
 				destroy: function() {
 					var procedureName='g740.PanelTabForm.destroy';
+					this.tablist.TabContainer=null;
 					var lst=this.getChildren();
 					for (var i=0; i<lst.length; i++) {
 						var obj=lst[i];
@@ -1421,6 +1443,10 @@ define(
 					this.inherited(arguments);
 				},
 				postCreate: function() {
+					this.tablist.TabContainer=this;
+					this.tablist.on('KeyDown',function(e){
+						if (this.TabContainer && this.TabContainer.onG740KeyDown) this.TabContainer.onG740KeyDown(e);
+					});
 					if (this.isShowTitle && this.title) {
 						var objTitle=new g740.PanelTitle({
 							title: this.title,
@@ -1442,7 +1468,18 @@ define(
 				onG740AfterBuild: function() {
 					this.g740childs=[];
 				},
-				
+				onG740KeyDown: function(e) {
+					if (!e.ctrlKey && (e.keyCode==13 || (e.keyCode==9 && !e.shiftKey))) {
+						// Enter, Tab
+						dojo.stopEvent(e);
+						if (this.selectedChildWidget && this.selectedChildWidget.doG740FocusChildFirst) {
+							this.selectedChildWidget.doG740FocusChildFirst();
+						}
+					}
+					else {
+						dojo.stopEvent(e);
+					}
+				},
 // Отобразить экранную форму
 				doG740ShowForm: function(objForm) {
 					var childs=this.getChildren();

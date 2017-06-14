@@ -421,7 +421,6 @@ define(
 			g740.DialogEditorAbstract,
 			{
 				objListRowSet: null,
-				charHeight: 18,
 				destroy: function() {
 					var procedureName='g740.DialogEditorRef.destroy';
 					try {
@@ -460,11 +459,6 @@ define(
 						}, 
 						null
 					);
-					var lst=this.objListRowSet.getItems();
-					var count=lst.length;
-					if (count<5) count=5;
-					if (count>25) count=25;
-					var h=(count*this.charHeight+5)+'px';
 					var w=350+'px';
 					if (fldRefId.dlgwidth) w=fldRefId.dlgwidth;
 					if (fld.dlgwidth) w=fld.dlgwidth;
@@ -475,10 +469,11 @@ define(
 						w+='px';
 					}
 					this.width=w;
-					this.height=h;
+					this.height=this.objListRowSet.getHeight()+'px';
 					
 					this.objListRowSet.on('KeyDown',dojo.lang.hitch(this,this.onListKeyDown));
 					this.objListRowSet.on('DblClick',dojo.lang.hitch(this,this.onListDblClick));
+					this.objListRowSet.on('Resize',dojo.lang.hitch(this,this.onListResize));
 					this.addChild(this.objListRowSet);
 				},
 
@@ -549,14 +544,38 @@ define(
 					var refRowSetName=objRowSet.getRefRowSetName(refIdFieldName, this.nodeType);
 					return this.objForm.rowsets[refRowSetName];
 				},
+				getSize: function() {
+					var result=this.inherited(arguments);
+					if (this.domNodeOwner && this.objForm && this.objForm.domNode) {
+						var posOwner=dojo.geom.position(this.domNodeOwner, false);
+						var posBody={
+							x: 0,
+							y: 0,
+							w: document.body.clientWidth,
+							h: document.body.clientHeight
+						};
+						result.l=posOwner.x;
+						if ((result.l+result.w)>posBody.w) {
+							result.l=posOwner.x+posOwner.w-result.w;
+						}
+						result.t=posOwner.y;
+						if ((result.t+result.h)>posBody.h) {
+							result.t=posOwner.y-result.h;
+						}
+						if (result.t<5) result.t=5;
+					}
+					return result;
+				},
+				doG740Resize: function() {
+					this.inherited(arguments);
+					this.objListRowSet.layout();
+				},
 				onG740Show: function() {
-					if (this.objListRowSet) this.objListRowSet.focus();
+					if (this.objListRowSet) {
+						this.objListRowSet.set('focused',true);
+					}
 				},
 				onListKeyDown: function(e) {
-					if (e.keyCode==32 || e.keyCode==13) {
-						dojo.stopEvent(e);
-						if (this.saveAndHide) this.saveAndHide(this.objListRowSet.value);
-					}
 					if (e.keyCode==27) {
 						dojo.stopEvent(e);
 						if (this.hide) this.hide();
@@ -567,6 +586,10 @@ define(
 				},
 				onListDblClick: function(e) {
 					if (this.saveAndHide) this.saveAndHide(this.objListRowSet.value);
+				},
+				onListResize: function() {
+					this.height=this.objListRowSet.getHeight()+'px';
+					this.doG740Resize();
 				}
 			}
 		);
@@ -612,10 +635,6 @@ define(
 						}, 
 						null
 					);
-					var lst=this.objListItems.getItems();
-					var count=lst.length;
-					if (count<5) count=5;
-					if (count>25) count=25;
 
 					var w=200+'px';
 					if (fieldDef.dlgwidth) w=fieldDef.dlgwidth;
@@ -625,16 +644,18 @@ define(
 						if (w<200) w=200;
 						w+='px';
 					}
-					var h=(count*this.charHeight+5)+'px';
 					this.width=w;
-					this.height=h;
+					this.height=this.objListItems.getHeight()+'px';
 					
 					this.objListItems.on('KeyDown',dojo.lang.hitch(this,this.onListKeyDown));
 					this.objListItems.on('DblClick',dojo.lang.hitch(this,this.onListDblClick));
+					this.objListItems.on('Resize',dojo.lang.hitch(this,this.onListResize));
 					this.addChild(this.objListItems);
 				},
 				onG740Show: function() {
-					if (this.objListItems) this.objListItems.focus();
+					if (this.objListItems) {
+						this.objListItems.set('focused',true);
+					}
 				},
 				_save: function(value) {
 					var objRowSet=this.getRowSet();
@@ -644,6 +665,32 @@ define(
 						value: value
 					});
 					objRowSet.doG740Repaint({ isRowUpdate: true });
+				},
+				getSize: function() {
+					var result=this.inherited(arguments);
+					if (this.domNodeOwner && this.objForm && this.objForm.domNode) {
+						var posOwner=dojo.geom.position(this.domNodeOwner, false);
+						var posBody={
+							x: 0,
+							y: 0,
+							w: document.body.clientWidth,
+							h: document.body.clientHeight
+						};
+						result.l=posOwner.x;
+						if ((result.l+result.w)>posBody.w) {
+							result.l=posOwner.x+posOwner.w-result.w;
+						}
+						result.t=posOwner.y;
+						if ((result.t+result.h)>posBody.h) {
+							result.t=posOwner.y-result.h;
+						}
+						if (result.t<5) result.t=5;
+					}
+					return result;
+				},
+				doG740Resize: function() {
+					this.inherited(arguments);
+					this.objListItems.layout();
 				},
 				onListKeyDown: function(e) {
 					if (e.keyCode==32 || e.keyCode==13) {
@@ -657,6 +704,10 @@ define(
 				},
 				onListDblClick: function(e) {
 					if (this.saveAndHide) this.saveAndHide(this.objListItems.value);
+				},
+				onListResize: function() {
+					this.height=this.objListItems.getHeight()+'px';
+					this.doG740Resize();
 				}
 			}
 		);

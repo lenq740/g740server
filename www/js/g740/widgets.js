@@ -647,7 +647,6 @@ define(
 				}
 			}
 		)
-		
 
 // Виджет: абстрактный предок списка
 		dojo.declare(
@@ -657,44 +656,57 @@ define(
 				filter: '',
 				value: null,
 				isAddEmptyItem: false,
-				templateString: '<select class="g740-storelist" multiple data-dojo-attach-event="'+
-					'onchange: doChange, '+
-					'onclick: onClick, ondblclick: onDblClick, '+
-					'onkeydown: onKeyDown, onkeyup: onKeyUp, onkeypress: onKeyPress, '+
-					'onblur: onBlur, onfocus: onFocus'+
-				'"></select>',
+				templateString: 
+					'<div class="g740-list">'+
+						'<div class="g740-list-div-input" data-dojo-attach-point="domNodeDivInput">'+
+							'<input type="text" class="g740-list-input" data-dojo-attach-point="domNodeInput" data-dojo-attach-event="'+
+								'onkeydown: doInputKeyDown'+
+							'"/>'+
+						'</div>'+
+						'<div class="g740-list-items" data-dojo-attach-point="domNodeItems">'+
+						'</div>'+
+					'</div>',
+				_listOfDomItem: {},
 				postCreate: function() {
 					this.inherited(arguments);
+					this.focusNode=this.domNodeInput;
+					this.domNodeInput.value=this.filter;
 					this._renderItems();
-					if (this.filter) {
-						this.value='';
-						for (var i=0; i<this.domNode.childNodes.length; i++) {
-							var domOption=this.domNode.childNodes[i];
-							if (domOption.nodeName.toLowerCase()!='option') continue;
-							var id=domOption.getAttribute('value');
-							if (!id) continue;
-							this.value=id;
-							break;
-						}
-					}
-					this._renderValue();
 					g740.execDelay.go({
 						delay: 50,
 						obj: this,
-						func: this.scrollToSelected
+						func: function() {
+							var cursorPos=String(this.filter).length;
+							if (this.domNodeInput.setSelectionRange) {
+								this.domNodeInput.setSelectionRange(cursorPos,cursorPos);
+							}
+							else if (this.domNodeInput.createTextRange) {
+								var range = this.domNodeInput.createTextRange();
+								range.collapse(true);
+								range.moveEnd('character', cursorPos);
+								range.moveStart('character', cursorPos);
+								range.select();
+							}
+							this.layout();
+						}
 					});
 				},
+
 				destroy: function() {
+					this._listOfDomItem={};
 					this.inherited(arguments);
-				},
-				focus: function() {
-					if (this.domNode) this.domNode.focus();
 				},
 				set: function(name, value) {
 					if (name=='value') {
 						if (this.value!=value) {
 							this.value=value;
 							this._renderValue();
+						}
+						return true;
+					}
+					if (name='focused') {
+						if (value) {
+							if (this.domNodeInput) this.domNodeInput.focus();
 						}
 						return true;
 					}
@@ -705,62 +717,176 @@ define(
 					return [];
 				},
 				_renderItems: function() {
-					if (!this.domNode) return false;
-					this.domNode.innerHTML='';
+					if (!this.domNodeItems) return false;
+					this.domNodeItems.innerHTML='';
+					this._listOfDomItem={};
 					var items=this.getItems();
 					for (var i=0; i<items.length; i++) {
 						var item=items[i];
-						var domOption=document.createElement('option');
-						domOption.setAttribute('value',item['id']);
+						var domItem=document.createElement('div');
+						domItem.setAttribute('data-id',item['id']);
+						domItem.setAttribute('title',item['value']);
+						domItem.className='g740-list-item';
+						domItem.obj=this;
+						dojo.on(domItem, 'click', function() {
+							if (this.obj && this.obj.doItemClick) {
+								var id=this.getAttribute('data-id');
+								this.obj.doItemClick(id);
+							}
+						});
+						dojo.on(domItem, 'dblclick', function() {
+							if (this.obj && this.obj.doItemDblClick) {
+								var id=this.getAttribute('data-id');
+								this.obj.doItemDblClick(id);
+							}
+						});
+						var domSpan=document.createElement('span');
 						var domText=document.createTextNode(item['value']);
-						domOption.appendChild(domText);
-						this.domNode.appendChild(domOption);
+						domSpan.appendChild(domText);
+						domItem.appendChild(domSpan);
+						this.domNodeItems.appendChild(domItem);
+						this._listOfDomItem[item['id']]=domItem;
 					}
+					if (!this._listOfDomItem[this.value]) this.value=this.getIdFirst();
+					this._renderValue();
+					this.onResize();
 				},
+				_oldValue: null,
 				_renderValue: function() {
-					for (var i=0; i<this.domNode.childNodes.length; i++) {
-						var domOption=this.domNode.childNodes[i];
-						if (domOption.nodeName.toLowerCase()!='option') continue;
-						var id=domOption.getAttribute('value');
-						domOption.selected=(id==this.value);
-					}
+					if (!this._listOfDomItem) return;
+					var domDivOld=this._listOfDomItem[this._oldValue];
+					if (domDivOld && dojo.hasClass(domDivOld, 'selected')) dojo.removeClass(domDivOld, 'selected');
+					var domDivNew=this._listOfDomItem[this.value];
+					if (domDivNew && !dojo.hasClass(domDivNew, 'selected')) dojo.addClass(domDivNew, 'selected');
+					this._oldValue=this.value;
+					this.scrollToSelected();
 				},
-				scrollToSelected: function() {
-					if (!this.domNode) return false;
-					var domSelected=null;
-					if (this.domNode.selectedIndex>=0) var domSelected=this.domNode.options[this.domNode.selectedIndex];
-					if (!domSelected) return false;
-					var y=this.domNode.scrollTop;
-					var h=this.domNode.offsetHeight;
-					var delta=10;
-					if (delta*4>h) delta=h/4;
-					
-					if (domSelected.offsetTop<(y+delta)) {
-						y=parseInt(domSelected.offsetTop-h/2);
+				
+				getIdFirst: function() {
+					var result=null;
+					if (!this.domNodeItems) return result;
+					for (var i=0; i<this.domNodeItems.childNodes.length; i++) {
+						var domItem=this.domNodeItems.childNodes[i];
+						if (domItem.nodeName!='DIV') continue;
+						result=domItem.getAttribute('data-id');
+						break;
 					}
-					if ((domSelected.offsetTop+domSelected.offsetHeight)>(y+h-delta)) {
-						y=parseInt(domSelected.offsetTop-h/2);
-					}
-					if (y<0) y=0;
-					this.domNode.scrollTop=y;
+					return result;
 				},
-				doChange: function(evt) {
-					var value=null;
-					if (!this.domNode) return false;
-					
-					var domSelected=null;
-					if (this.domNode.selectedIndex>=0) var domSelected=this.domNode.options[this.domNode.selectedIndex];
-					if (domSelected) {
-						value=domSelected.getAttribute('value');
+				getIdLast: function() {
+					var result=null;
+					if (!this.domNodeItems) return result;
+					for (var i=this.domNodeItems.childNodes.length-1; i>=0; i--) {
+						var domItem=this.domNodeItems.childNodes[i];
+						if (domItem.nodeName!='DIV') continue;
+						result=domItem.getAttribute('data-id');
+						break;
 					}
-					if (this.value!=value) {
-						this.value=value;
-						this._renderValue();
-						this.onChange(value);
+					return result;
+				},
+				getIdNext: function(id) {
+					if (!this.domNodeItems) return null;
+					if (!this._listOfDomItem) return null;
+					var domItem=this._listOfDomItem[id];
+					while (domItem) {
+						domItem=domItem.nextSibling;
+						if (domItem && domItem.nodeName=='DIV') {
+							return domItem.getAttribute('data-id');
+						}
+					}
+					return this.getIdLast();
+				},
+				getIdPrev: function(id) {
+					if (!this.domNodeItems) return null;
+					if (!this._listOfDomItem) return null;
+					var domItem=this._listOfDomItem[id];
+					while (domItem) {
+						domItem=domItem.previousSibling;
+						if (domItem && domItem.nodeName=='DIV') {
+							return domItem.getAttribute('data-id');
+						}
+					}
+					return this.getIdFirst();
+				},
+				getHeight: function() {
+					var n=0;
+					for(var id in this._listOfDomItem) {
+						n++;
+						if (n>=25) break;
+					}
+					if (n<5) n=5;
+					return n*17+18;
+				},
+				doInputKeyDown: function(e) {
+					if (!e.ctrlKey && e.keyCode==40) {
+						this.set('value',this.getIdNext(this.value));
+						dojo.stopEvent(e);
+					}
+					else if (!e.ctrlKey && e.keyCode==38) {
+						this.set('value',this.getIdPrev(this.value));
+						dojo.stopEvent(e);
+					}
+					else if (!e.ctrlKey && e.keyCode==13) {
+						dojo.stopEvent(e);
+						this.onDblClick();
 					}
 					else {
-						this._renderValue();
+						this._refreshIndex++;
+						g740.execDelay.go({
+							delay: 400,
+							obj: this,
+							func: this._refreshGo
+						});
 					}
+				},
+				_refreshIndex: 0,
+				_refreshGo: function() {
+					this._refreshIndex--;
+					if (this._refreshIndex>0) return;
+					if (!this.domNodeInput) return;
+					if (this.filter==this.domNodeInput.value) return;
+					this.filter=this.domNodeInput.value;
+					this._renderItems();
+					this._renderValue();
+				},
+				layout: function() {
+					this.inherited(arguments);
+					if (this.domNodeItems) {
+						var h=(this.domNode.clientHeight-this.domNodeDivInput.offsetHeight)+'px';
+						dojo.style(this.domNodeItems,'height',h);
+					}
+					this.scrollToSelected();
+				},
+				scrollToSelected: function() {
+					if (!this.domNodeItems) return;
+					if (!this._listOfDomItem) return;
+					var domItem=this._listOfDomItem[this.value];
+					if (!domItem) return;
+					
+					var y=this.domNodeItems.scrollTop;
+					var h=this.domNodeItems.offsetHeight;
+					var delta=10;
+					if (delta*4>h) delta=h/4;
+					if (domItem.offsetTop<(y+delta)) {
+						y=parseInt(domItem.offsetTop-h/2);
+					}
+					if ((domItem.offsetTop+domItem.offsetHeight)>(y+h-delta)) {
+						y=parseInt(domItem.offsetTop-h/2);
+					}
+					if (y<0) y=0;
+					this.domNodeItems.scrollTop=y;
+				},
+				doItemClick: function(id) {
+					if (this.domNodeInput) this.domNodeInput.focus();
+					this.set('value',id);
+					this.onChange(id);
+					this.onClick();
+				},
+				doItemDblClick: function(id) {
+					if (this.domNodeInput) this.domNodeInput.focus();
+					this.set('value',id);
+					this.onChange(id);
+					this.onDblClick();
 				},
 				onChange: function(newValue) {
 				},
@@ -768,19 +894,11 @@ define(
 				},
 				onDblClick: function(evt) {
 				},
-				onKeyDown: function(evt) {
-				},
-				onKeyUp: function(evt) {
-				},
-				onKeyPress: function(evt) {
-				},
-				onBlur: function() {
-				},
-				onFocus: function() {
+				onResize: function() {
 				}
 			}
 		);
-
+		
 // Виджет: список, начитываемый из DataApi
 		dojo.declare(
 			'g740.ListRowSet',
