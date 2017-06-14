@@ -583,7 +583,7 @@ html, body {
 .g740-paginator {
 	background-color: #f3f3f3;
 	padding-top: 2px;
-	padding-bottom: 2px;
+	padding-bottom: 0px;
 	text-align: center;
 	border-top-color: lightgray !important;
 	border-top-style: solid !important;
@@ -593,9 +593,10 @@ html, body {
 	display: inline-block;
 }
 .g740-paginator .btn{
-	width: 16px;
-	height: 16px;
+	width: 24px;
+	height: 24px;
 	background-repeat: no-repeat;
+	background-position: center;
 	cursor: pointer;
 }
 .g740-paginator .btn:hover{
@@ -628,15 +629,20 @@ html, body {
 .g740-paginator .pages .item {
 	display: inline-block;
 	float: left;
-	min-width: 30px;
-	line-height: 16px;
+	min-width: 24px;
+	line-height: 24px;
 	cursor: pointer;
+	margin-left:2px;
+	margin-right:2px;
+}
+.g740-paginator .pages .item:hover {
+	background-color: #E5E5E5;
 }
 .g740-paginator .pages .item.current {
-	border-style: solid;
-	border-color: #869CBF;
-	border-width: 1px;
 	background-color: #E5E5E5;
+	outline-style: solid;
+	outline-color: #D4464E;
+	outline-width: 1px;
 }
 
 
