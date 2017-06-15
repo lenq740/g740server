@@ -308,6 +308,22 @@
 	height: 16px;
 }
 
+.g740-icons-clipboard-copy {
+	background-image: url('clipboard-copy.png');
+	width: 16px;
+	height: 16px;
+}
+.g740-icons-clipboard-cut {
+	background-image: url('clipboard-cut.png');
+	width: 16px;
+	height: 16px;
+}
+.g740-icons-clipboard-paste {
+	background-image: url('clipboard-paste.png');
+	width: 16px;
+	height: 16px;
+}
+
 .g740-icons-login {
 	background-image: url('login.png');
 	width: 128px;

@@ -628,12 +628,22 @@ define(
 					}
 				},
 				postCreate: function() {
-					if (this.fieldDef && this.fieldDef.on && this.fieldDef.on.dblclick) {
-						this.set('buttonVisible',true);
+					if (this.fieldDef) {
+						if (this.fieldDef.on && this.fieldDef.on.dblclick) this.set('buttonVisible',true);
+						if (this.fieldDef.type=='num') dojo.addClass(this.domNode,'g740-widget-num');
 					}
 					this.on('ButtonClick',this.onG740ButtonClick);
 					this.on('Blur',this.onG740Blur);
 					this.inherited(arguments);
+				},
+				convertFromValueToTextValue: function(value) {
+					var result=value;
+					if (this.fieldDef && this.fieldDef.type=='num' && this.fieldDef.dec) {
+						var result=parseFloat(result);
+						if (isNaN(result)) result=0;
+						result=result.toFixed(this.fieldDef.dec);
+					}
+					return result;
 				},
 				onG740Blur: function() {
 					if (this.domNodeInput) this.onG740Change(this.domNodeInput.value);

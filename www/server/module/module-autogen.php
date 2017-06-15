@@ -440,6 +440,7 @@ PHP;
 			if ($fld['dec']) $res['dec']=$fld['dec'];
 			if ($fld['isnotempty']) $res['notnull']=1;
 			if ($fld['save']) $res['save']=1;
+			if ($fld['stretch']) $res['stretch']=1;
 			if (($fld['type']=='string' || $fld['type']=='memo') && !$fld['len']) $res['stretch']=1;
 			if ($fld['alias']==$tableName && $fld['default']) $res['default']=$fld['default'];
 			if ($fld['change']==1) {

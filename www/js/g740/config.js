@@ -101,6 +101,9 @@ define(
 				'dbtable': 'g740-icons-dbtable',
 				'asterisk': 'g740-icons-asterisk',
 				'help': 'g740-icons-help',
+				'clipboard.copy': 'g740-icons-clipboard-copy',
+				'clipboard.cut': 'g740-icons-clipboard-cut',
+				'clipboard.paste': 'g740-icons-clipboard-paste',
 				
 				'login': 'g740-icons-login',
 				'error': 'g740-icons-error',

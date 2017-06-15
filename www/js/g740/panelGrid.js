@@ -12,6 +12,7 @@ define(
 			[dojox.grid.DataGrid, g740._PanelAbstract],
 			{
 			    isG740Grid: true,
+				isG740Clipboard: true,
 				objRowSet: null,
 			    g740structure: null,
 			    objActionOnDblClick: null,
@@ -159,11 +160,13 @@ define(
 					if (!this.focus) return null;
 					return this.inherited(arguments);
 				},
-			    doG740RepaintVisible: function (para) {
+			    
+				_isFirstG740RepaintVisible: true,
+				doG740RepaintVisible: function (para) {
 			        var procedureName = 'g740.Grid.doG740RepaintVisible';
 			        if (!this.g740structure) return false;
 			        if (this.g740structure.length == 0) return false;
-			        if (!this.g740structure[0].isJsVisible) return true;
+			        if (!this._isFirstG740RepaintVisible && !this.g740structure[0].isJsVisible) return true;
 			        if (!this.layout) return false;
 			        if (!this.layout.cells) return false;
 
@@ -202,16 +205,54 @@ define(
 			            }
 			        }
 
-			        if (isVisibleChanged) {
+			        if (this._isFirstG740RepaintVisible) {
+						// Первый раз всегда перестраиваем - для пересчета stretch полей
+						this._isFirstG740RepaintVisible=false;
+						isVisibleChanged=true;
+					}
+					if (isVisibleChanged) {
 			            var structure = [
 							{
 							    defaultCell: this.g740structure[0].defaultCell,
-							    cells: cellsNew
+							    cells: this.doG740RebuildCellsForStretch(cellsNew)
 							}
 			            ];
 			            this.set('structure', structure);
 			        }
 			    },
+				doG740RebuildCellsForStretch: function(cells) {
+					var width=this.domNode.offsetWidth-25;
+					var result=cells;
+					if (!width) return result;
+					var w=0;
+					var nStretch=0;
+					for(var i=0; i<result.length; i++) {
+						var cell=result[i];
+						if (!cell) continue;
+						var fldDef=cell.fldDef;
+						if (!fldDef) continue;
+						var len = fldDef.len;
+						if (!len) len = 10;
+						w+=(len*g740.config.charwidth)+8;
+						if (fldDef.stretch) nStretch++;
+					}
+					if (!nStretch) return result;
+					if (w>=width) return result;
+					for(var i=0; i<result.length; i++) {
+						var cell=result[i];
+						if (!cell) continue;
+						var fldDef=cell.fldDef;
+						if (!fldDef) continue;
+						if (!fldDef.stretch) continue;
+						var delta=parseInt((width-w)/nStretch);
+						nStretch--;
+						w+=delta;
+						var len = fldDef.len;
+						if (!len) len = 10;
+						cell.width=(len*g740.config.charwidth+delta)+'px';
+					}
+					return result;
+				},
 
 				canFocused: function() {
 					return true;
@@ -442,7 +483,7 @@ define(
 			        var cellIndex = objCell.index;
 			        var rowIndex = this.focus.rowIndex;
 			        // Space, Enter
-			        if (!e.ctrlKey && (e.keyCode == 32 || e.keyCode == 13)) {
+			        if (!e.ctrlKey && e.keyCode == 13) {
 
 			            if (this.objActionOnDblClick) {
 			                this.objActionOnDblClick.exec();
@@ -780,11 +821,9 @@ define(
 				cell['js_visible'] = g740.xml.getAttrValue(xmlField, 'js_visible', fld.js_visible);
 				if (cell['js_visible']) isJsVisible = true;
 
-				var width = fldNew.width;
 				var len = fldNew.len;
 				if (!len) len = 10;
-				if (!width) width = (len * g740.config.charwidth) + 'px';
-				cell['width'] = width;
+				cell['width'] = (len*g740.config.charwidth)+'px';
 
 				var request = null;
 				if (fldNew.on && fldNew.on.dblclick) request = fldNew.on.dblclick;

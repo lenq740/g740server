@@ -10,6 +10,7 @@ define(
 			[g740._PanelAbstract, dijit._TemplatedMixin],
 			{
 				isG740Fields: true,
+				isG740Clipboard: true,
 				fields: [],
 				_childs: [],
 				title: '',

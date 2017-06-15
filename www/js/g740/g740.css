@@ -268,6 +268,7 @@ html, body {
 	-khtml-user-select: none;
 	-webkit-user-select: none;
 	text-align: center;
+	height: 18px;
 }
 .g740-list .g740-list-items .g740-list-item span{
 	width: 95%;
@@ -410,6 +411,10 @@ html, body {
 .g740-widget-text .g740-widget-input:focus {
 	border-color: #d4464e;
 }
+.g740-widget-text.g740-widget-num .g740-widget-input {
+	text-align: right;
+}
+
 .g740-combobox .g740-widget-input {
 	border-right:0px; 
 }

@@ -133,20 +133,12 @@ define(
 				else {
 					objParent.addChild(objPanel);
 				}
-
 				// Формируем Menu
 				var xmlMenu=g740.xml.findFirstOfChild(xml,{nodeName:'menu'});
-				if (!xmlMenu) xmlMenu=g740.xml.findFirstOfChild(xml,{nodeName:'toolbar'});
-				if (!xmlMenu && objPanel && objPanel.isG740AutoMenu && !objPanel.getParentMenu()) {
-					xmlMenu=g740.xml.createElement('menu');
-					xmlMenu.setAttribute('default','1');
-				}
-				if (xmlMenu) {
-					this.buildMenu(xmlMenu, objPanel);
-				}
+				this.buildMenu(xmlMenu, objPanel);
 				
 				if (objPanel.postCreateBeforeChilds) objPanel.postCreateBeforeChilds();
-				
+		
 				// Разбираемся с детьми
 				var xmlPanels=g740.xml.findFirstOfChild(xml,{nodeName:'panels'});
 				if (xmlPanels==null) xmlPanels=xml;
@@ -251,13 +243,45 @@ define(
 			buildMenu: function(xml, objPanel) {
 				var result=false;
 				var procedureName='g740.panels.buildMenu';
-				if (!g740.xml.isXmlNode(xml)) g740.systemError(procedureName, 'errorValueUndefined', 'xml');
-				if (xml.nodeName!='menu' && xml.nodeName!='toolbar') g740.systemError(procedureName, 'errorIncorrectValue', xml.nodeName);
 				if (!objPanel) g740.systemError(procedureName, 'errorValueUndefined', 'objPanel');
 				var objForm=objPanel.objForm;
 				if (!objForm) g740.systemError(procedureName, 'errorValueUndefined', 'objPanel.objForm');
-				var requests=this.getRequests(xml, objPanel);
-				if (!requests || requests.length==0) return false;
+
+				if (xml) {
+					if (!g740.xml.isXmlNode(xml)) g740.systemError(procedureName, 'errorValueUndefined', 'xml');
+					if (xml.nodeName!='menu' && xml.nodeName!='toolbar') g740.systemError(procedureName, 'errorIncorrectValue', xml.nodeName);
+					var requests=this.getRequests(xml, objPanel);
+				}
+				if (!requests) requests=[];
+				
+				if (objPanel.isG740Clipboard) {
+					if (requests.length>0) {
+						var xml=g740.xml.createElement('separator');
+						requests.unshift(xml);
+					}
+					var xml=g740.xml.createElement('request');
+					xml.setAttribute('caption',g740.getMessage('clipboardPaste'));
+					xml.setAttribute('request','clipboard');
+					xml.setAttribute('mode','paste');
+					xml.setAttribute('icon','clipboard.paste');
+					requests.unshift(xml);
+
+					var xml=g740.xml.createElement('request');
+					xml.setAttribute('caption',g740.getMessage('clipboardCut'));
+					xml.setAttribute('request','clipboard');
+					xml.setAttribute('mode','cut');
+					xml.setAttribute('icon','clipboard.cut');
+					requests.unshift(xml);
+
+					var xml=g740.xml.createElement('request');
+					xml.setAttribute('caption',g740.getMessage('clipboardCopy'));
+					xml.setAttribute('request','clipboard');
+					xml.setAttribute('mode','copy');
+					xml.setAttribute('icon','clipboard.copy');
+					requests.unshift(xml);
+				}
+				if (!requests.length) return false;
+
 				var objMenu=new g740.Menu();
 				objPanel.set('objMenu', objMenu);
 				for(var i=0; i<requests.length; i++) {
@@ -386,7 +410,6 @@ define(
 								this.buildToolbarMenuItem(requests[i], objPanel, objMenu);
 							}
 							result = new g740.PopupMenuBarItem(p, null);
-							//objMenu.startup();
 						}
 						else {
 							result = new g740.MenuBarItem(p, null);
@@ -661,6 +684,7 @@ define(
 				isG740Tree: false,					// Панель дерева
 				isG740Grid: false,					// Панель таблицы grid
 				isG740Fields: false,				// Панель списка полей
+				isG740Clipboard: false,				// Доступны операции с буфером обмена
 				
 				objForm: null,
 				rowsetName: null,
@@ -899,7 +923,6 @@ define(
 					if (!objParent._getParentMenu) return null;
 					return objParent._getParentMenu(rowsetName, nodeType);
 				},
-				
 				doG740Repaint: function(para) {
 					if (!this.visible) return true;
 					this.doG740RepaintChildsVisible();	// Персчитываем видимость дочерних панелей;

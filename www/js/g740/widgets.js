@@ -815,18 +815,41 @@ define(
 						if (n>=25) break;
 					}
 					if (n<5) n=5;
-					return n*17+18;
+					return n*18+25;
 				},
 				doInputKeyDown: function(e) {
 					if (!e.ctrlKey && e.keyCode==40) {
+						// Dn
 						this.set('value',this.getIdNext(this.value));
 						dojo.stopEvent(e);
 					}
 					else if (!e.ctrlKey && e.keyCode==38) {
+						// Up
 						this.set('value',this.getIdPrev(this.value));
 						dojo.stopEvent(e);
 					}
+					else if (!e.ctrlKey && e.keyCode==34) {
+						// PgDn
+						if (this.domNodeItems) {
+							var id=this.value;
+							var n=parseInt(this.domNodeItems.clientHeight/18);
+							for(var i=0; i<n; i++) id=this.getIdNext(id);
+							this.set('value',id);
+						}
+						dojo.stopEvent(e);
+					}
+					else if (!e.ctrlKey && e.keyCode==33) {
+						// PgUp
+						if (this.domNodeItems) {
+							var id=this.value;
+							var n=parseInt(this.domNodeItems.clientHeight/18);
+							for(var i=0; i<n; i++) id=this.getIdPrev(id);
+							this.set('value',id);
+						}
+						dojo.stopEvent(e);
+					}
 					else if (!e.ctrlKey && e.keyCode==13) {
+						// Enter
 						dojo.stopEvent(e);
 						this.onDblClick();
 					}
@@ -1537,6 +1560,16 @@ define(
 					return result;
 				},
 				getEnabled: function() {
+					if (this.request.name=='clipboard') {
+						try {
+							if (this.request.mode=='paste') return false;
+							return document.queryCommandSupported(this.request.mode);
+						}
+						catch (e) {
+						}
+						return false;
+					}
+					
 					if (!this.objForm) return false;
 					var obj=this.getObjRowSet();
 					if (!obj) obj=this.objForm;
@@ -1556,8 +1589,16 @@ define(
 				},
 				exec: function(isNoConfirm) {
 					if (!this.getEnabled()) return false;
-					var obj=this.objForm;
+					if (this.request.name=='clipboard') {
+						try {
+							document.execCommand(this.request.mode);
+						}
+						catch(e) {
+						}
+						return true;
+					}
 					
+					var obj=this.objForm;
 					var objRowSet=this.getObjRowSet();
 					if (objRowSet) {
 						var objFocusedRowSet=this.objForm.getFocusedRowSet();

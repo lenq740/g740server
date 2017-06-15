@@ -117,5 +117,10 @@
 	// сообщения трасировки
 	traceStart: 'Точка входа',
 	traceEnd: 'Точка выхода',
-	traceTree: 'Дерево трассировки'
+	traceTree: 'Дерево трассировки',
+
+	// edit
+	clipboardCopy: 'Копировать',
+	clipboardCut: 'Вырезать',
+	clipboardPaste: 'Вставить'
 }

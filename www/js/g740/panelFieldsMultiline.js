@@ -10,6 +10,7 @@ define(
 			[g740._PanelAbstract, dijit._TemplatedMixin],
 			{
 				isG740Fields: true,
+				isG740Clipboard: true,
 				isG740CanToolBar: true,
 				isLayoutContainer: true,
 				lines: [],
@@ -393,7 +394,6 @@ define(
 					dojo.style(this.domNode,'height',size.h+'px');
 					this.layout();
 				},
-				
 				doG740Repaint: function(para) {
 					var objRowSet=this.getRowSet();
 					if (!objRowSet) return false;
