@@ -1486,24 +1486,23 @@ define(
 					}
 			        return true;
 			    },
-// Обработка строки ответа: row, delete, change
+// Обработка строки ответа: row, delete, change, append, shift
 			    _doResponseItem: function (xmlItem, parentNode) {
 			        var procedureName = 'g740.RowSet[' + this.name + ']._doResponseItem';
 					if (this.isObjectDestroed) g740.systemError(procedureName, 'errorAccessToDestroedObject');
 					if (!g740.xml.isXmlNode(xmlItem)) g740.systemError(procedureName, 'errorNotXml', 'xmlItem');
 
-					if (xmlItem.nodeName == 'row') return this._doResponseRow(xmlItem, parentNode);
-					// Формируем row, идентичную delete
-					if (xmlItem.nodeName == 'delete') {
-						var xml = g740.xml.createElement('row');
-						if (g740.xml.isAttr(xmlItem, 'id')) {
-							xml.setAttribute('id', g740.xml.getAttrValue(xmlItem, 'id', ''));
-						}
-						xml.setAttribute('row.delete', '1');
-						return this._doResponseRow(xml, parentNode);
+					if (xmlItem.nodeName=='row') return this._doResponseRow(xmlItem, parentNode);
+					if (xmlItem.nodeName=='change') {
+						xmlItem.setAttribute('row.change', '1');
+						return this._doResponseRow(xmlItem, parentNode);
 					}
-					// Формируем row, идентичную change или append
-					if (xmlItem.nodeName == 'change' || xmlItem.nodeName == 'append' || xmlItem.nodeName == 'shift') {
+					if (xmlItem.nodeName=='append') {
+						xmlItem.setAttribute('row.new', '1');
+						return this._doResponseRow(xmlItem, parentNode);
+					}
+					// Формируем row, идентичную delete
+					if (xmlItem.nodeName=='delete' || xmlItem.nodeName=='shift') {
 						var xml = g740.xml.createElement('row');
 						if (g740.xml.isAttr(xmlItem, 'id')) {
 							xml.setAttribute('id', g740.xml.getAttrValue(xmlItem, 'id', ''));
@@ -1511,84 +1510,16 @@ define(
 						if (g740.xml.isAttr(xmlItem, 'row.type')) {
 							xml.setAttribute('row.type', g740.xml.getAttrValue(xmlItem, 'row.type', ''));
 						}
-						if (g740.xml.isAttr(xmlItem, 'row.icon')) {
-							xml.setAttribute('row.icon', g740.xml.getAttrValue(xmlItem, 'row.icon', ''));
+						if (xmlItem.nodeName=='delete') {
+							xml.setAttribute('row.delete', '1');
 						}
-
-						if (g740.xml.isAttr(xmlItem, 'row.final')) {
-							xml.setAttribute('row.final', g740.xml.getAttrValue(xmlItem, 'row.final', '0'));
-						}
-						if (g740.xml.isAttr(xmlItem, 'row.empty')) {
-							xml.setAttribute('row.empty', g740.xml.getAttrValue(xmlItem, 'row.empty', '0'));
-						}
-
-						if (xmlItem.nodeName == 'append') {
-							xml.setAttribute('row.new', '1');
-							if (g740.xml.getAttrValue(xmlItem, 'row.focus', '') != '0') {
-								xml.setAttribute('row.focus', '1');
-							}
-						}
-
-						if (xmlItem.nodeName == 'append' || xmlItem.nodeName == 'shift') {
+						if (xmlItem.nodeName=='shift') {
+							xml.setAttribute('row.change', '1');
 							if (g740.xml.isAttr(xmlItem, 'row.destmode')) {
 								xml.setAttribute('row.destmode', g740.xml.getAttrValue(xmlItem, 'row.destmode', ''));
 							}
 							if (g740.xml.isAttr(xmlItem, 'row.destid')) {
 								xml.setAttribute('row.destid', g740.xml.getAttrValue(xmlItem, 'row.destid', ''));
-							}
-						}
-
-						if (xmlItem.nodeName == 'append' || xmlItem.nodeName == 'change') {
-							if (g740.xml.isAttr(xmlItem, 'row.readonly')) {
-								xml.setAttribute('row.readonly', g740.xml.getAttrValue(xml, 'row.readonly', ''));
-							}
-							if (g740.xml.isAttr(xmlItem, 'row.color')) {
-								xml.setAttribute('row.color', g740.xml.getAttrValue(xml, 'row.color', ''));
-							}
-
-							var nodeType = '';
-							if (g740.xml.isAttr(xmlItem, 'row.type')) {
-								nodeType = g740.xml.getAttrValue(xmlItem, 'row.type', '');
-							}
-							else if (xmlItem.nodeName == 'change') {
-								var node = this.getFocusedNode();
-								if (node) nodeType = node.nodeType;
-							}
-							var fields = this.getFieldsByNodeType(nodeType);
-							for (var fieldName in fields) {
-								var fld = fields[fieldName];
-								if (!fld) continue;
-								if (g740.xml.isAttr(xmlItem, fieldName)) {
-									xml.setAttribute(fieldName + '.change', g740.xml.getAttrValue(xmlItem, fieldName, ''));
-								}
-								if (g740.xml.isAttr(xmlItem, fieldName + '.readonly')) {
-									xml.setAttribute(fieldName + '.readonly', g740.xml.getAttrValue(xmlItem, fieldName + '.readonly', ''));
-								}
-								if (g740.xml.isAttr(xmlItem, fieldName + '.visible')) {
-									xml.setAttribute(fieldName + '.visible', g740.xml.getAttrValue(xmlItem, fieldName + '.visible', ''));
-								}
-								if (g740.xml.isAttr(xmlItem, fieldName + '.color')) {
-									xml.setAttribute(fieldName + '.color', g740.xml.getAttrValue(xmlItem, fieldName + '.color', ''));
-								}
-							}
-							var lstXmlFields = g740.xml.findArrayOfChild(xmlItem, { nodeName: 'field' });
-							for (var i = 0; i < lstXmlFields.length; i++) {
-								var xmlOldField = lstXmlFields[i];
-								var fieldName = g740.xml.getAttrValue(xmlOldField, 'name', '');
-								if (!fieldName) fieldName = g740.xml.getAttrValue(xmlOldField, 'field', '');
-								if (!fields[fieldName]) continue;
-								var xmlNewField = g740.xml.createElement('field');
-								xmlNewField.setAttribute('name', fieldName);
-								if (g740.xml.isAttr(xmlOldField, 'change')) xmlNewField.setAttribute('change', g740.xml.getAttrValue(xmlOldField, 'change', '0'));
-								if (xmlItem.nodeName == 'change') xmlNewField.setAttribute('change', '1');
-								if (g740.xml.isAttr(xmlOldField, 'readonly')) xmlNewField.setAttribute('readonly', g740.xml.getAttrValue(xmlOldField, 'readonly', '0'));
-								if (g740.xml.isAttr(xmlOldField, 'visible')) xmlNewField.setAttribute('visible', g740.xml.getAttrValue(xmlOldField, 'visible', '0'));
-								if (g740.xml.isAttr(xmlOldField, 'color')) xmlNewField.setAttribute('color', g740.xml.getAttrValue(xmlOldField, 'color', ''));
-								if (xmlOldField.firstChild) {
-									var xmlText = g740.xml.createTextNode(xmlOldField.firstChild.nodeValue);
-									xmlNewField.appendChild(xmlText);
-								}
-								xml.appendChild(xmlNewField);
 							}
 						}
 						return this._doResponseRow(xml, parentNode);
@@ -1601,7 +1532,6 @@ define(
 					if (this.isObjectDestroed) g740.systemError(procedureName, 'errorAccessToDestroedObject');
 					if (!g740.xml.isXmlNode(xmlRow)) g740.systemError(procedureName, 'errorNotXml', 'xmlRow');
 
-					if (xmlRow.nodeName != 'row') g740.responseError('errorXmlNodeNotFound', 'row');
 					// id строки должно быть задано обязательно
 					if (!g740.xml.isAttr(xmlRow, 'id')) g740.responseError('errorValueUndefined', 'id');
 					var id = g740.xml.getAttrValue(xmlRow, 'id', '');
@@ -1673,8 +1603,8 @@ define(
 							if (!fld) continue;
 							var def = '';
 							if (fld.def) def = fld.def;
-							row[fieldName + '.value'] = g740.convertor.toJavaScript(def, fld.type);;
-							row[fieldName + '.oldvalue'] = g740.convertor.toJavaScript('', fld.type);;
+							row[fieldName + '.value'] = g740.convertor.toJavaScript(def, fld.type);
+							row[fieldName + '.oldvalue'] = g740.convertor.toJavaScript('', fld.type);
 							row[fieldName + '.visible'] = true;
 						}
 						node.info = row;
@@ -1718,13 +1648,30 @@ define(
 						}
 					}
 
-					var isRowNew = '0';
-					if (row['row.new']) isRowNew = '1';
-					row['row.new'] = g740.convertor.toJavaScript(g740.xml.getAttrValue(xmlRow, 'row.new', isRowNew), 'check');
+					var isRowChange=g740.convertor.toJavaScript(g740.xml.getAttrValue(xmlRow, 'row.change', '0'), 'check');
+					var isRowNew=g740.convertor.toJavaScript(g740.xml.getAttrValue(xmlRow, 'row.new', '0'), 'check');
+					if (!isRowChange && !isNewNode) {
+						delete row['row.new'];
+						delete row['row.readonly'];
+						delete row['row.color'];
+						delete row['row.icon'];
+						delete row['row.mark'];
+						delete node.isFinal;
+						delete node.isEmpty;
+						var fields=this.getFields(node);
+						for (var fieldName in fields) {
+							var fld=fields[fieldName];
+							if (!fld) continue;
+							delete row[fieldName+'.readonly'];
+							delete row[fieldName+'.color'];
+							row[fieldName+'.visible']=true;
+						}
+					}
+					if (g740.xml.isAttr(xmlRow, 'row.new')) row['row.new'] = g740.convertor.toJavaScript(g740.xml.getAttrValue(xmlRow, 'row.new', '0'), 'check');
 					if (g740.xml.isAttr(xmlRow, 'row.readonly')) row['row.readonly'] = g740.convertor.toJavaScript(g740.xml.getAttrValue(xmlRow, 'row.readonly', '0'), 'check');
 					if (g740.xml.isAttr(xmlRow, 'row.color')) row['row.color'] = g740.xml.getAttrValue(xmlRow, 'row.color', '');
-
 					if (g740.xml.isAttr(xmlRow, 'row.icon')) row['row.icon'] = g740.xml.getAttrValue(xmlRow, 'row.icon', '');
+					if (g740.xml.isAttr(xmlRow, 'row.mark')) row['row.mark'] = g740.convertor.toJavaScript(g740.xml.getAttrValue(xmlRow, 'row.mark', '0'), 'check');
 					if (g740.xml.isAttr(xmlRow, 'row.final')) node.isFinal = g740.convertor.toJavaScript(g740.xml.getAttrValue(xmlRow, 'row.final', '0'), 'check');
 					if (g740.xml.isAttr(xmlRow, 'row.empty')) node.isEmpty = g740.convertor.toJavaScript(g740.xml.getAttrValue(xmlRow, 'row.empty', '0'), 'check');
 
@@ -1732,62 +1679,50 @@ define(
 					var isFocus = false;
 					if (g740.xml.isAttr(xmlRow, 'row.focus')) isFocus = g740.convertor.toJavaScript(g740.xml.getAttrValue(xmlRow, 'row.focus', '0'), 'check');
 					if (isFocus) this._nextFocusedNode = node;
-					if (g740.xml.isAttr(xmlRow, 'row.mark')) row['row.mark'] = g740.convertor.toJavaScript(g740.xml.getAttrValue(xmlRow, 'row.mark', '0'), 'check');
 
-					var fields = this.getFields(node);
+					var fields=this.getFields(node);
 					for (var fieldName in fields) {
-						var fld = fields[fieldName];
+						var fld=fields[fieldName];
 						if (!fld) continue;
 						if (g740.xml.isAttr(xmlRow, fieldName)) {
-							var v = row[fieldName + '.value'];
-							var value = g740.convertor.toJavaScript(g740.xml.getAttrValue(xmlRow, fieldName, ''), fld.type);
-							row[fieldName + '.value'] = value;
-							row[fieldName + '.oldvalue'] = value;
+							var value=g740.convertor.toJavaScript(g740.xml.getAttrValue(xmlRow, fieldName, ''), fld.type);
+							row[fieldName+'.value']=value;
+							if (!isRowChange && !isRowNew) row[fieldName+'.oldvalue']=value;
 						}
-						if (g740.xml.isAttr(xmlRow, fieldName + '.change')) {
-							var v = row[fieldName + '.value'];
-							var value = g740.convertor.toJavaScript(g740.xml.getAttrValue(xmlRow, fieldName + '.change', ''), fld.type);
-							row[fieldName + '.value'] = value;
+						if (g740.xml.isAttr(xmlRow, fieldName+'.readonly')) {
+							var value=g740.convertor.toJavaScript(g740.xml.getAttrValue(xmlRow, fieldName+'.readonly', '0'), 'check');
+							row[fieldName+'.readonly']=value;
 						}
-						if (g740.xml.isAttr(xmlRow, fieldName + '.readonly')) {
-							var value = g740.convertor.toJavaScript(g740.xml.getAttrValue(xmlRow, fieldName + '.readonly', '0'), 'check');
-							row[fieldName + '.readonly'] = value;
+						if (g740.xml.isAttr(xmlRow, fieldName+'.visible')) {
+							var value=g740.convertor.toJavaScript(g740.xml.getAttrValue(xmlRow, fieldName+'.visible', '1'), 'check');
+							row[fieldName+'.visible']=value;
 						}
-						if (g740.xml.isAttr(xmlRow, fieldName + '.visible')) {
-							var value = g740.convertor.toJavaScript(g740.xml.getAttrValue(xmlRow, fieldName + '.visible', '1'), 'check');
-							row[fieldName + '.visible'] = value;
-						}
-						if (g740.xml.isAttr(xmlRow, fieldName + '.color')) {
-							row[fieldName + '.color'] = g740.xml.getAttrValue(xmlRow, fieldName + '.color', '');
+						if (g740.xml.isAttr(xmlRow, fieldName+'.color')) {
+							row[fieldName+'.color']=g740.xml.getAttrValue(xmlRow, fieldName+'.color', '');
 						}
 					}
-					var lstXmlFields = g740.xml.findArrayOfChild(xmlRow, { nodeName: 'field' });
-					for (var i = 0; i < lstXmlFields.length; i++) {
-						var xmlField = lstXmlFields[i];
-						var fieldName = g740.xml.getAttrValue(xmlField, 'name', '');
-						if (!fieldName) fieldName = g740.xml.getAttrValue(xmlField, 'field', '');
+					var lstXmlFields=g740.xml.findArrayOfChild(xmlRow, {nodeName: 'field'});
+					for (var i=0; i<lstXmlFields.length; i++) {
+						var xmlField=lstXmlFields[i];
+						var fieldName=g740.xml.getAttrValue(xmlField, 'name', '');
+						if (!fieldName) fieldName=g740.xml.getAttrValue(xmlField, 'field', '');
 						var fld = fields[fieldName];
 						if (!fld) continue;
-						var value = '';
-						if (xmlField.firstChild) value = xmlField.firstChild.nodeValue;
+						var value='';
+						if (xmlField.firstChild) value=xmlField.firstChild.nodeValue;
 						var value = g740.convertor.toJavaScript(value, fld.type);
-						if (g740.xml.getAttrValue(xmlField, 'change', '0') == '1') {
-							row[fieldName + '.value'] = value;
-						}
-						else {
-							row[fieldName + '.value'] = value;
-							row[fieldName + '.oldvalue'] = value;
-						}
+						row[fieldName+'.value']=value;
+						if (!isRowChange && !isRowNew) row[fieldName+'.oldvalue']=value;
 						if (g740.xml.isAttr(xmlField, 'readonly')) {
-							var value = g740.convertor.toJavaScript(g740.xml.getAttrValue(xmlField, 'readonly', '0'), 'check');
-							row[fieldName + '.readonly'] = value;
+							var value=g740.convertor.toJavaScript(g740.xml.getAttrValue(xmlField, 'readonly', '0'), 'check');
+							row[fieldName+'.readonly']=value;
 						}
 						if (g740.xml.isAttr(xmlField, 'visible')) {
-							var value = g740.convertor.toJavaScript(g740.xml.getAttrValue(xmlField, 'visible', '1'), 'check');
-							row[fieldName + '.visible'] = value;
+							var value=g740.convertor.toJavaScript(g740.xml.getAttrValue(xmlField, 'visible', '1'), 'check');
+							row[fieldName+'.visible']=value;
 						}
 						if (g740.xml.isAttr(xmlField, 'color')) {
-							row[fieldName + '.color'] = g740.xml.getAttrValue(xmlField, 'color', '');
+							row[fieldName+'.color'] = g740.xml.getAttrValue(xmlField, 'color', '');
 						}
 					}
 			        return true;
@@ -2724,7 +2659,10 @@ define(
 											//this.exec({ requestName: 'change', requestMode: para.fieldName });
 										}
 										if (this.isFilter && this.isEnabled && this.isFilterAutoRefresh) {
-											this.doRefreshChilds(); 	// для фильтра любое изменение полей приводит к перечитке подчиненных наборов строк
+											// для фильтра любое изменение полей приводит к перечитке подчиненных наборов строк
+											// делаем перечитку с задержкой, иначе конфликт с change - change еще не отработал и перечитка может быть некорректной
+											this.doRefreshChilds(true);
+											
 										}
 										this.doG740Repaint({ isRowUpdate: true });
 									}

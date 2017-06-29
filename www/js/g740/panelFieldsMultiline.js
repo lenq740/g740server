@@ -113,7 +113,7 @@ define(
 					
 					this.inherited(arguments);
 				},
-				addChild(obj) {
+				addChild: function(obj) {
 					if (!obj) return;
 					if (obj.g740className=='g740.Toolbar') {
 						if (this.objToolBar) this.objToolBar.destroyRecursive();
