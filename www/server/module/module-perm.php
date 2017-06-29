@@ -11,7 +11,7 @@
 @param	String	$operation
 @return	Boolean допустимость выполнения операции по правам
 */
-function getPerm($mode, $operation, $params=Array()) {
+function getPerm($mode, $operation) {
 	if (!$_SESSION['connect_ok']) return false;
 	if ($_SESSION['connect_okroot']) return true;
 	if ($mode=='connected') return true;

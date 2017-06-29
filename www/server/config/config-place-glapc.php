@@ -8,9 +8,9 @@
 //------------------------------------------------------------------------------
 // Подключение к базе данных
 //------------------------------------------------------------------------------
-$sqlHost='localhost';
-$sqlLogin='root';
-$sqlPassword='918918';
-$sqlDbName='g740starter';
-$sqlCharSet='utf8';
+$config['sqlHost']='localhost';
+$config['sqlLogin']='root';
+$config['sqlPassword']='918918';
+$config['sqlDbName']='g740starter';
+$config['sqlCharSet']='utf8';
 ?>
