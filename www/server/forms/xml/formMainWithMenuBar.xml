@@ -1,0 +1,8 @@
+<form name="%form%">
+	<panels>
+		<panel>
+$sysmenubar$
+			<panel type="form" form="formLogoScreen" tab="1"/>
+		</panel>
+	</panels>
+</form>

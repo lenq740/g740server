@@ -39,7 +39,7 @@ header("Cache-Control: post-check=0, pre-check=0", false);
 	<script type="text/javascript" src="js/dojocompressed/dojo.js.uncompressed.js"></script>
 	<script type="text/javascript" src="js/dojocompressed/g740-dojo.js"></script>
 </head>
-<body class="g740">
+<body class="g740 app-color-red">
 <!-- Выделяем место под размещение главной формы приложения -->
 	<div id="FormPanelMain"></div>
 <!--[if IE]>
@@ -57,10 +57,10 @@ header("Cache-Control: post-check=0, pre-check=0", false);
 // Тут подстраиваем клиентскую оболочку под конкретные особенности проекта
 				{
 					var conf=g740.config;
-					conf['isTraceEnabled']=false;				// Включен режим трассировки через FireBug
-					conf['urlServer']='server/';				// Точка входа для управляющих серверных скриптов
-					conf['mainFormName']='formMain';			// Имя главной формы приложения
-					conf['mainFormDomNode']='FormPanelMain';	// Узел DOM, в ктором размещается главная форма приложения
+					conf['urlServer']='server/';					// Точка входа для управляющих серверных скриптов
+					//conf['mainFormName']='formMain';				// Имя главной формы приложения
+					conf['mainFormName']='formMainWithMenuBar';	// Вариант главной экранной формы приложения с верхним меню вместо древовидного
+					conf['mainFormDomNode']='FormPanelMain';		// Узел DOM, в ктором размещается главная форма приложения
 					
 					// Настройка диалога авторизации
 					var confDialogLogin=conf['dialogLogin'];
