@@ -335,11 +335,11 @@ try {
 	$config['pathDataSources']='../'.$config['pathDataSources'];
 	echo '<div class="message">Устанавливаем соединение с базой данных ... '; flush();
 	$pdoDB=new PDODataConnectorMySql(
-		$sqlDbName, 
-		$sqlLogin, 
-		$sqlPassword, 
-		$sqlCharSet, 
-		$sqlHost
+		getCfg('sqlDbName'),
+		getCfg('sqlLogin'),
+		getCfg('sqlPassword'),
+		getCfg('sqlCharSet'),
+		getCfg('sqlHost')
 	); // Устанавливаем соединение с базой данных
 	echo 'Ok!</div>';
 	try {
