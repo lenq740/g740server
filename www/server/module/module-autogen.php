@@ -440,6 +440,12 @@ PHP;
 			if ($fld['dec']) $res['dec']=$fld['dec'];
 			if ($fld['isnotempty']) $res['notnull']=1;
 			if ($fld['save']) $res['save']=1;
+			
+			if ($fld['readonly']) $res['readonly']=$fld['readonly'];
+			if ($fld['js_readonly']) $res['js_readonly']=$fld['js_readonly'];
+			if ($fld['visible']) $res['visible']=$fld['visible'];
+			if ($fld['js_visible']) $res['js_visible']=$fld['js_visible'];
+			
 			if ($fld['stretch']) $res['stretch']=1;
 			if (($fld['type']=='string' || $fld['type']=='memo') && !$fld['len']) $res['stretch']=1;
 			if ($fld['alias']==$tableName && $fld['default']) $res['default']=$fld['default'];

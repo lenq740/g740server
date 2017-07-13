@@ -71,11 +71,11 @@ flush();
 try {
 	$config['pathDataSources']='../'.$config['pathDataSources'];
 	$pdoDB=new PDODataConnectorMySql(
-		$sqlDbName, 
-		$sqlLogin, 
-		$sqlPassword, 
-		$sqlCharSet, 
-		$sqlHost
+		getCfg('sqlDbName'),
+		getCfg('sqlLogin'),
+		getCfg('sqlPassword'),
+		getCfg('sqlCharSet'),
+		getCfg('sqlHost')
 	); // Устанавливаем соединение с базой данных
 	try {
 		$pdoDB->beginTransaction();

@@ -13,22 +13,22 @@
 */
 function getPerm($mode, $operation) {
 	if (!$_SESSION['connect_ok']) return false;
-	if ($_SESSION['connect_okroot']) return true;
+	if ($_SESSION['connect_sys']) return true;
 	if ($mode=='connected') return true;
 	if ($mode=='sys') {
-		if ($_SESSION['connect_okroot']) return true;
+		return false;
+	}
+	if ($mode=='adm') {
+		if ($_SESSION['connect_adm']) return true;
 		return false;
 	}
 	if ($mode=='sysref') {
 		if ($operation=='read') return true;
 		return false;
 	}
-	if ($mode=='adm') {
-		if ($_SESSION['connect_okadm']) return true;
-		return false;
-	}
 	if ($mode=='admref') {
-		if ($_SESSION['connect_okadm'] && $operation=='read') return true;
+		if ($operation=='read') return true;
+		if ($_SESSION['connect_adm']) return true;
 		return false;
 	}
 	return false;
@@ -42,13 +42,13 @@ function getPerm($mode, $operation) {
 */
 function execConnect($params) {
 	execDisconnect();
-	if ($params['login']=='root' && $params['password']=='740') {
+	if ($params['login']=='madmin' && $params['password']=='918') {
 		$_SESSION['connect_ok']=true;
-		$_SESSION['connect_okroot']=true;
+		$_SESSION['connect_sys']=true;
 	}
 	if ($params['login']=='admin' && $params['password']=='1') {
 		$_SESSION['connect_ok']=true;
-		$_SESSION['connect_okadmin']=true;
+		$_SESSION['connect_adm']=true;
 	}
 	return true;
 }
@@ -61,8 +61,8 @@ function execConnect($params) {
 */
 function execDisconnect() {
 	unset($_SESSION['connect_ok']);
-	unset($_SESSION['connect_okroot']);
-	unset($_SESSION['connect_okadmin']);
+	unset($_SESSION['connect_sys']);
+	unset($_SESSION['connect_adm']);
 	return true;
 }
 ?>

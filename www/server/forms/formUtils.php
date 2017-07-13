@@ -15,7 +15,11 @@ class FormUtils extends FormController {
 		$result=<<<XML
 <form name="{$form}" caption="Утилиты" modal="1">
 	<panels>
-		<panel type="webbrowser" url="{$url}">
+		<panel>
+			<panel type="webbrowser" url="{$url}"/>
+			<buttons>
+				<request name="close" icon="ok" caption="Закрыть" align="right"/>
+			</buttons>
 		</panel>
 	</panels>
 </form>
