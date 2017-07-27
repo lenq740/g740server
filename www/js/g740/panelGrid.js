@@ -253,7 +253,6 @@ define(
 					}
 					return result;
 				},
-
 				canFocused: function() {
 					return true;
 				},
@@ -268,23 +267,19 @@ define(
 			        this.focus.focusGrid();
 			        this.focus.setFocusIndex(rowIndex, cellIndex);
 			    },
-				
 				doG740ScrollToRow: function (rowIndex) {
-			        var domItem = this.getRowNode(rowIndex);
+					var domItem = this.getRowNode(rowIndex);
 			        if (!domItem) return false;
 			        var y = this.scrollTop;
 			        var h = this.scroller.windowHeight;
-			        var delta = 50;
-			        if (delta * 4 > h) delta = h / 4;
-
-			        if (domItem.offsetTop < (y + delta)) {
-			            y = parseInt(domItem.offsetTop - h / 2);
+					if (domItem.offsetTop < y) {
+						y=parseInt(domItem.offsetTop);
+					}
+			        if ((domItem.offsetTop + domItem.offsetHeight) > (y + h)) {
+			            y = parseInt(domItem.offsetTop + domItem.offsetHeight - h);
 			        }
-			        if ((domItem.offsetTop + domItem.offsetHeight) > (y + h - delta)) {
-			            y = parseInt(domItem.offsetTop - h / 2);
-			        }
-			        if (y < 0) y = 0;
-			        this.scrollTo(y);
+					if (y < 0) y = 0;
+					this.scrollTo(y);
 			    },
 			    doG740SetSelectionDelay: function (para) {
 			        this.selection.clear();
