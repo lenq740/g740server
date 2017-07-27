@@ -205,7 +205,7 @@ define(
 			            }
 			        }
 
-			        if (this._isFirstG740RepaintVisible) {
+			        if (this._isFirstG740RepaintVisible && this.domNode.offsetWidth>0) {
 						// Первый раз всегда перестраиваем - для пересчета stretch полей
 						this._isFirstG740RepaintVisible=false;
 						isVisibleChanged=true;

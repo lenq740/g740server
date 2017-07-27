@@ -598,7 +598,7 @@ define(
 				});
 				return null;
 			}
-			
+/*			
 			if (g740.xml.isAttr(xml,'ondblclick')) {
 				if (!para.objActionOnDblClick) {
 					var p={
@@ -612,6 +612,7 @@ define(
 					exec: g740.xml.getAttrValue(xml,'ondblclick','')
 				};
 			}
+*/
 			var xmlRequests=g740.xml.findFirstOfChild(xml,{nodeName:'requests'});
 			if (!g740.xml.isXmlNode(xmlRequests)) xmlRequests=xml;
 			var lst=g740.xml.findArrayOfChild(xmlRequests,{nodeName:'request'});

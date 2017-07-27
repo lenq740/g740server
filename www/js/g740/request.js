@@ -314,7 +314,9 @@ define(
 					this._indexExecuted=0;
 				}
 				else {
-					if (errMessage) g740.showError(errMessage);
+					if (errMessage) {
+						g740.showError(errMessage, para.objOwner);
+					}
 					if (message) g740.showMessage(message);
 					this._indexExecuted--;
 					this._sendLastFiFo();

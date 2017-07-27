@@ -1290,22 +1290,9 @@ define(
 				selectChild: function(objPage) {
 					var old=this.selectedChildWidget;
 					this.inherited(arguments);
-/*
-					if (old!=this.selectedChildWidget) {
-					}
-*/
-/*
-					if (this.selectedChildWidget && this.selectedChildWidget.domNode) {
-						var className=this.selectedChildWidget.domNode.className;
-						this.selectedChildWidget.domNode.className='111';
-						this.selectedChildWidget.domNode.className=className;
-					}
-*/
-/*
-					if (this.selectedChildWidget && old!=this.selectedChildWidget) {
-						//if (this.selectedChildWidget.doG740Focus) this.selectedChildWidget.doG740Focus();
-					}
-*/
+					if (objPage.doG740Repaint) objPage.doG740Repaint({
+						isFull: true
+					});
 				},
 				doG740FocusChildFirst: function() {
 					if (this.selectedChildWidget && this.selectedChildWidget.doG740FocusChildFirst) {

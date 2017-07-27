@@ -1450,6 +1450,15 @@ define(
 					this.destroyRecursive();
 				},
 				onG740Show: function() {
+					if (this.objBtnOk) {
+						g740.execDelay.go({
+							delay: 200,
+							obj: this,
+							func: this._doBtnOkFocus
+						});
+					}
+				},
+				_doBtnOkFocus: function() {
 					if (this.objBtnOk) this.objBtnOk.set('focused',true);
 				}
 			}

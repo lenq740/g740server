@@ -44,13 +44,21 @@ define(
 		g740.showMessage=function(message) {
 			alert(message);
 		};
-		g740.showError=function(message) {
+		g740.showError=function(message, objOwner) {
+			var objForm=null;
+			var objFocusedPanel=null
+			if (objOwner) {
+				if (objOwner.g740className=='g740.RowSet' && !objOwner.isObjectDestroed) objForm=objOwner.objForm;
+				if (objOwner.g740className=='g740.Form' && !objOwner.isObjectDestroed) objForm=objOwner;
+			}
+			if (objForm && !objForm.isObjectDestroed && objForm.objFocusedPanel) objFocusedPanel=objForm.objFocusedPanel;
 			var objDialog=new g740.DialogConfirm(
 				{ 
 					duration: 0, 
 					draggable: false,
 					mode: 'error',
-					messageText: message
+					messageText: message,
+					objOwner: objFocusedPanel
 				}
 			);
 			objDialog.show();
