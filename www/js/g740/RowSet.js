@@ -252,6 +252,7 @@ define(
 //		fld.refid
 //		fld.refname
 //		fld.reftext
+//		fld.def - значение по умолчанию, для добавления новой строки
 //		on=fld.on
 //			on['dblclick']=request
 
@@ -729,13 +730,20 @@ define(
 					if (this.isObjectDestroed) g740.systemError(procedureName, 'errorAccessToDestroedObject');
 					if (this.isEnabled) {
 						this.isEnabled = false;
-						this.objTreeStorage.collapseNode(this.objTreeStorage.rootNode);
-						this._focusedParentNode = this.objTreeStorage.rootNode;
-						this.focusedPath = [];
-						// Перечитываем дочерние наборы строк, блокируя их
-						this.doRefreshChilds();
+						if (!this.isFilter) {
+							this.objTreeStorage.collapseNode(this.objTreeStorage.rootNode);
+							this._focusedParentNode = this.objTreeStorage.rootNode;
+							this.focusedPath = [];
+						}
+						// Блокируем дочерние
+						for (var name in this.childs) {
+							var objChild = this.childs[name];
+							if (!objChild) continue;
+							if (objChild.isObjectDestroed) continue;
+							if (objChild.isEnabled) objChild.doDisable();
+						}
 						// Вызываем полную отрисовку
-						this.doG740Repaint({ isFull: true, parentNode: this.objTreeStorage.rootNode });
+						if (!this.isFilter) this.doG740Repaint({ isFull: true, parentNode: this.objTreeStorage.rootNode });
 					}
 			        return true;
 			    },
@@ -779,6 +787,7 @@ define(
 						}
 						return false;
 					}
+					if (this.isFilter && requestName == 'refresh') return true;
 
 					var node = this.getFocusedNode();
 					// collapse доступно для деревьев
@@ -801,6 +810,7 @@ define(
 					if (this.isFilter && r.specnofilter) return false;
 
 					// В состоянии this.isEnabled==false доступно только refresh
+					if (this.objParent && !this.objParent.isEnabled) return false;
 					if (r.name == 'refresh') return true;
 					if (!this.isEnabled) return false;
 
@@ -1009,6 +1019,7 @@ define(
 						return this.objForm.exec(para);
 					}
 					if (para.requestName=='collapse') return this.collapseRow();
+					if (this.isFilter && para.requestName=='refresh') return this._execRefreshFilter();
 					
 					this.isInActivity=false; // что-то где-то происходит (автоматическая перечитка в этом такте не нужна)
 					var r = this.getRequest(para.requestName, para.requestMode);
@@ -1250,6 +1261,29 @@ define(
 					}
 			        return result;
 			    },
+				_execRefreshFilter: function() {
+					var procedureName = 'g740.RowSet[' + this.name + ']._execRefreshFilter()';
+					if (!this.isFilter) return false;
+					this.isEnabled = true;
+					if (!this.getFocusedId()) {
+				        var parentNode = this.getFocusedParentNode();
+						var node = this.objTreeStorage.getFirstChildNode(parentNode);
+						if (!node) {
+							var xml = g740.xml.createElement('row');
+							xml.setAttribute('id', 1);
+							this._doResponseRow(xml);
+						}
+						this.setFocusedFirst();
+					}
+					else {
+						for (var name in this.childs) {
+							var objChild = this.childs[name];
+							if (!objChild) continue;
+							if (objChild.isObjectDestroed) continue;
+							objChild.exec({ requestName: 'refresh' });
+						}
+					}
+				},
 // Запрос на удаление строки
 			    execConfirmDelete: function () {
 			        var procedureName = 'g740.RowSet[' + this.name + '].execConfirmDelete';
@@ -2145,19 +2179,6 @@ define(
 					};
 					g740.panels.buildRequestParams(xmlChange, request);
 					nt.requests[fullname] = request;
-			        return true;
-			    },
-// Инициализация фильтра пустой строкой
-			    doInitFilter: function () {
-			        var procedureName = 'g740.RowSet[' + this.name + '].doInitFilter';
-					if (this.isObjectDestroed) g740.systemError(procedureName, 'errorAccessToDestroedObject');
-					if (!this.isFilter) return false;
-					this.isEnabled = false;
-					var xml = g740.xml.createElement('row');
-					xml.setAttribute('id', 1);
-					this._doResponseRow(xml);
-					this.isEnabled = true;
-					this.setFocusedFirst();
 			        return true;
 			    },
 

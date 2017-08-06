@@ -864,15 +864,11 @@ define(
 					var result=true;
 					var procedureName='g740.Form['+this.name+'].doRefreshRowSets';
 					if (this.isObjectDestroed) g740.systemError(procedureName, 'errorAccessToDestroedObject');
+					// Перечитываем верхние
 					for(var rowsetName in this.rowsets) {
 						var objRowSet=this.rowsets[rowsetName];
 						if (!objRowSet) continue;
-
 						if (objRowSet.isRef) continue;
-						if (objRowSet.isFilter) {
-							objRowSet.doInitFilter();
-							continue;
-						}
 						objRowSet.execAutoRefresh();	// запускаем цикл автомитической перечитки (если задан параметр autorefresh)
 						if (objRowSet.objParent) continue;
 						if (objRowSet.getRequestEnabled('refresh')) objRowSet.exec({requestName: 'refresh'});
