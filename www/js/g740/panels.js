@@ -115,7 +115,7 @@ define(
 					}
 				}
 
-				if (objPanel.isG740BorderContainer) {
+				if (objPanel.isG740BorderContainer || objPanel.isG740CanButtons) {
 					var xmlMenuBar = g740.xml.findFirstOfChild(xml, { nodeName: 'menubar' });
 					if (xmlMenuBar) {
 						this.buildMenuBar(xmlMenuBar, objPanel);

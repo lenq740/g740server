@@ -1,300 +1,459 @@
 //-----------------------------------------------------------------------------
-// Панель Tree
+// Панель Tree - самописная версия дерева
 //-----------------------------------------------------------------------------
 define(
 	[],
 	function() {
 		if (typeof(g740)=='undefined') g740={};
-
 // Класс дерево
 		dojo.declare(
 			'g740.Tree',
-			[g740._PanelAbstract, dijit.Tree],
+			[g740._PanelAbstract, dijit._TemplatedMixin, dijit.layout._LayoutWidget],
 			{
 				isG740Tree: true,
-				objRowSet: null,
-				objForm: null,
-				isTreeMenuMode: false,
-				isAutoHidePanel: false,
+				isG740CanToolBar: true,
+				isG740CanButtons: true,
+				templateString: '<div class="g740tree-panel">'+
+					'<div data-dojo-attach-point="domNodeTitle"></div>'+
+					'<div data-dojo-attach-point="domNodeToolbar"></div>'+
+					'<input type="checkbox" class="g740-focused" data-dojo-attach-point="focusNode" data-dojo-attach-event="onkeypress: onKeyPress"></input>'+
+					'<div class="g740tree-body" data-dojo-attach-point="domNodeBody">'+
+					'</div>'+
+					'<div data-dojo-attach-point="domNodeButtons"></div>'+
+				'</div>',
+				objTreeNodes: null,
+				_objRowSet: null,
+				_objNodes: null,
+				_treeNodeFocused: null,
 				objActionOnDblClick: null,
+				objToolBar: null,
+				objPanelButtons: null,
+				isTreeMenuMode: false,
+				set: function(name, value) {
+					if (name=='focused' && value) {
+						this.focusNode.focus();
+						return true;
+					}
+					this.inherited(arguments);
+				},
 				constructor: function(para, domElement) {
 					var procedureName='g740.Tree.constructor';
 					this.objActionOnDblClick=para.objActionOnDblClick;
-					if (para.objRowSet) {
-						this.objRowSet=para.objRowSet;
-						this.objForm=this.objRowSet.objForm;
-						this.rowsetName=this.objRowSet.name;
-					} else {
-						this.objForm=para.objForm;
-						this.rowsetName=para.rowsetName;
-						if (this.objForm && this.objForm.rowsets) this.objRowSet=this.objForm.rowsets[this.rowsetName];
-					}
-					this.color=para.color;
-					if (para.isTreeMenuMode) this.isTreeMenuMode=para.isTreeMenuMode;
-					if (this.objRowSet) {
-						this.set('model',this.objRowSet.objTreeModelApi);
-					}
-					this.on('Click', this.onG740Click);
-					this.on('Open', this.onG740Open);
-					this.on('Close', this.onG740Close);
-					this.on('DblClick', this.onG740DblClick);
-					this.on('Focus', this.onG740Focus);
-					//console.log(this);
+					this.objTreeNodes = new g740.TreeStorage();
 				},
 				destroy: function() {
 					var procedureName='g740.Tree.destroy';
+					if (this._treeParentNode) this._treeParentNode=null;
+					if (this.objTreeNodes) {
+						this.objTreeNodes.destroy();
+						this.objTreeNodes = null;
+					}
 					if (this.objActionOnDblClick) {
 						this.objActionOnDblClick.destroy();
 						this.objActionOnDblClick=null;
 					}
-					this.objRowSet=null;
-					this.objForm=null;
-					this.set('model',null);
+					if (this.objToolBar) {
+						this.objToolBar.destroyRecursive();
+						this.objToolBar=null;
+					}
+					if (this.objPanelButtons) {
+						this.objPanelButtons.destroyRecursive();
+						this.objPanelButtons=null;
+					}
+					if (this._objRowSet) this._objRowSet=null;
+					if (this._objNodes) this._objNodes=null;
+					if (this._treeNodeFocused) this._treeNodeFocused=null;
 					this.inherited(arguments);
 				},
 				postCreate: function() {
-					dojo.addClass(this.domNode,'g740-tree');
-					if (this.color) {
-						var colorItem=g740.colorScheme.getColorItem(this.color);
-						var className=colorItem.className;
-						if (!dojo.hasClass(this.domNode, className)) dojo.addClass(this.domNode, className);
-					}
+					this.domNode.title='';
+					dojo.on(this.domNode, 'click', dojo.hitch(this, function(e){
+						this.set('focused', true);
+					}));
 					this.inherited(arguments);
-					this.own(
-						dojo.aspect.after(this.model, 'onIdChange', dojo.lang.hitch(this, '_onItemIdChange'), true)
-					);
+					this.domNodeTitle.innerHTML='';
+					if (this.title && this.isShowTitle) {
+						objDiv=document.createElement('div');
+						objDiv.className='g74-paneltitle';
+						var objText=document.createTextNode(this.title);
+						objDiv.appendChild(objText);
+						this.domNodeTitle.appendChild(objDiv);
+					}
 				},
-				getIconClass: function(node, isExpanded) {
-					var result=this.inherited(arguments);
-					if (!this.objRowSet) return result;
-					if (this.objRowSet.isObjectDestroed) return result;
-					if (!this.objRowSet.objTreeStorage) return result;
-					if (this.objRowSet.objTreeStorage.isObjectDestroed) return result;
-					if (!this.objRowSet.objTreeStorage.isNode(node)) return result;
-/*
-					if (node==this.objRowSet.getMarkNode()) {
-						result=g740.icons.getIconClassName('mark');
-					} else 
-*/
-					if (node.info && node.info['row.icon']) {
-						result=g740.icons.getIconClassName(node.info['row.icon']);
+				layout: function() {
+					var h=this.domNode.offsetHeight-this.domNodeTitle.offsetHeight-this.domNodeToolbar.offsetHeight-this.domNodeButtons.offsetHeight;
+					this.domNodeBody.style.height=h+'px';
+					if (this.objPanelButtons) this.objPanelButtons.resize();
+				},
+				addChild: function(obj) {
+					if (!obj) return;
+					if (obj.g740className=='g740.Toolbar') {
+						if (this.objToolBar) this.objToolBar.destroyRecursive();
+						this.objToolBar=obj;
+						if (this.objToolBar.domNode && this.domNodeToolbar) this.domNodeToolbar.appendChild(this.objToolBar.domNode);
+					} 
+					else if (obj.isG740PanelButtons) {
+						if (this.objPanelButtons) this.objPanelButtons.destroyRecursive();
+						this.objPanelButtons=obj;
+						if (this.objPanelButtons.domNode && this.domNodeButtons) this.domNodeButtons.appendChild(this.objPanelButtons.domNode);
+					}
+				},
+				getRowSet: function() {
+					if (!this._objRowSet) this._objRowSet=this.inherited(arguments);
+					return this._objRowSet;
+				},
+				getObjNodes: function() {
+					if (!this._objNodes) {
+						var objRowSet=this.getRowSet();
+						if (objRowSet) this._objNodes=objRowSet.objTreeStorage;
+					}
+					return this._objNodes;
+				},
+				focus: function() {
+					this.set('focused',true);
+				},
+				// Синхронизировать содержимое источника данных и дерева
+				doSync: function(treeNode, node) {
+					var objNodes=this.getObjNodes();
+					if (!objNodes) return false;
+					if (node.nodeType!='root') this._doUpdateTreeNode(treeNode, node);
+		
+					var firstNode=null;
+					if (treeNode.childs) firstNode=treeNode.childs.firstNode;
+					// Удаляем несуществующие дочерние элементы
+					var lstRemove=[];
+					for(var treeNodeChild=this.objTreeNodes.getFirstChildNode(treeNode); treeNodeChild; treeNodeChild=this.objTreeNodes.getNextNode(treeNodeChild)) {
+						if (!treeNodeChild.info || !treeNodeChild.info.node) {
+							lstRemove.push(treeNodeChild);
+							continue;
+						}
+						var id=treeNodeChild.id;
+						var nodeChild=objNodes.getNode(id, node);
+						
+						if (!nodeChild) {
+							lstRemove.push(treeNodeChild);
+							continue;
+						}
+						if (treeNodeChild.info.node!=nodeChild) {
+							lstRemove.push(treeNodeChild);
+							continue;
+						}
+					}
+					for(var i=0; i<lstRemove.length; i++) {
+						var treeNodeChild=lstRemove[i];
+						this._doRemoveTreeNode(treeNodeChild);
+					}
+
+
+					
+					// Добавляем новые дочерние элементы
+					for(var nodeChild=objNodes.getFirstChildNode(node); nodeChild; nodeChild=objNodes.getNextNode(nodeChild)) {
+						var id=nodeChild.id;
+						var treeNodeChild=this.objTreeNodes.getNode(id, treeNode);
+						if (!treeNodeChild) {
+							treeNodeChild=this.objTreeNodes.appendNode(id,treeNode);
+						}
+						this.doSync(treeNodeChild,nodeChild);
+					}
+					
+					// Сортируем дочерние элементы
+					for(var nodeChild=objNodes.getFirstChildNode(node); nodeChild; nodeChild=objNodes.getNextNode(nodeChild)) {
+						var id=nodeChild.id;
+						var nodeChildPrev=objNodes.getPrevNode(nodeChild);
+						var idPrev=nodeChildPrev?nodeChildPrev.id:null;
+						
+						var treeNodeChild=this.objTreeNodes.getNode(id, treeNode);
+						var treeNodeChildPrev=this.objTreeNodes.getPrevNode(treeNodeChild);
+						var idTreePrev=treeNodeChildPrev?treeNodeChildPrev.id:null;
+						if (idPrev!=idTreePrev) {
+							var treeNodeChildPrev=this.objTreeNodes.getNode(idPrev);
+							this.objTreeNodes.cutNode(treeNodeChild);
+							this.objTreeNodes.pasteNode(treeNodeChild, treeNode, treeNodeChildPrev);
+							var domItemNext=null;
+							var domItemParent=treeNodeChild.info.domItem.parentNode;
+							if (treeNodeChildPrev) {
+								domItemNext=treeNodeChildPrev.info.domItem.nextSibling;
+							}
+							domItemParent.insertBefore(treeNodeChild.info.domItem, domItemNext);
+						}
+					}
+				},
+				_doUpdateTreeNode: function(treeNode, node) {
+					if (!treeNode.info) treeNode.info={};
+					var info=treeNode.info;
+					info.node=node;
+					if (!info.domItem) {
+						var domItem=document.createElement('div');
+						domItem.className='g740tree-item';
+						var domItemElement=document.createElement('div');
+						domItemElement.className='g740tree-item-element';
+						var domItemChilds=document.createElement('div');
+						domItemChilds.className='g740tree-item-childs';
+						domItem.appendChild(domItemElement);
+						domItem.appendChild(domItemChilds);
+						info.domItem=domItem;
+						info.domItemElement=domItemElement;
+						info.domItemChilds=domItemChilds;
+						domItemElement.treeNode=treeNode;
+						dojo.on(domItemElement, 'click', dojo.hitch(this, function(e){
+							var d=e.target;
+							var treeNode=null;
+							while(d) {
+								if (d.treeNode) {
+									treeNode=d.treeNode;
+									break;
+								}
+								d=d.parentNode;
+								if (d==this.domNode) break;
+							}
+							if (treeNode) this.doNodeClick(treeNode);
+						}));
+						dojo.on(domItemElement, 'dblclick', dojo.hitch(this, function(e){
+							var d=e.target;
+							var treeNode=null;
+							while(d) {
+								if (d.treeNode) {
+									treeNode=d.treeNode;
+									break;
+								}
+								d=d.parentNode;
+								if (d==this.domNode) break;
+							}
+							if (treeNode) this.doNodeDblClick(treeNode);
+						}));
+						
+						var domParent=this.domNodeBody;
+						if (treeNode.parentNode && treeNode.parentNode.info && treeNode.parentNode.info.domItemChilds) {
+							domParent=treeNode.parentNode.info.domItemChilds;
+						}
+						var domNext=null;
+						if (treeNode.nextNode && treeNode.nextNode.info && treeNode.nextNode.info.domItem) domNext=treeNode.nextNode.info.domItem;
+						if (domNext) {
+							domParent.insertBefore(domItem, domNext);
+						}
+						else {
+							domParent.appendChild(domItem);
+						}
+					}
+					this.buildDomItem(treeNode);
+				},
+				_doRemoveTreeNode: function(treeNode) {
+					if (treeNode.info) {
+						if (treeNode.info.domItem) {
+							treeNode.info.domItem.innerHTML='';
+							if (treeNode.info.domItem.parentNode) treeNode.info.domItem.parentNode.removeChild(treeNode.info.domItem);
+						}
+						for(var name in treeNode.info) treeNode.info[name]=null;
+						treeNode.info={};
+					}
+					this.objTreeNodes.removeNode(treeNode);
+				},
+				_doSetFocusedNode: function(treeNode) {
+					if (this._treeNodeFocused==treeNode) return true;
+					if (this._treeNodeFocused && this._treeNodeFocused.info && this._treeNodeFocused.info.domItemElement) {
+						dojo.removeClass(this._treeNodeFocused.info.domItemElement, 'selected');
+					}
+					this._treeNodeFocused=treeNode;
+					if (this._treeNodeFocused && this._treeNodeFocused.info && this._treeNodeFocused.info.domItemElement) {
+						dojo.addClass(this._treeNodeFocused.info.domItemElement, 'selected');
+						g740.execDelay.go({
+							delay: 100,
+							obj: this,
+							func: this._doScrollToNode,
+							para: this._treeNodeFocused
+						});
+					}
+				},
+				_doScrollToNode: function(treeNode) {
+					if (!treeNode) return;
+					if (!treeNode.info) return;
+					if (!treeNode.info.domItemElement) return;
+					var t=this.domNodeBody.scrollTop;
+					var h=this.domNodeBody.offsetHeight*0.9;
+					var domItemElement=treeNode.info.domItemElement;
+					if (domItemElement.offsetTop<t) {
+						this.domNodeBody.scrollTop=domItemElement.offsetTop;
+					}
+					else if ((domItemElement.offsetTop+domItemElement.offsetHeight)>(t+h)) {
+						this.domNodeBody.scrollTop=domItemElement.offsetTop+domItemElement.offsetHeight-h;
+					}
+				},
+				buildDomItem: function(treeNode) {
+					if (!treeNode) return false;
+					if (!treeNode.info) return false;
+					var info=treeNode.info;
+					
+					var domItemElement=info.domItemElement;
+					if (!domItemElement) return false;
+					if (!info.domItemExpander) {
+						var domExpander=document.createElement('div');
+						domExpander.className='g740tree-item-expander';
+						domItemElement.appendChild(domExpander);
+						info.domItemExpander=domExpander;
+						dojo.on(domExpander, 'click', dojo.hitch(this, function(e){
+							var d=e.target;
+							var treeNode=null;
+							while(d) {
+								if (d.treeNode) {
+									treeNode=d.treeNode;
+									break;
+								}
+								d=d.parentNode;
+								if (d==this.domNode) break;
+							}
+							if (treeNode) this.doNodeExpandCollapse(treeNode);
+						}));
+					}
+					if (!info.domItemIcon) {
+						var domItemIcon=document.createElement('div');
+						domItemIcon.className='g740tree-item-icon';
+						domItemElement.appendChild(domItemIcon);
+						info.domItemIcon=domItemIcon;
+					}
+					if (!info.domItemText) {
+						var domItemText=document.createElement('div');
+						domItemText.className='g740tree-item-text';
+						domItemElement.appendChild(domItemText);
+						info.domItemText=domItemText;
+					}
+					var node=info.node;
+					if (!info.node) return false;
+
+					var label='';
+					var description='';
+					var icon=node.nodeType;
+					var isFinal=node.isFinal?true:false;
+					var isEmpty=node.isEmpty?true:false;
+					var isMark=false;
+
+					var objRowSet=this.getRowSet();
+					var fieldNameLabel = 'name';
+					var fieldNameDescription = 'name';
+					var nt = objRowSet.getNt(node.nodeType);
+					if (nt.name) fieldNameLabel = nt.name;
+					if (nt.description) fieldNameDescription = nt.description;
+					if (node.info) {
+						isMark=node.info['row.mark']
+						if (nt.fields[fieldNameLabel]) label=node.info[fieldNameLabel + '.value'];
+						if (nt.fields[fieldNameDescription]) description=node.info[fieldNameDescription + '.value'];
+						if (node.info['row.icon']) icon=node.info['row.icon'];
+						if (node.info['row.mark']) icon='mark';
+						if (objRowSet._markNode && objRowSet._markNode==node) icon='mark';
+					}
+					
+					if (isFinal || isEmpty) {
+						info.domItemExpander.className='g740tree-item-expander g740tree-item-expander-final';
+					}
+					else if (node.childs) {
+						info.domItemExpander.className='g740tree-item-expander g740tree-item-expander-minus';
 					}
 					else {
-						if (node.nodeType) {
-							var iconClass=g740.icons.getIconClassName(node.nodeType);
-							if (iconClass) result=iconClass;
-						}
+						info.domItemExpander.className='g740tree-item-expander g740tree-item-expander-plus';
 					}
-					return result;
-				},
-				
-				getRowClass: function(node, isExpanded) {
-					var result=this.inherited(arguments);
-					if (!this.objRowSet) return result;
-					if (this.objRowSet.isObjectDestroed) return result;
-					if (!this.objRowSet.objTreeStorage) return result;
-					if (this.objRowSet.objTreeStorage.isObjectDestroed) return result;
-					if (!this.objRowSet.objTreeStorage.isNode(node)) return result;
-					var row = node.info;
-					if (!row) return result;
-					if (row['row.mark'] || node==this.objRowSet.getMarkNode()) {
-					    result = result += ' g740-mark';
+					
+					if (label!=info.label) {
+						info.label=label;
+						info.domItemText.innerHTML='';
+						var ddd=document.createTextNode(info.label);
+						info.domItemText.appendChild(ddd);
 					}
-					else {
-					    var color = row['row.color'];
-					    var fieldName = 'name';
-					    var nt = this.objRowSet.getNt(node.nodeType);
-					    if (nt.name) fieldName = nt.name;
-					    if (row[fieldName + '.color']) color = row[fieldName + '.color'];
-					    if (color) {
-					        var colorItem = g740.colorScheme.getColorItem(color);
-					        if (colorItem) result += ' ' + colorItem.className;
-					    }
+					if (description!=info.description) {
+						info.description=description;
+						info.domItemText.title=info.description;
 					}
-					return result;
-				},
-				
-				getTooltip: function(node) {
-					var result='';
-					if (!node) return '';
-					var row=node.info;
-					if (!row) return '';
-					var fieldName='description';
-					var nt=this.objRowSet.getNt(node.nodeType);
-					if (nt.description) fieldName=nt.description;
-					if (row[fieldName+'.value']) return row[fieldName+'.value'];
-					return '';
-				},
-				getTreeNode: function(node) {
-					var id=this.model.getIdentity(node);
-					var lst=this._itemNodesMap[id];
-					for (var i=0; i<lst.length; i++) {
-						var treeNode=lst[i];
-						if (!treeNode) continue;
-						if (treeNode.item==node) return treeNode;
-					}
-					return null;
-				},
-				
-				_onItemIdChange: function(node, oldId) {
-					var newId=this.model.getIdentity(node);
-					if (this._itemNodesMap[oldId] && !this._itemNodesMap[newId]) {
-						this._itemNodesMap[newId]=this._itemNodesMap[oldId];
-						delete this._itemNodesMap[oldId];
-					}
-				},
-				_onItemChange: function(node) {
-					var treeNode=this.getTreeNode(node);
-					if (treeNode) {
-						treeNode.set('item', node);
-						treeNode.set('label', this.getLabel(node));
-						treeNode.set('tooltip', this.getTooltip(node));
-/*
-						var nodeIsExpanded=!node.isEmpty && !node.isFinal;
-						if (nodeIsExpanded!=treeNode.isExpanded) {
-							treeNode.isExpanded=nodeIsExpanded;
-							treeNode._setExpando(false);
-						}
-*/
-						treeNode._updateItemClasses(node);
-					}
-				},
-				_onItemChildrenChange: function(parentNode, newChildrenList) {
-					var treeNode=this.getTreeNode(parentNode);
-					if (parentNode && treeNode) {
-						if (newChildrenList.length==0 && treeNode.isExpanded) {
-							var ret = treeNode.collapse();
-							this._state(treeNode, false);
-							this._startPaint(ret);
-							//dojo.domClass.remove(treeNode.expandoNode, 'dijitTreeExpandoOpened');
-							//dojo.domClass.add(treeNode.expandoNode, 'dijitTreeExpandoClosed');
-							//dijitInline dijitTreeExpando dijitTreeExpandoOpened
-							//dijitInline dijitTreeExpando dijitTreeExpandoLeaf
-						}
-						treeNode.setChildItems(newChildrenList);
-						if (newChildrenList.length==0) {
-							if (!parentNode.isEmpty && !parentNode.isFinal) {
-								treeNode.makeExpandable();
+					if (icon!=info.icon) {
+						info.icon=icon;
+						var iconClass=g740.icons.getIconClassName(info.icon);
+						if (!iconClass) {
+							if (isFinal || isEmpty) {
+								iconClass=g740.icons.getIconClassName('default');
 							}
 							else {
-								dojo.domClass.remove(treeNode.expandoNode, 'dijitTreeExpandoOpened');
-								dojo.domClass.remove(treeNode.expandoNode, 'dijitTreeExpandoClosed');
-								dojo.domClass.add(treeNode.expandoNode, 'dijitTreeExpandoLeaf');
+								iconClass=g740.icons.getIconClassName('folder');
 							}
 						}
-						if (newChildrenList.length>0 && !treeNode.isExpanded) treeNode.expand();
+						info.domItemIcon.className='g740tree-item-icon '+iconClass;
 					}
 				},
-				doG740Repaint: function(para) {
-					var procedureName='g740.Tree.doG740Repaint';
-					if (!this.objRowSet) return false;
-					if (this.objRowSet.isObjectDestroed) return false;
-					if (!para) para={};
-					if (para.objRowSet && para.objRowSet.name!=this.rowsetName) return true;
-			
-					this.doG740setFocusedNode();
-
-					g740.execDelay.go({
-						delay: 50,
-						obj: this,
-						func: this.doG740ScrollToFocusedNode
-					});
- 				},
-				doG740setFocusedNode: function() {
-					if (!this.objRowSet) return false;
-					if (this.objRowSet.isObjectDestroed) return false;
-					
-					var p=[];
-					for(var node=this.objRowSet.getFocusedNode(); node!=null; node=node.parentNode) {
-						p.push(node);
+				// Ищет последнюю согласованную пару
+				getNodes: function(node) {
+					var objNodes=this.getObjNodes();
+					if (!objNodes) return null;
+					var result={
+						node: objNodes.rootNode,
+						treeNode: this.objTreeNodes.rootNode
+					};
+					var path=objNodes.getNodePath(node);
+					for (var i=1; i<path.length; i++) {
+						var id=path[i];
+						var treeNode=this.objTreeNodes.getNode(id,result.treeNode);
+						if (!treeNode) break;
+						var node=objNodes.getNode(id,result.node);
+						if (treeNode.info && treeNode.info.node!=node) break;
+						result.treeNode=treeNode;
+						result.node=node;
 					}
-					
-					var path=[];
-					for (var i=p.length-1; i>=0; i--) {
-						var node=p[i];
-						var id=this.model.getIdentity(node);
-						path.push(id);
+					return result;
+				},
+				doNodeClick: function(treeNode) {
+					if (!treeNode) return;
+					var objRowSet=this.getRowSet();
+					if (!objRowSet) return;
+					var info=treeNode.info;
+					if (!info) return;
+					objRowSet.setFocusedNode(info.node);
+				},
+				doNodeExpandCollapse: function(treeNode) {
+					var objRowSet=this.getRowSet();
+					if (!objRowSet) return;
+					var node=objRowSet.getFocusedNode();
+					if (treeNode) {
+						if (!treeNode.info) return false;
+						if (!treeNode.info.node) return false;
+						if (node!=treeNode.info.node) {
+							objRowSet.setFocusedNode(treeNode.info.node);
+							node=treeNode.info.node;
+						}
 					}
-					this.set('path',path);
-					return true;
-				},
-				doG740Focus: function() {
-					var objParent=this.getParent();
-					if (objParent && objParent.doG740SelectChild) objParent.doG740SelectChild(this);
-					this.focus();
-				},
-				doG740ScrollToFocusedNode: function() {
-					if (!this.domNode) return false;
-					if (!this.selectedNode) return false;
-					var domItem=this.selectedNode.domNode;
-					if (!domItem) return false;
-					var y=this.domNode.scrollTop;
-					var h=this.domNode.offsetHeight;
-					var delta=50;
-					if (delta*4>h) delta=h/4;
-					
-					if (domItem.offsetTop<(y+delta)) {
-						y=parseInt(domItem.offsetTop-h/2);
-					}
-					if ((domItem.offsetTop+domItem.offsetHeight)>(y+h-delta)) {
-						y=parseInt(domItem.offsetTop-h/2);
-					}
-					if (y<0) y=0;
-					this.domNode.scrollTop=y;
-				},
-				onG740Click: function(node, objNode, evt) {
-					if (!this.objRowSet) return false;
-					if (this.objRowSet.isObjectDestroed) return false;
-					if (!this.objForm) return false;
-					if (this.objForm.getFocusedRowSet()!=this.objRowSet) return false;
-					this.objRowSet.setFocusedNode(node);
-				},
-				onG740Open: function(node, objNode) {
-					var procedureName='g740.Tree.onG740Open';
-					if (!this.objRowSet) return false;
-					if (this.objRowSet.isObjectDestroed) return false;
 					if (!node) return false;
-					if (node.isEmpty || node.isFinal) return false;
-					if (node.childs) return true;
-					if (node!=this.objRowSet.getFocusedNode()) {
-						if (!this.objRowSet.setFocusedNode(node)) return false;
+					if (node.isFinal || node.isEmpty) return;
+					if (node.childs) {
+						objRowSet.exec({
+							requestName: 'collapse'
+						});
 					}
-					this.objRowSet.exec({requestName:'expand'});
-				},
-				onG740Close: function(node, objNode) {
-					var procedureName='g740.Tree.onG740Close';
-					if (!this.objRowSet) return false;
-					if (this.objRowSet.isObjectDestroed) return false;
-					if (!node) return false;
-					if (!node.childs) return true;
-					if (node!=this.objRowSet.getFocusedNode()) {
-						if (!this.objRowSet.setFocusedNode(node)) return false;
+					else {
+						objRowSet.exec({
+							requestName: 'expand'
+						});
 					}
-					this.objRowSet.exec({requestName:'collapse'});
 				},
-				onG740DblClick: function(node, objNode, evt) {
-					var procedureName='g740.Tree.onG740DblClick';
-					if (!this.objRowSet) return false;
-					if (this.objRowSet.isObjectDestroed) return false;
+				doNodeDblClick: function(treeNode) {
+					var objRowSet=this.getRowSet();
+					if (!objRowSet) return false;
+					var node=objRowSet.getFocusedNode();
+					if (treeNode) {
+						if (!treeNode.info) return false;
+						if (!treeNode.info.node) return false;
+						if (node!=treeNode.info.node) {
+							objRowSet.setFocusedNode(treeNode.info.node);
+							node=treeNode.info.node;
+						}
+					}
 					if (!node) return false;
-					
 					if (this.objActionOnDblClick) {
 						this.objActionOnDblClick.exec();
-						return true;
 					}
-					var isModeExpandCollapse=true;
-					if (this.isTreeMenuMode) {
+					else if (this.isTreeMenuMode) {
 						var row=node.info;
 						if (!row) return false;
-						var nt=this.objRowSet.getNt(node.nodeType);
+						var nt=objRowSet.getNt(node.nodeType);
 						
 						var fieldName='form';
 						if (nt.treemenuForm) fieldName=nt.treemenuForm;
 						var p={};
 						p.formName=row[fieldName+'.value'];
 						if (p.formName) {
-							isModeExpandCollapse=false;
-
 							var G740params={};
 							var fieldName='params';
 							if (nt.treemenuParams) fieldName=nt.treemenuParams;
@@ -313,123 +472,228 @@ define(
 								}
 								p.G740params=G740params;
 							}
-							if (this.isAutoHidePanel) this.doG740PanelHide();
 							g740.application.doG740ShowForm(p);
 						}
-					}
-					if (isModeExpandCollapse) {
-						if (node.childs && node.childs.firstNode) {
-							this.objRowSet.exec({requestName:'collapse'});
-						}
 						else {
-							this.objRowSet.exec({requestName:'expand'});
+							this.doNodeExpandCollapse();
 						}
 					}
-				},
-				_isPanelHide: false,
-				doG740PanelHide: function() {
-					if (this._isPanelHide) return true;
-					this._isPanelHide=true;
-					var objPanel=this.getParent();
-					if (!objPanel) return;
-					var objParent=objPanel.getParent();
-					if (!objParent) return;
-					if (objPanel.region=='left' || objPanel.region=='right') objPanel.domNode.style.width='6%';
-					if (objPanel.region=='top' || objPanel.region=='bottom') objPanel.domNode.style.height='6%';
-					objParent.layout();
-				},
-				doG740PanelShow: function() {
-					if (!this._isPanelHide) return true;
-					this._isPanelHide=false;
-					var objPanel=this.getParent();
-					if (!objPanel) return;
-					var objParent=objPanel.getParent();
-					if (!objParent) return;
-					if (objPanel.region=='left' || objPanel.region=='right') {
-						var w=objPanel.width;
-						if (!w) w='25%';
-						objPanel.domNode.style.width=w;
+					else {
+						this.doNodeExpandCollapse();
 					}
-					if (objPanel.region=='top' || objPanel.region=='bottom') {
-						var h=objPanel.height;
-						if (!h) h='25%';
-						objPanel.domNode.style.height=h;
-					}
-					objParent.layout();
 				},
-
-				_onContainerKeydown: function(e){
-					if (e && e.type=='keydown' && this.objRowSet && !this.objRowSet.isObjectDestroed) {
-						if (e.keyCode==27) {
-							// Esc
-							this.objRowSet.undoUnsavedChanges();
-							dojo.stopEvent(e);
-							return true;
-						}
-						if (e.ctrlKey && e.keyCode==46) {
-							// Ctrl+Del
-							this.objRowSet.execConfirmDelete();
-							dojo.stopEvent(e);
-							return true;
-						}
-						if (e.keyCode==45) {
-							// Ins, Ctrl+Ins
-							this.objRowSet.exec({requestName: 'append'});
-							dojo.stopEvent(e);
-							return true;
-						}
-						if (!e.ctrlKey && e.keyCode==113) {
-							// F2
-							this.objRowSet.exec({requestName: 'save'});
-							dojo.stopEvent(e);
-							return true;
-						}
-						if (!e.ctrlKey && !e.shiftKey && e.keyCode==9) {
-							// Tab
-							dojo.stopEvent(e);
-							var objParent=this.getParent();
-							if (objParent && objParent.doG740FocusChildNext) objParent.doG740FocusChildNext();
-						}
-						if (!e.ctrlKey && e.shiftKey && e.keyCode==9) {
-							// Shift+Tab
-							dojo.stopEvent(e);
-							var objParent=this.getParent();
-							if (objParent && objParent.doG740FocusChildPrev) objParent.doG740FocusChildPrev();
-						}
-					}
-					this.inherited(arguments);
-				},
-
 				onG740Focus: function() {
-					if (this.objForm) {
-						if (!this.objForm.onG740ChangeFocusedPanel(this)) {
-							g740.execDelay.go({
-								delay:50,
-								obj: this,
-								func: this.doG740setFocusedNode
-							});
-						}
-					}
-					dojo.addClass(this.domNode, 'g740-tree-focused');
-					if (this.isTreeMenuMode && this.isAutoHidePanel) this.doG740PanelShow();
+					if (this.objForm) this.objForm.onG740ChangeFocusedPanel(this);
+					if (!dojo.hasClass(this.domNode,'focused')) dojo.addClass(this.domNode,'focused');
 					return true;
 				},
 				onG740Blur: function() {
-					dojo.removeClass(this.domNode, 'g740-tree-focused');
-					if (this.isTreeMenuMode && this.isAutoHidePanel) {
-						g740.execDelay.go({
-							delay: 100,
-							obj: this,
-							func: this.doG740PanelHide
-						});
-					}
+					if (dojo.hasClass(this.domNode,'focused')) dojo.removeClass(this.domNode,'focused');
 					return true;
+				},
+				onKeyPress: function(e) {
+					var objRowSet=this.getRowSet();
+					if (!objRowSet) return;
+					if (!e.ctrlKey && !e.altKey && !e.shiftKey && e.keyCode==40) {
+						// Dn
+						var node=objRowSet.getFocusedNode();
+						if (node) {
+							if (node.childs && node.childs.firstNode) {
+								objRowSet.setFocusedNode(node.childs.firstNode);
+							}
+							else if (node.nextNode) {
+								objRowSet.setFocusedNode(node.nextNode);
+							}
+							else {
+								for(var p=node.parentNode; p; p=p.parentNode) {
+									if (p.nextNode) {
+										objRowSet.setFocusedNode(p.nextNode);
+										break;
+									}
+								}
+							}
+						}
+						dojo.stopEvent(e);
+					}
+					else if (!e.ctrlKey && !e.altKey && !e.shiftKey && e.keyCode==38) {
+						// Up
+						var node=objRowSet.getFocusedNode();
+						if (node) {
+							if (node.prevNode) {
+								var p=node.prevNode;
+								while(true) {
+									if (!p.childs) break;
+									if (!p.childs.lastNode) break;
+									p=p.childs.lastNode;
+								}
+								objRowSet.setFocusedNode(p);
+							}
+							else if (node.parentNode && node.parentNode.nodeType!='root') {
+								objRowSet.setFocusedNode(node.parentNode);
+							}
+						}
+						dojo.stopEvent(e);
+					}
+					else if (!e.ctrlKey && !e.altKey && !e.shiftKey && e.keyChar=='+') {
+						var node=objRowSet.getFocusedNode();
+						if (node && !node.childs) {
+							objRowSet.exec({
+								requestName: 'expand'
+							});
+						}
+						dojo.stopEvent(e);
+					}
+					else if (!e.ctrlKey && !e.altKey && !e.shiftKey && e.keyChar=='-') {
+						var node=objRowSet.getFocusedNode();
+						if (node && node.childs) {
+							objRowSet.exec({
+								requestName: 'collapse'
+							});
+						}
+						dojo.stopEvent(e);
+					}
+					else if (!e.ctrlKey && !e.altKey && !e.shiftKey && e.keyCode==9) {
+						// Tab
+						dojo.stopEvent(e);
+						var objParent=this.getParent();
+						if (objParent && objParent.doG740FocusChildNext) {
+							objParent.doG740FocusChildNext(this);
+						}
+					}
+					else if (!e.ctrlKey && e.shiftKey && e.keyCode==9) {
+						// Shift+Tab
+						dojo.stopEvent(e);
+						var objParent=this.getParent();
+						if (objParent && objParent.doG740FocusChildPrev) {
+							objParent.doG740FocusChildPrev(this);
+						}
+					}
+					else if (!e.ctrlKey && !e.altKey && !e.shiftKey && e.keyCode==13) {
+						// Enter
+						this.doNodeDblClick();
+						dojo.stopEvent(e);
+					}
+					else if (!e.ctrlKey && !e.altKey && !e.shiftKey && e.keyCode==45) {
+						// Ins
+						objRowSet.exec({
+							requestName: 'append'
+						});
+						dojo.stopEvent(e);
+					}
+					else if (e.ctrlKey && !e.altKey && !e.shiftKey && e.keyCode==45) {
+						// Ctrl+Ins
+						objRowSet.exec({
+							requestName: 'append',
+							requestMode: 'into'
+						});
+						dojo.stopEvent(e);
+					}
+					else if (e.ctrlKey && !e.altKey && !e.shiftKey && e.keyCode==46) {
+						// Ctrl+Del
+						objRowSet.execConfirmDelete();
+						dojo.stopEvent(e);
+					}
+					else {
+						//console.log(e);
+					}
 				},
 				canFocused: function() {
 					return true;
+				},
+				
+				doG740Repaint: function(para) {
+					if (!para) return true;
+					if (!para.objRowSet) return true;
+					if (para.objRowSet.name!=this.rowsetName) return true;
+
+					if (para.isFull && para.parentNode) {
+						var nn=this.getNodes(para.parentNode);
+						if (nn && nn.treeNode && nn.node) this.doSync(nn.treeNode, nn.node);
+						
+						var nodeFocused=para.objRowSet.getFocusedNode();
+						var nn=this.getNodes(nodeFocused);
+						if (nn && nn.node==nodeFocused) this._doSetFocusedNode(nn.treeNode);
+					}
+					else {
+						if (para.isRowUpdate) {
+							var node=para.node;
+							if (!node) node=para.objRowSet.getFocusedNode();
+							var nn=this.getNodes(node);
+							if (nn && nn.node==node) {
+								this._doUpdateTreeNode(nn.treeNode, nn.node);
+							}
+							else {
+								if (nn && nn.treeNode && nn.node) this.doSync(nn.treeNode, nn.node);
+							}
+						}
+						if (para.isNavigate) {
+							var nodeFocused=para.objRowSet.getFocusedNode();
+							var nn=this.getNodes(nodeFocused);
+							if (nn && nn.node==nodeFocused) this._doSetFocusedNode(nn.treeNode);
+						}
+					}
 				}
 			}
 		);
+
+		g740.panels._builderPanelTree=function(xml, para) {
+			var result=null;
+			var procedureName='g740.panels._builderPanelTree';
+			if (!g740.xml.isXmlNode(xml)) g740.systemError(procedureName, 'errorValueUndefined', 'xml');
+			if (xml.nodeName!='panel') g740.systemError(procedureName, 'errorXmlNodeNotFound', xml.nodeName);
+			var panelType=g740.xml.getAttrValue(xml, 'type', '');
+			if (!panelType)	panelType=g740.xml.getAttrValue(xml, 'panel', 'tree');
+			
+			if (!para) g740.systemError(procedureName, 'errorValueUndefined', 'para');
+			if (!para.objForm) g740.systemError(procedureName, 'errorValueUndefined', 'para.objForm');
+			if (!para.rowsetName) {
+				g740.trace.goBuilder({
+					formName: para.objForm.name,
+					panelType: panelType,
+					messageId: 'errorRowSetNameEmpty'
+				});
+				return null;
+			}
+			var objRowSet=para.objForm.rowsets[para.rowsetName];
+			if (!objRowSet) {
+				g740.trace.goBuilder({
+					formName: para.objForm.name,
+					panelType: panelType,
+					rowsetName: para.rowsetName,
+					messageId: 'errorRowSetNotFoundInForm'
+				});
+				return null;
+			}
+			
+			var xmlRequests=g740.xml.findFirstOfChild(xml,{nodeName:'requests'});
+			if (!g740.xml.isXmlNode(xmlRequests)) xmlRequests=xml;
+			var lst=g740.xml.findArrayOfChild(xmlRequests,{nodeName:'request'});
+			for(var i=0; i<lst.length; i++) {
+				var xmlRequest=lst[i];
+				var t=g740.xml.getAttrValue(xmlRequest,'on','dblclick');
+				if (t!='dblclick') continue;
+				var request={
+					sync: true,
+					params: {}
+				}
+				g740.panels.buildRequestParams(xmlRequest, request);
+				if (!para.objActionOnDblClick) {
+					var p={
+						objForm: para.objForm
+					};
+					para.objActionOnDblClick=new g740.Action(p);
+				}
+				para.objActionOnDblClick.request=request;
+			}
+
+			if (panelType=='treemenu') para.isTreeMenuMode=true;
+			var objTree=new g740.Tree(para, null);
+			var result=objTree;
+			return result;
+		};
+		g740.panels.registrate('tree', g740.panels._builderPanelTree);
+		g740.panels.registrate('treemenu', g740.panels._builderPanelTree);
+
 
 // Виджет: дерево с пометкой листьев
 		dojo.declare(
@@ -443,8 +707,6 @@ define(
 				_value: '',
 				
 				constructor: function(para, domElement) {
-					this.set('showRoot',false);
-					this.set('persist',false);
 					this._nodeTypes={};
 					this._nodeTypesCount=0;
 					this._itemsChecked={};
@@ -473,15 +735,10 @@ define(
 				clearChecked: function() {
 					this._itemsChecked={};
 					this._value='-';
-					for(var id in this._itemNodesMap) {
-						var lst=this._itemNodesMap[id];
-						if (!lst) continue;
-						for(var i=0; i<lst.length; i++) {
-							var treeNode=lst[i];
-							if (!treeNode) continue;
-							treeNode._updateItemClasses(treeNode.item);
-						}
-					}
+					var objNodes=this.getObjNodes();
+					if (!objNodes) return;
+					
+					this.doG740Repaint({isFull: true, parentNode:objNodes.rootNode});
 				},
 				_setValue: function(newValue) {
 					this._itemsChecked={};
@@ -516,6 +773,118 @@ define(
 					}
 					return result;
 				},
+
+				buildDomItem: function(treeNode) {
+					if (!treeNode) return false;
+					if (!treeNode.info) return false;
+					var info=treeNode.info;
+					
+					var domItemElement=info.domItemElement;
+					if (!domItemElement) return false;
+					if (!info.domItemExpander) {
+						var domExpander=document.createElement('div');
+						domExpander.className='g740tree-item-expander';
+						domItemElement.appendChild(domExpander);
+						info.domItemExpander=domExpander;
+						dojo.on(domExpander, 'click', dojo.hitch(this, function(e){
+							var d=e.target;
+							var treeNode=null;
+							while(d) {
+								if (d.treeNode) {
+									treeNode=d.treeNode;
+									break;
+								}
+								d=d.parentNode;
+								if (d==this.domNode) break;
+							}
+							if (treeNode) this.doNodeExpandCollapse(treeNode);
+						}));
+					}
+					if (!info.domItemIcon) {
+						var domItemIcon=document.createElement('div');
+						domItemIcon.className='g740tree-item-icon';
+						domItemElement.appendChild(domItemIcon);
+						info.domItemIcon=domItemIcon;
+						dojo.on(domItemIcon, 'click', dojo.hitch(this, function(e){
+							var d=e.target;
+							var treeNode=null;
+							while(d) {
+								if (d.treeNode) {
+									treeNode=d.treeNode;
+									break;
+								}
+								d=d.parentNode;
+								if (d==this.domNode) break;
+							}
+							if (treeNode) this.doNodeCheck(treeNode);
+						}));
+					}
+					if (!info.domItemText) {
+						var domItemText=document.createElement('div');
+						domItemText.className='g740tree-item-text';
+						domItemElement.appendChild(domItemText);
+						info.domItemText=domItemText;
+					}
+					var node=info.node;
+					if (!info.node) return false;
+
+					var label='';
+					var description='';
+					var icon=node.nodeType;
+					var isFinal=node.isFinal?true:false;
+					var isEmpty=node.isEmpty?true:false;
+					var isMark=false;
+
+					var objRowSet=this.getRowSet();
+					var fieldNameLabel = 'name';
+					var fieldNameDescription = 'name';
+					var nt = objRowSet.getNt(node.nodeType);
+					if (nt.name) fieldNameLabel = nt.name;
+					if (nt.description) fieldNameDescription = nt.description;
+					if (node.info) {
+						isMark=node.info['row.mark']
+						if (nt.fields[fieldNameLabel]) label=node.info[fieldNameLabel + '.value'];
+						if (nt.fields[fieldNameDescription]) description=node.info[fieldNameDescription + '.value'];
+						if (node.info['row.icon']) icon=node.info['row.icon'];
+						if (this.getIsNodeCheckable(node)) {
+							icon=this.getIsNodeChecked(node)?'check-on':'check-off';
+						}
+					}
+					
+					if (isFinal || isEmpty) {
+						info.domItemExpander.className='g740tree-item-expander g740tree-item-expander-final';
+					}
+					else if (node.childs) {
+						info.domItemExpander.className='g740tree-item-expander g740tree-item-expander-minus';
+					}
+					else {
+						info.domItemExpander.className='g740tree-item-expander g740tree-item-expander-plus';
+					}
+					
+					if (label!=info.label) {
+						info.label=label;
+						info.domItemText.innerHTML='';
+						var ddd=document.createTextNode(info.label);
+						info.domItemText.appendChild(ddd);
+					}
+					if (description!=info.description) {
+						info.description=description;
+						info.domItemText.title=info.description;
+					}
+					if (icon!=info.icon) {
+						info.icon=icon;
+						var iconClass=g740.icons.getIconClassName(info.icon);
+						if (!iconClass) {
+							if (isFinal || isEmpty) {
+								iconClass=g740.icons.getIconClassName('default');
+							}
+							else {
+								iconClass=g740.icons.getIconClassName('folder');
+							}
+						}
+						info.domItemIcon.className='g740tree-item-icon '+iconClass;
+					}
+				},
 				getIsNodeCheckable: function(node) {
 					if (!node) return false;
 					if (!node.info) return false;
@@ -530,137 +899,32 @@ define(
 					if (this._itemsChecked[id]) return true;
 					return false;
 				},
-				getIconClass: function(node, isExpanded) {
-					var result=this.inherited(arguments);
-					if (this.getIsNodeCheckable(node)) {
-						if (this.getIsNodeChecked(node)) {
-							return 'g740-grid-check-on';
+				doNodeCheck: function(treeNode) {
+					if (!treeNode) return;
+					if (!treeNode.info) return;
+					var node=treeNode.info.node;
+					if (!node) return;
+					if (!this.getIsNodeCheckable(node)) return;
+					var id=treeNode.id;
+					
+					if (this.getIsNodeChecked(node)) {
+						delete(this._itemsChecked[id]);
+						if (node.nodeType) delete(this._itemsChecked[node.nodeType+'.'+id]);
+					}
+					else {
+						if (node.nodeType) {
+							this._itemsChecked[node.nodeType+'.'+id]=treeNode.info.label;
 						}
 						else {
-							return 'g740-grid-check-off';
+							this._itemsChecked[id]=treeNode.info.label;;
 						}
 					}
-					return result;
-				},
-				onG740Click: function(node, objNode, evt) {
-					var dom=evt.target;
-					if (!this.objRowSet) return false;
-					if (this.objRowSet.isObjectDestroed) return false;
-					this.objRowSet.setFocusedNode(node);
-					if (dom && dom.nodeName=='SPAN' && dojo.hasClass(dom,'dijitIcon')) {
-						if (this.getIsNodeCheckable(node)) {
-							var id=node.info['id'];
-							if (this.getIsNodeChecked(node)) {
-								delete(this._itemsChecked[id]);
-								if (node.nodeType) delete(this._itemsChecked[node.nodeType+'.'+id]);
-							}
-							else {
-								if (node.nodeType) {
-									this._itemsChecked[node.nodeType+'.'+id]=this.getLabel(node);
-								}
-								else {
-									this._itemsChecked[id]=this.getLabel(node);
-								}
-							}
-							this._onItemChange(node);
-							this._value='-';
-						}
-					}
+					this._doUpdateTreeNode(treeNode, node);
+					this._value='-';
 				}
 			}
 		);
-		
-		g740.panels._builderPanelTree=function(xml, para) {
-			var result=null;
-			var procedureName='g740.panels._builderPanelTree';
-			if (!g740.xml.isXmlNode(xml)) g740.systemError(procedureName, 'errorValueUndefined', 'xml');
-			if (xml.nodeName!='panel') g740.systemError(procedureName, 'errorXmlNodeNotFound', xml.nodeName);
-			var panelType=g740.xml.getAttrValue(xml, 'type', '');
-			if (!panelType)	panelType=g740.xml.getAttrValue(xml, 'panel', 'tree');
-			
-			if (!para) g740.systemError(procedureName, 'errorValueUndefined', 'para');
-			if (!para.objForm) g740.systemError(procedureName, 'errorValueUndefined', 'para.objForm');
-			if (!para.rowsetName) {
-				g740.trace.goBuilder({
-					formName: para.objForm.name,
-					panelType: panelType,
-					messageId: 'errorRowSetNameEmpty'
-				});
-				return null;
-			}
-			var objRowSet=para.objForm.rowsets[para.rowsetName];
-			if (!objRowSet) {
-				g740.trace.goBuilder({
-					formName: para.objForm.name,
-					panelType: panelType,
-					rowsetName: para.rowsetName,
-					messageId: 'errorRowSetNotFoundInForm'
-				});
-				return null;
-			}
-/*			
-			if (g740.xml.isAttr(xml,'ondblclick')) {
-				if (!para.objActionOnDblClick) {
-					var p={
-						objForm: para.objForm
-					};
-					para.objActionOnDblClick=new g740.Action(p);
-				}
-				para.objActionOnDblClick.request={
-					sync: true,
-					params: {},
-					exec: g740.xml.getAttrValue(xml,'ondblclick','')
-				};
-			}
-*/
-			var xmlRequests=g740.xml.findFirstOfChild(xml,{nodeName:'requests'});
-			if (!g740.xml.isXmlNode(xmlRequests)) xmlRequests=xml;
-			var lst=g740.xml.findArrayOfChild(xmlRequests,{nodeName:'request'});
-			for(var i=0; i<lst.length; i++) {
-				var xmlRequest=lst[i];
-				var t=g740.xml.getAttrValue(xmlRequest,'on','dblclick');
-				if (t!='dblclick') continue;
-				var request={
-					sync: true,
-					params: {}
-				}
-				g740.panels.buildRequestParams(xmlRequest, request);
-				if (!para.objActionOnDblClick) {
-					var p={
-						objForm: para.objForm
-					};
-					para.objActionOnDblClick=new g740.Action(p);
-				}
-				para.objActionOnDblClick.request=request;
-			}
 
-			
-			var isFocusOnShow=para.isFocusOnShow;
-			para.isFocusOnShow=false;
-			var objPanel=new g740.Panel(para, null);
-			
-			var isAutoHidePanel=false;
-			if (panelType=='treemenu') isAutoHidePanel=g740.xml.getAttrValue(xml, 'collapse', '0')=='1';
-			
-			var objTree=new g740.Tree({
-				objForm: para.objForm,
-				rowsetName: para.rowsetName,
-				objActionOnDblClick: para.objActionOnDblClick,
-				color: para.color,
-				region: 'center',
-				isTreeMenuMode: (panelType=='treemenu'),
-				showRoot: false,
-				persist: false,
-				isFocusOnShow: isFocusOnShow,
-				isAutoHidePanel: isAutoHidePanel
-			}, null);
-			objPanel.addChild(objTree);
-			if (panelType!='treemenu') objPanel.isG740AutoMenu=true;
-			var result=objPanel;
-			return result;
-		};
-		g740.panels.registrate('tree', g740.panels._builderPanelTree);
-		g740.panels.registrate('treemenu', g740.panels._builderPanelTree);
-		return g740;
+
 	}
 );

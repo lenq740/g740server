@@ -650,6 +650,79 @@ html, body {
 	outline-width: 1px;
 }
 
+/* G740Tree */
+.g740tree-panel {
+	overflow-x: hidden;
+}
+.g740tree-panel .g740-focused {
+	position: absolute;
+	height: 0px;
+	width: 0px;
+	opacity: 0;
+	z-index: -1;
+}
+.g740tree-panel .g740tree-body {
+	position: relative;
+	overflow-y: auto;
+	overflow-x: hidden;
+	user-select: none;
+	-ms-user-select: none;
+	-moz-user-select: none;
+	-khtml-user-select: none;
+	-webkit-user-select: none;
+}
+.g740tree-panel .g740tree-item-childs {
+	margin-left: 20px;
+}
+.g740tree-panel .g740tree-item-element {
+	position: relative;
+	min-height: 22px;
+	cursor: default;
+}
+.g740tree-panel .g740tree-item-element.selected {
+	background-color: moccasin;
+}
+.g740tree-panel.focused .g740tree-item-element.selected {
+	background-color: orange;
+	color: white;
+}
+.g740tree-panel .g740tree-item-expander {
+	position: absolute;
+	top: 1px;
+	left: 0px;
+	float: left;
+	width: 18px;
+	height: 18px;
+}
+.g740tree-panel .g740tree-item-expander.g740tree-item-expander-plus {
+	background-image: url('cssdojo/g740/images/treeExpand_plus.gif');
+	cursor: pointer;
+}
+.g740tree-panel .g740tree-item-expander.g740tree-item-expander-minus {
+	background-image: url('cssdojo/g740/images/treeExpand_minus.gif');
+	cursor: pointer;
+}
+.g740tree-panel .g740tree-item-expander.g740tree-item-expander-final {
+	background-image: url('cssdojo/g740/images/treeExpand_leaf.gif');
+}
+.g740tree-panel .g740tree-item-icon {
+	position: absolute;
+	top: 3px;
+	left: 22px;
+	float: left;
+	width: 16px;
+	height: 16px;
+}
+
+.g740tree-panel .g740tree-item-text {
+	display: inline-block;
+	line-height: 20px;
+	margin-left: 45px;
+	overflow: hidden;
+    white-space: nowrap;
+}
+
+
 
 /* DialogLogin */
 .g740-dialoglogin-table {

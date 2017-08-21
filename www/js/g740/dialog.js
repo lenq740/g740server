@@ -310,9 +310,14 @@ define(
 				filter: '',
 				_isSaveOnHide: false,
 				_saveValueOnHide: null,
+				_oldObjDialogEditor: null,
 				set: function(name, value) {
 					if (name=='objForm') {
 						this.objForm=value;
+						if (this.objForm) {
+							if (this.objForm.objDialogEditor) this._oldObjDialogEditor=this.objForm.objDialogEditor;
+							this.objForm.objDialogEditor=this;
+						}
 						return true;
 					}
 					if (name=='rowsetName') {
@@ -344,6 +349,8 @@ define(
 				destroy: function() {
 					var procedureName='g740.DialogEditorAbstract.destroy';
 					try {
+						if (this.objForm) this.objForm.objDialogEditor=this._oldObjDialogEditor;
+						this._oldObjDialogEditor=null;
 						this.objForm=null;
 						this.domNodeOwner=null;
 						this.objOwner=null;
@@ -378,6 +385,9 @@ define(
 						if (result.t<5) result.t=5;
 					}
 					return result;
+				},
+				// Абстрактный метод, переопределить!!!
+				doG740Repaint: function(para) {
 				},
 				// Абстрактный метод, переопределить!!!
 				build: function() {
@@ -940,9 +950,11 @@ define(
 					var reftext='name';
 					if (fld.refname) reftext=fld.refname;
 					if (fld.reftext) reftext=fld.reftext;
+					
 					this.objTreeCheckBox=new g740.TreeCheckBox(
 						{
-							objRowSet: objRefRowSet,
+							objForm: this.objForm,
+							rowsetName: objRefRowSet.name,
 							fieldName: reftext,
 							nodeTypes: fld.refnodes,
 							value: objRowSet.getFieldProperty({fieldName: this.fieldName}),
@@ -995,6 +1007,10 @@ define(
 						null
 					);
 					objPanelBottom.addChild(objBtn);
+					objRefRowSet.doG740Repaint({isFull: true, parentNode: objRefRowSet.objTreeStorage.rootNode});
+				},
+				doG740Repaint: function(para) {
+					if (this.objTreeCheckBox && this.objTreeCheckBox.doG740Repaint) this.objTreeCheckBox.doG740Repaint(para);
 				},
 				_save: function(value) {
 					var objRowSet=this.getRowSet();

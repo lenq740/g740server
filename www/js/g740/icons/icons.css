@@ -307,6 +307,16 @@
 	width: 16px;
 	height: 16px;
 }
+.g740-icons-check-on {
+	background-image: url('check-on.png');
+	width: 16px;
+	height: 16px;
+}
+.g740-icons-check-off {
+	background-image: url('check-off.png');
+	width: 16px;
+	height: 16px;
+}
 
 .g740-icons-clipboard-copy {
 	background-image: url('clipboard-copy.png');
