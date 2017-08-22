@@ -1396,7 +1396,7 @@ define(
 								if (!lstResponseRowNames[xml.nodeName]) continue;
 								rowCount++;
 							}
-							if (rowCount == 0) {
+							if (para.isFirstOk && rowCount == 0) {
 								if (requestName == 'append') {
 									var xml = g740.xml.createElement('append');
 									xmlResponse.appendChild(xml);
@@ -2169,7 +2169,6 @@ define(
 					nt.requests[fullname] = request;
 			        return true;
 			    },
-
 // Вызывается из формы после полного завершения построения набора строк
 			    doAfterBuild: function () {
 			        for (var nodeType in this.nodeTypes) {

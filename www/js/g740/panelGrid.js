@@ -125,31 +125,37 @@ define(
 			                this.scrollTo(scrollTop);
 			            }
 			            var rowIndex = -1;
-			            var node = this.objRowSet.getFocusedNode();
-			            if (node) rowIndex = this.getItemIndex(node);
-			            var cellIndex = 0;
-			            var fieldName = '';
-			            if (this.focus.cell) {
-			                cellIndex = this.focus.cell.index;
-			                fieldName = this.focus.cell.field;
-			            }
-
-			            if (!para.isFull && para.isRowUpdate) {
-			                this.updateRow(rowIndex);
-			            }
-			            this.doG740ScrollToRow(rowIndex);
-			            if (isFocused) {
-			                this.focus.focusGrid();
-			                this.focus.setFocusIndex(rowIndex, cellIndex);
-			            }
-			            g740.execDelay.go({
-			                delay: 10,
-			                obj: this,
-			                func: this.doG740SetSelectionDelay,
-			                para: {
-			                    rowIndex: rowIndex
-			                }
-			            });
+						var node = this.objRowSet.getFocusedNode();
+			            if (!para.isFull && para.isRowUpdate && para.node && para.node!=node) {
+							// Отдельно отрабатывем запрос на перерисовку не текущей явно указанной строки
+							var rowIndex=this.getItemIndex(para.node);
+							this.updateRow(rowIndex);
+						}
+						else {
+							if (node) rowIndex = this.getItemIndex(node);
+							var cellIndex = 0;
+							var fieldName = '';
+							if (this.focus.cell) {
+								cellIndex = this.focus.cell.index;
+								fieldName = this.focus.cell.field;
+							}
+							if (!para.isFull && para.isRowUpdate) {
+								this.updateRow(rowIndex);
+							}
+							this.doG740ScrollToRow(rowIndex);
+							if (isFocused) {
+								this.focus.focusGrid();
+								this.focus.setFocusIndex(rowIndex, cellIndex);
+							}
+							g740.execDelay.go({
+								delay: 10,
+								obj: this,
+								func: this.doG740SetSelectionDelay,
+								para: {
+									rowIndex: rowIndex
+								}
+							});
+						}
 			        }
 			        finally {
 			            this.isRepainted = oldRepainted;
