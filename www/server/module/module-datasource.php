@@ -19,6 +19,7 @@ class DataSource extends DSConnector{
 	public $selectOtherFields='';	// Добавляется к списку полей в select, может быть переопределено в потомке
 	public $isGUID=false;			// В качестве id используется GUID
 	public $isSaveOnAppend=false;	// Сохранять в базе при добавлении
+	public $selectLimit=0;			// Ограничение на максимальное кол-во возвращаемых строк
 
 	public function getPerm($permOper='read', $requestName='', $params=Array()) {
 		$permMode=$this->permMode;
@@ -1169,6 +1170,10 @@ SQL;
 		$selectOrderBy=$this->getSelectOrderBy($params);
 		$paginatorFrom=$params['paginator.from'];
 		$paginatorCount=$params['paginator.count'];
+		if (!$paginatorFrom && !$paginatorCount && $this->selectLimit) {
+			$paginatorFrom=0;
+			$paginatorCount=$this->selectLimit;
+		}
 
 		$result=<<<SQL
 select
@@ -1204,6 +1209,10 @@ SQL;
 		$selectOrderBy=$this->getSelectOrderBy($params);
 		$paginatorFrom=$params['paginator.from'];
 		$paginatorCount=$params['paginator.count'];
+		if (!$paginatorFrom && !$paginatorCount && $this->selectLimit) {
+			$paginatorFrom=0;
+			$paginatorCount=$this->selectLimit;
+		}
 		
 		if (!$paginatorFrom && !$paginatorCount) {
 			$result=<<<SQL
@@ -1455,9 +1464,8 @@ PHP;
 				}
 			} else if ($filterType=='check') {
 				$result.="\n".<<<PHP
-	if (isset({$D}params['filter.{$fld['name']}'])) {
-		{$D}value={$D}this->php2Sql({$D}params['filter.{$fld['name']}']);
-		{$D}result.="\\n"."and {$fullFieldName}='{{$D}value}'";
+	if ({$D}params['filter.{$fld['name']}']) {
+		{$D}result.="\\n"."and {$fullFieldName}='1'";
 	}
 PHP;
 			}
