@@ -306,7 +306,6 @@ define(
 			    isEnabled: false,			// Набор строк загружен и готов к работе
 
 			    objDataApi: null,			// Доступ к интерфейсу dojo.data.Api
-			    objTreeModelApi: null,		// Доступ к интерфейсу tree.model
 
 			    _markNode: null,
 				
@@ -356,7 +355,6 @@ define(
 					this.focusedPath = [];
 					this._focusedParentNode = null;
 					this.objDataApi = new g740.RowSetDataApi({ objRowSet: this });
-					this.objTreeModelApi = new g740.RowSetTreeModelApi({ objRowSet: this });
 
 					var names = ['parentName', 'objParent', 'isReadOnly', 'isFilter', 'parentRowsetNodeType'];
 					for (var i = 0; i < names.length; i++) {
@@ -412,10 +410,6 @@ define(
 					if (this.objDataApi) {
 						this.objDataApi.destroy();
 						this.objDataApi = null;
-					}
-					if (this.objTreeModelApi) {
-						this.objTreeModelApi.destroy();
-						this.objTreeModelApi = null;
 					}
 					if (this.objTreeStorage) {
 						this.objTreeStorage.destroy();
@@ -701,6 +695,7 @@ define(
 // Перерисовка экранных элементов, по умолчанию перерисовывается только текущая строка
 //	objRowSet 	- набор строк
 //  parentNode	- родительский узел
+//	node		- узел, обычно не задан, берется из текущего
 //	isFull		- полная перерисовка всех дочерних элементов
 //	isRowUpdate	- изменения в строке
 //	isNavigate	- сменилась текущая строка
@@ -710,16 +705,6 @@ define(
 					if (!params) g740.systemError(procedureName, 'errorValueUndefined', 'params');
 					if (!params.objRowSet) params.objRowSet = this;
 					if (!params.parentNode) params.parentNode = this.getFocusedParentNode();
-
-					// Обработка событий отрисовки для дерева
-					if (params.isFull && params.parentNode) {
-						this.objTreeModelApi.onChildrenChange(params.parentNode, this.objTreeStorage.getChildsOrdered(params.parentNode));
-					}
-					if (params.isRowUpdate) {
-						var node = this.getFocusedNode();
-						if (node) this.objTreeModelApi.onChange(node);
-					}
-					
 					if (this.objForm) this.objForm.doG740Repaint(params);
 			        return true;
 			    },
@@ -1324,8 +1309,13 @@ define(
 					else {
 						this._markNode = node;
 					}
-					if (oldMarkNode) this.objTreeModelApi.onChange(oldMarkNode);
-					if (this._markNode) this.objTreeModelApi.onChange(this._markNode);
+					if (oldMarkNode) {
+						this.doG740Repaint({
+							node: oldMarkNode,
+							parentNode: oldMarkNode.parentNode,
+							isRowUpdate: true
+						});
+					}
 					this.doG740Repaint({ isRowUpdate: true });
 			        return true;
 			    },
@@ -1406,7 +1396,7 @@ define(
 								if (!lstResponseRowNames[xml.nodeName]) continue;
 								rowCount++;
 							}
-							if (rowCount == 0) {
+							if (para.isFirstOk && rowCount == 0) {
 								if (requestName == 'append') {
 									var xml = g740.xml.createElement('append');
 									xmlResponse.appendChild(xml);
@@ -1494,16 +1484,18 @@ define(
 								var markNode = this.getMarkNode();
 								if (markNode) {
 									var markParentNode = markNode.parentNode;
-									this.objTreeModelApi.onDelete(markNode);
 									this.objTreeStorage.removeNode(markNode);
 									this._markNode = null;
+									this.doG740Repaint({
+										parentNode: markParentNode,
+										isFull: true
+									});
 								}
 							}
 
 							if (requestName == 'expand') {
 								if (!node.childs) {
 									node.isEmpty = true;
-									this.objTreeModelApi.onChildrenChange(node, this.objTreeStorage.getChildsOrdered(node));
 								}
 							}
 							return true;
@@ -1579,7 +1571,6 @@ define(
 							if (node) g740.responseError('errorRowIdNotUnique', newid);
 							var node = this.objTreeStorage.getNode(oldid, parentNode);
 							if (!node) g740.responseError('errorRowIdNotFound', oldid);
-							var oldTreeModelId = this.objTreeModelApi.getIdentity(node);
 							var row = node.info;
 							if (!row) g740.responseError('errorRowIdNotFound', oldid);
 							var prevNode = node.prevNode;
@@ -1592,7 +1583,6 @@ define(
 								this.focusedPath[this.focusedPath.length - 1] = newid;
 							}
 							id = newid;
-							this.objTreeModelApi.onIdChange(node, oldTreeModelId);
 							this._g740repaint.isIdChanged = true;
 							this._g740repaint.isFull = true;		// Смена id строки требует полной перечитки Grid
 						}
@@ -1649,10 +1639,8 @@ define(
 					if (g740.xml.isAttr(xmlRow, 'row.type')) {
 						var nodeType = g740.xml.getAttrValue(xmlRow, 'row.type', node.nodeType);
 						if (node.nodeType != nodeType) {
-							var oldTreeModelId = this.objTreeModelApi.getIdentity(node);
 							node.nodeType = nodeType;
 							row['row.type'] = nodeType;
-							if (!isNewNode) this.objTreeModelApi.onIdChange(node, oldTreeModelId);
 						}
 					}
 
@@ -2181,7 +2169,6 @@ define(
 					nt.requests[fullname] = request;
 			        return true;
 			    },
-
 // Вызывается из формы после полного завершения построения набора строк
 			    doAfterBuild: function () {
 			        for (var nodeType in this.nodeTypes) {
@@ -2917,7 +2904,20 @@ define(
 					}
 			        return true;
 			    },
-			    // Нумерация узлов, необходима для работы Grid
+			    // Получить путь до узла от корня
+				getNodePath: function(node) {
+					var lst=[];
+					while(node) {
+						lst.push(node.id);
+						node=node.parentNode;
+					}
+					var result=[];
+					for(var i=lst.length-1; i>=0; i--) {
+						result.push(lst[i]);
+					}
+					return result;
+				},
+				// Нумерация узлов, необходима для работы Grid
 			    // Вернуть, при необходимости пересчитав, порядковый номер узла
 			    getIndex: function (node) {
 			        var procedureName = 'g740.TreeStorage.getIndex';
@@ -3314,136 +3314,6 @@ define(
 			    }
 			}
 		);
-
-	    dojo.declare(
-			'g740.RowSetTreeModelApi',
-			null,
-			{
-			    g740className: 'g740.RowSetTreeModelApi',
-			    isTraceEnabled: false,	// трассировка внутри объекта g740.RowSetTreeModelApi
-
-			    objRowSet: null,
-			    objTreeStorage: null,
-			    // Создание и уничтожение объекта
-			    // Создание экземпляра объекта
-			    //	para.objRowSet
-			    constructor: function (para) {
-			        var procedureName = 'g740.RowSetTreeModelApi.constructor';
-					if (!para) g740.systemError(procedureName, 'errorValueUndefined', 'para');
-					if (!para.objRowSet) g740.systemError(procedureName, 'errorValueUndefined', 'para.objRowSet');
-					this.set('objRowSet', para.objRowSet);
-			    },
-			    destroy: function () {
-			        var procedureName = 'g740.RowSetTreeModelApi.destroy';
-		            this.set('objRowSet', null);
-			    },
-			    set: function (name, value) {
-			        var procedureName = 'g740.RowSetTreeModelApi.set';
-			        if (name == 'objRowSet') {
-			            if (this.objRowSet != value) {
-			                this.objTreeStorage = null;
-			                if (value != null) {
-			                    if (typeof (value) != 'object') g740.systemError(procedureName, 'errorIncorrectTypeOfValue', 'objRowSet');
-			                    if (value.isObjectDestroed) g740.systemError(procedureName, 'errorAccessToDestroedObject', 'objRowSet');
-			                    if (!value.objTreeStorage) g740.systemError(procedureName, 'errorIncorrectTypeOfValue', 'objRowSet');
-			                    this.objTreeStorage = value.objTreeStorage;
-			                }
-			                this.objRowSet = value;
-			            }
-			            return true;
-			        }
-			        return false;
-			    },
-			    // Methods for traversing hierarchy
-			    getRoot: function (onItem) {
-			        var procedureName = 'g740.RowSetTreeModelApi.getRoot';
-			        var result = true;
-					if (!this.objRowSet) g740.systemError(procedureName, 'errorValueUndefined', 'objRowSet');
-					if (this.objRowSet.isObjectDestroed) g740.systemError(procedureName, 'errorAccessToDestroedObject', 'objRowSet');
-					if (!this.objTreeStorage) g740.systemError(procedureName, 'errorValueUndefined', 'objTreeStorage');
-					if (typeof (onItem) == 'function') {
-						onItem(this.objTreeStorage.rootNode);
-					}
-			        return result;
-			    },
-			    mayHaveChildren: function (node) {
-			        var procedureName = 'g740.RowSetTreeModelApi.mayHaveChildren';
-			        var result = false;
-					if (!this.objRowSet) g740.systemError(procedureName, 'errorValueUndefined', 'objRowSet');
-					if (this.objRowSet.isObjectDestroed) g740.systemError(procedureName, 'errorAccessToDestroedObject', 'objRowSet');
-					if (!this.objTreeStorage) g740.systemError(procedureName, 'errorValueUndefined', 'objTreeStorage');
-					if (this.objTreeStorage.isNode(node)) {
-						result = !node.isFinal && !node.isEmpty;
-					}
-			        return result;
-			    },
-			    getChildren: function (node, onItem) {
-			        var procedureName = 'g740.RowSetTreeModelApi.mayHaveChildren';
-					if (!this.objRowSet) g740.systemError(procedureName, 'errorValueUndefined', 'objRowSet');
-					if (this.objRowSet.isObjectDestroed) g740.systemError(procedureName, 'errorAccessToDestroedObject', 'objRowSet');
-					if (!this.objTreeStorage) g740.systemError(procedureName, 'errorValueUndefined', 'objTreeStorage');
-					if (this.objTreeStorage.isNode(node) && typeof (onItem) == 'function') {
-						var lst = this.objTreeStorage.getChildsOrdered(node);
-						onItem(lst);
-					}
-			    },
-			    isItem: function (node) {
-			        var procedureName = 'g740.RowSetTreeModelApi.isItem';
-					if (!this.objRowSet) g740.systemError(procedureName, 'errorValueUndefined', 'objRowSet');
-					if (this.objRowSet.isObjectDestroed) g740.systemError(procedureName, 'errorAccessToDestroedObject', 'objRowSet');
-					if (!this.objTreeStorage) g740.systemError(procedureName, 'errorValueUndefined', 'objTreeStorage');
-					if (!this.objTreeStorage.isNode(node)) return false;
-					if (!node.info) return false;
-			        return true;
-			    },
-			    getIdentity: function (node) {
-			        var procedureName = 'g740.RowSetTreeModelApi.getIdentity';
-					var result = null;
-					if (!this.objRowSet) g740.systemError(procedureName, 'errorValueUndefined', 'objRowSet');
-					if (this.objRowSet.isObjectDestroed) g740.systemError(procedureName, 'errorAccessToDestroedObject', 'objRowSet');
-					if (!this.objTreeStorage) g740.systemError(procedureName, 'errorValueUndefined', 'objTreeStorage');
-					if (this.objTreeStorage.isNode(node)) {
-						if (node.nodeType) {
-							result = node.nodeType + '.' + node.id;
-						}
-						else {
-							result = node.id;
-						}
-					}
-			        return result;
-			    },
-			    getLabel: function (node) {
-			        var procedureName = 'g740.RowSetTreeModelApi.getLabel';
-					var result = undefined;
-					if (!this.objRowSet) g740.systemError(procedureName, 'errorValueUndefined', 'objRowSet');
-					if (this.objRowSet.isObjectDestroed) g740.systemError(procedureName, 'errorAccessToDestroedObject', 'objRowSet');
-					if (!this.objTreeStorage) g740.systemError(procedureName, 'errorValueUndefined', 'objTreeStorage');
-					if (!this.objTreeStorage.isNode(node)) return 'error, node undefined';
-					var result = node.id;
-					var fieldName = 'name';
-					var nt = this.objRowSet.getNt(node.nodeType);
-					if (nt.name) fieldName = nt.name;
-					if (node.info && nt.fields[fieldName]) {
-						result = node.info[fieldName + '.value'];
-					}
-			        return result;
-			    },
-			    // Реализация dojo.data.api.Write
-			    newItem: function (args, parentNode, insertIndex, beforeNode) {
-			    },
-			    pasteItem: function (childItem, oldParentItem, newParentItem, bCopy, insertIndex, before) {
-			    },
-			    // Notification
-			    onIdChange: function (node, oldId) {
-			    },
-			    onChange: function (node) {
-			    },
-			    onChildrenChange: function (parentNode, newChildrenList) {
-			    },
-			    onDelete: function (node) {
-			    }
-			}
-		)
 
 	    return g740;
 	}

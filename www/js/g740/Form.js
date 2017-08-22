@@ -49,6 +49,8 @@ define(
 				requests: {},				// Список поддерживаемых запросов
 				g740childs: [],				// Список дочерних панелек для поддержки visible
 				
+				objDialogEditor: null,
+				
 // Создание экземпляра объекта
 //	para.name
 				constructor: function(para) {
@@ -94,6 +96,10 @@ define(
 							this.g740childs[i]=null;
 						}
 						this.g740childs=[];
+					}
+					if (this.objDialogEditor) {
+						this.objDialogEditor.destroyRecursive();
+						this.objDialogEditor=null;
 					}
 					this.inherited(arguments);
 				},
@@ -891,6 +897,7 @@ define(
 						if (!obj.doG740Repaint) continue;
 						obj.doG740Repaint(para);
 					}
+					if (this.objDialogEditor && this.objDialogEditor.doG740Repaint) this.objDialogEditor.doG740Repaint(para);
 				},
 				doG740RepaintChildsVisible: function() {
 					var index=0;

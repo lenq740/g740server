@@ -225,54 +225,46 @@ define(
 					var lst=g740.xml.findArrayOfChild(xmlResponse, {nodeName:'response'});
 					
 					var isDisconnected=false;
-					var lstErr=[];
+					var isError=false;
+					var lstResponseExec=[];
 					for (var i=0; i<lst.length; i++) {
 						var xmlItem=lst[i];
 						if (!g740.xml.isXmlNode(xmlItem)) continue;
 						var name=g740.xml.getAttrValue(xmlItem,'name','');
 						if (!name) name=g740.xml.getAttrValue(xmlItem,'response','');
+						if (!name) continue;
 						var mess=g740.xml.getAttrValue(xmlItem,'message','');
 						if (name=='error' || name=='disconnected') {
 							if (name=='disconnected') isDisconnected=true;
-							lstErr.push(xmlItem);
+							isError=true;
 							if (mess) {
 								if (errMessage) errMessage+="\n";
 								errMessage+=mess;
 							}
 						}
 						else {
+							if (name=='exec') {
+								var responseExec=g740.xml.getAttrValue(xmlItem,'exec','');
+								if (responseExec) lstResponseExec.push(responseExec);
+							}
 							if (mess) {
 								if (message) message+="\n";
 								message+=mess;
 							}
 						}
 					}
-					if (lstErr.length>0) {
-						lst=lstErr;
+					if (isError) {
 						result=false;
 						message='';
 					}
 					if (!isDisconnected) {
-						var lstResponseExec=[];
-						for (var i=0; i<lst.length; i++) {
+						var isFirstOk=true;
+						if (!isError) for (var i=0; i<lst.length; i++) {
 							var xmlItem=lst[i];
 							if (!g740.xml.isXmlNode(xmlItem)) continue;
-
-							var responseExec=g740.xml.getAttrValue(xmlItem,'exec','');
-							if (responseExec) lstResponseExec.push(responseExec);
-							var lstXmlExec=g740.xml.findArrayOfChild(xmlItem, {nodeName:'exec'});
-							for (var execIndex=0; execIndex<lstXmlExec.length; execIndex++) {
-								var xmlExecItem=lstXmlExec[execIndex];
-								var responseExec=g740.xml.getAttrValue(xmlExecItem,'exec','');
-								if (!responseExec) responseExec=g740.xml.getAttrValue(xmlExecItem,'name','');
-								if (responseExec) lstResponseExec.push(responseExec);
-							}
-							
 							var name=g740.xml.getAttrValue(xmlItem,'name','');
 							if (!name) name=g740.xml.getAttrValue(xmlItem,'response','');
-							if (name=='exec') continue;
-							
-							if (para.objOwner.doResponse) {
+							if (name=='ok' && para.objOwner.doResponse) {
 								var p={};
 								p.xmlResponse=xmlItem;
 								if (para.requestName) p.requestName=para.requestName;
@@ -283,7 +275,9 @@ define(
 								if (para.parentNodeId) p.parentNodeId=para.parentNodeId;
 								if (para.parentNodeType) p.parentNodeType=para.parentNodeType;
 								if (para.xmlRequest) p.xmlRequest=para.xmlRequest;
+								p.isFirstOk=isFirstOk;
 								if (!para.objOwner.doResponse(p)) result=false;
+								isFirstOk=false;
 							}
 						}
 						// Если ответы содержат запросы exec то последовательно выполняем их
@@ -317,7 +311,7 @@ define(
 					if (errMessage) {
 						g740.showError(errMessage, para.objOwner);
 					}
-					if (message) g740.showMessage(message);
+					if (message) g740.showMessage(message, para.objOwner);
 					this._indexExecuted--;
 					this._sendLastFiFo();
 				}

@@ -38,8 +38,6 @@ define(
 		'dojox/grid/cells',
 		'dojox/grid/cells/dijit',
 
-		'dijit/Tree',
-
 		'dijit/form/TextBox',
 		'dijit/form/DateTextBox',
 		'dijit/form/CheckBox',
@@ -73,7 +71,6 @@ define(
 		'g740/widgetFields',
 		'g740/panelGrid',
 		'g740/panelTree',
-//		'g740/panelG740Tree',
 		'g740/panelFields',
 		'g740/panelFieldsMultiline',
 		'g740/panelHtmlFields',
