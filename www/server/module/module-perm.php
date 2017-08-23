@@ -42,7 +42,7 @@ function getPerm($mode, $operation) {
 */
 function execConnect($params) {
 	execDisconnect();
-	if ($params['login']=='madmin' && $params['password']=='918') {
+	if ($params['login']=='root' && $params['password']=='1') {
 		$_SESSION['connect_ok']=true;
 		$_SESSION['connect_sys']=true;
 	}
