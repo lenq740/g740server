@@ -26,6 +26,7 @@ class DataSource2_TreeDataModel extends DataSource {
 	<request name="append" mode="into"/>
 	<request name="delete"/>
 	<request name="save"/>
+	<request name="unmarkall" js_enabled="get('#markcount')"/>
 
 	<fields name="name" description="name">
 		<field name="name" type="string" caption="Имя"/>
@@ -37,9 +38,9 @@ XML;
 			$addRequests=<<<XML
 <requests>
 	<request name="shift"/>
-	<request name="move" js_enabled="get('#this[@mark].row.type')=='systable'">
-		<param name="from.id" js_value="get('#this[@mark].id')"/>
-		<param name="from.type" js_value="get('#this[@mark].row.type')"/>
+	<request name="move" js_enabled="get('#this[systable].#markcount')">
+		<param name="from.id" js_value="get('#this[systable].#mark')"/>
+		<param name="from.type" value="systable"/>
 	</request>
 </requests>
 XML;
@@ -73,10 +74,7 @@ XML;
 			$rowFromId=$pdoDB->str2Sql($params['from.id']);
 			$rowType=$params['row.type'];
 			if ($rowType=='systablecategory' && $rowFromType=='systable') {
-				$p=Array();
-				$p['id']=$rowFromId;
-				$p['klssystablecategory']=$params['id'];
-				return $this->execSysTableMove($p);
+				return $this->execSysTableMove($params);
 			}
 		}
 		if ($rowParentType=='root') return $this->execSysTableCategory($params);
@@ -156,15 +154,19 @@ XML;
 	}
 	
 	protected function execSysTableMove($params) {
-		$p=Array();
-		$p['#request.name']='save';
-		$p['id']=$params['id'];
-		$p['klssystablecategory']=$params['klssystablecategory'];
-		$result=$this->execSysTable($p);
-		foreach($result as $index=>$rec) {
-			$rec['row.destmode']='last';
-			$rec['row.focus']=1;
-			$result[$index]=$rec;
+		$result=Array();
+		$klssystablecategory=$this->str2Sql($params['id']);
+		$lstSysTable=explode(',',$params['from.id']);
+		$lst='';
+		foreach($lstSysTable as $klsSysTable) {
+			if ($lst) $lst.=',';
+			$lst.="'".$this->str2Sql($klsSysTable)."'";
+		}
+		if ($klssystablecategory && $lst) {
+			$sql=<<<SQL
+update systable set klssystablecategory='{$klssystablecategory}' where id in ({$lst})
+SQL;
+			$this->pdo($sql);
 		}
 		return $result;
 	}

@@ -171,8 +171,8 @@ define(
 	            speclocal: true,
 	            specnofilter: true
 	        },
-	        'markclear': {
-	            captionId: 'requestMarkClear',
+	        'unmarkall': {
+	            captionId: 'requestUnMarkAll',
 	            specread: true,
 	            speclocal: true,
 	            specnofilter: true
@@ -233,6 +233,8 @@ define(
 //		nt.description - для дерева имя поля tooltip
 //		nt.fields - описания полей
 //		nt.requests - описание запросов
+//		nt.mark - список помеченных id
+//		nt.markCount
 //	fld=nt.fields[name]
 //		fld.name
 //		fld.type
@@ -307,8 +309,6 @@ define(
 
 			    objDataApi: null,			// Доступ к интерфейсу dojo.data.Api
 
-			    _markNode: null,
-				
 				autoRefreshTimeout: 0,		// Задержка автоперечитки (0 - автоперечитка выключена)
 				isInActivity: false,		// Состояние бездействия (возможна автоматическая перечитка)
 
@@ -330,7 +330,9 @@ define(
 						treemenuForm: 'form',
 						treemenuParams: 'params',
 						fields: {},
-						requests: {}
+						requests: {},
+						mark: {},
+						markCount: 0
 					};
 					this._buildEmptyRequests('');
 					this.childs = {};
@@ -382,7 +384,9 @@ define(
 							description: 'description',
 							treemenuForm: 'form',
 							treemenuParams: 'params',
-							fields: {}
+							fields: {},
+							mark: {},
+							markCount: 0
 						};
 					}
 					if (this.objForm) {
@@ -415,7 +419,6 @@ define(
 						this.objTreeStorage.destroy();
 						this.objTreeStorage = null;
 					}
-					this._markNode = null;
 					this.focusedPath = [];
 					this._focusedParentNode = null;
 			    },
@@ -1011,7 +1014,21 @@ define(
 					if (!r) g740.systemError(procedureName, 'errorIncorrectRequestName', fullName);
 					if (r.speclocal) {
 						if (r.name == 'undo') return this.undoUnsavedChanges();
-						if (r.name == 'mark') return this.markRow();
+						if (r.name == 'mark') {
+							var node=this.getFocusedNode();
+							if (node) {
+								if (this.getIsNodeMarked(node)) {
+									return this.unmarkNode(node);
+								}
+								else {
+									return this.markNode(node);
+								}
+							}
+							return false;
+						}
+						if (r.name == 'unmarkall') {
+							return this.unmarkAll();
+						}
 						return false;
 					}
 					para.requestName = r.name;
@@ -1297,32 +1314,113 @@ define(
 					this.doG740Repaint({ isFull: true, parentNode: node });
 			        return true;
 			    },
-// Пометить узел для копирования или переноса
-			    markRow: function () {
-			        var procedureName = 'g740.RowSet[' + this.name + '].markRow()';
+
+// Маркировка
+				markNode: function(node) {
+					var procedureName = 'g740.RowSet[' + this.name + '].markNode()';
 					if (this.isObjectDestroed) g740.systemError(procedureName, 'errorAccessToDestroedObject');
-					var node = this.getFocusedNode();
-					var oldMarkNode = this.getMarkNode();
-					if (node == oldMarkNode) {
-						this._markNode = null;
+					if (!node) g740.systemError(procedureName, 'errorValueUndefined','node');
+					var nt=this.getNt(node.nodeType);
+					if (!nt.mark) {
+						nt.mark={};
+						nt.markCount=0;
 					}
-					else {
-						this._markNode = node;
-					}
-					if (oldMarkNode) {
+					if (!nt.mark[node.id]) {
+						nt.mark[node.id]=true;
+						nt.markCount++;
 						this.doG740Repaint({
-							node: oldMarkNode,
-							parentNode: oldMarkNode.parentNode,
-							isRowUpdate: true
+							isRowUpdate: true,
+							node: node,
+							parentNode: node.parentNode
 						});
 					}
-					this.doG740Repaint({ isRowUpdate: true });
-			        return true;
-			    },
-			    getMarkNode: function () {
-			        if (this._markNode && !this._markNode.parentNode) this._markNode = null;
-			        return this._markNode;
-			    },
+					return true;
+				},
+				unmarkNode: function(node) {
+					var procedureName = 'g740.RowSet[' + this.name + '].unmarkNode()';
+					if (this.isObjectDestroed) g740.systemError(procedureName, 'errorAccessToDestroedObject');
+					if (!node) g740.systemError(procedureName, 'errorValueUndefined','node');
+					var nt=this.getNt(node.nodeType);
+					if (!nt.mark) {
+						nt.mark={};
+						nt.markCount=0;
+					}
+					if (nt.mark[node.id]) {
+						delete nt.mark[node.id];
+						nt.markCount--;
+						this.doG740Repaint({
+							isRowUpdate: true,
+							node: node,
+							parentNode: node.parentNode
+						});
+					}
+					return true;
+				},
+				unmarkAll: function() {
+					var procedureName = 'g740.RowSet[' + this.name + '].unmarkAll()';
+					if (this.isObjectDestroed) g740.systemError(procedureName, 'errorAccessToDestroedObject');
+					if (this.getMarkCount()) {
+						for(var nodeType in this.nodeTypes) {
+							var nt=this.getNt(nodeType);
+							nt.mark={};
+							nt.markCount=0;
+						}
+						this.doG740Repaint({
+							isFull: true,
+							parentNode: this.objTreeStorage.rootNode
+						});
+					}
+					return true;
+				},
+				getMarkCountByNodeType: function(nodeType) {
+					var procedureName = 'g740.RowSet[' + this.name + '].getMarkCountByNodeType()';
+					if (this.isObjectDestroed) g740.systemError(procedureName, 'errorAccessToDestroedObject');
+					var nt=this.getNt(nodeType);
+					if (!nt.mark) nt.mark={};
+					if (!nt.markCount) nt.markCount=0;
+					return nt.markCount;
+				},
+				getMarkCount: function() {
+					var procedureName = 'g740.RowSet[' + this.name + '].getMarkCount()';
+					if (this.isObjectDestroed) g740.systemError(procedureName, 'errorAccessToDestroedObject');
+					var result=0;
+					for(var nodeType in this.nodeTypes) result+=this.getMarkCountByNodeType(nodeType);
+					return result;
+				},
+				getMarkByNodeType: function(nodeType) {
+					var procedureName = 'g740.RowSet[' + this.name + '].getMarkByNodeType()';
+					if (this.isObjectDestroed) g740.systemError(procedureName, 'errorAccessToDestroedObject');
+					var result=Array();
+					var nt=this.getNt(nodeType);
+					if (!nt.mark) {
+						nt.mark={};
+						nt.markCount=0;
+					}
+					for(var id in nt.mark) result.push({nodeType:nodeType,id:id});
+					return result;
+				},
+				getMark: function() {
+					var procedureName = 'g740.RowSet[' + this.name + '].getMark()';
+					if (this.isObjectDestroed) g740.systemError(procedureName, 'errorAccessToDestroedObject');
+					var result=Array();
+					for(var nodeType in this.nodeTypes) {
+						var lst=this.getMarkByNodeType(nodeType);
+						for(var i=0; i<lst.length; i++) result.push(lst[i]);
+					}
+					return result;
+				},
+				getIsNodeMarked: function(node) {
+					var procedureName = 'g740.RowSet[' + this.name + '].getIsNodeMarked()';
+					if (this.isObjectDestroed) g740.systemError(procedureName, 'errorAccessToDestroedObject');
+					if (!node) return false;
+					var nt=this.getNt(node.nodeType);
+					if (!nt.mark) {
+						nt.mark={};
+						nt.markCount=0;
+					}
+					return (nt.mark[node.id])?true:false;
+				},
+				
 // Обработка ответа
 			    _nextFocusedNode: null,	// Сюда пойдет фокус ввода по завершению обработки
 			    _g740repaint: {},
@@ -1481,16 +1579,15 @@ define(
 								if (!this._nextFocusedNode) this._nextFocusedNode = this.objTreeStorage.getFirstChildNode(this.objTreeStorage.rootNode);
 							}
 							if (r.name == 'move') {
-								var markNode = this.getMarkNode();
-								if (markNode) {
-									var markParentNode = markNode.parentNode;
-									this.objTreeStorage.removeNode(markNode);
-									this._markNode = null;
-									this.doG740Repaint({
-										parentNode: markParentNode,
-										isFull: true
-									});
-								}
+								this._collapseParents(node);
+								this.objTreeStorage.collapseNode(node);
+								this._g740repaint={isFull: true, parentNode: this.objTreeStorage.rootNode};
+								g740.execDelay.go({
+									delay: 200,
+									obj: this,
+									func: this.exec,
+									para: {requestName: 'expand'}
+								});
 							}
 
 							if (requestName == 'expand') {
@@ -1512,6 +1609,15 @@ define(
 					}
 			        return true;
 			    },
+				_collapseParents: function(node) {
+					if (!node) return false;
+					parentNode=node.parentNode;
+					if (!parentNode) return false;
+					for(var childNode=this.objTreeStorage.getFirstChildNode(parentNode); childNode; childNode=this.objTreeStorage.getNextNode(childNode)) {
+						if (childNode!=node) this.objTreeStorage.collapseNode(childNode);
+					}
+					this._collapseParents(parentNode);
+				},
 // Обработка строки ответа: row, delete, change, append, shift
 			    _doResponseItem: function (xmlItem, parentNode) {
 			        var procedureName = 'g740.RowSet[' + this.name + ']._doResponseItem';
@@ -1677,7 +1783,6 @@ define(
 						delete row['row.readonly'];
 						delete row['row.color'];
 						delete row['row.icon'];
-						delete row['row.mark'];
 						delete node.isFinal;
 						delete node.isEmpty;
 						var fields=this.getFields(node);
@@ -1693,7 +1798,6 @@ define(
 					if (g740.xml.isAttr(xmlRow, 'row.readonly')) row['row.readonly'] = g740.convertor.toJavaScript(g740.xml.getAttrValue(xmlRow, 'row.readonly', '0'), 'check');
 					if (g740.xml.isAttr(xmlRow, 'row.color')) row['row.color'] = g740.xml.getAttrValue(xmlRow, 'row.color', '');
 					if (g740.xml.isAttr(xmlRow, 'row.icon')) row['row.icon'] = g740.xml.getAttrValue(xmlRow, 'row.icon', '');
-					if (g740.xml.isAttr(xmlRow, 'row.mark')) row['row.mark'] = g740.convertor.toJavaScript(g740.xml.getAttrValue(xmlRow, 'row.mark', '0'), 'check');
 					if (g740.xml.isAttr(xmlRow, 'row.final')) node.isFinal = g740.convertor.toJavaScript(g740.xml.getAttrValue(xmlRow, 'row.final', '0'), 'check');
 					if (g740.xml.isAttr(xmlRow, 'row.empty')) node.isEmpty = g740.convertor.toJavaScript(g740.xml.getAttrValue(xmlRow, 'row.empty', '0'), 'check');
 
@@ -1817,7 +1921,9 @@ define(
 							treemenuForm: 'form',
 							treemenuParams: 'params',
 							fields: {},
-							requests: {}
+							requests: {},
+							mark: {},
+							markCount: 0
 						};
 						this.nodeTypes[nodeType] = nt;
 					}
@@ -2456,12 +2562,38 @@ define(
 			            propertyName = p[1];
 			        }
 			        if (p.length == 1) return defValue;
+
+					if (fieldName == '#mark' || fieldName == '#markcount') {
+						if (fieldName == '#mark') {
+							var result='';
+							if (rowType && rowType!='@parent') {
+								var lst=this.getMarkByNodeType(rowType);
+							}
+							else {
+								var lst=this.getMark(rowType);
+							}
+							for(var i=0; i<lst.length; i++) {
+								if (result) result+=',';
+								if (lst[i].nodeType && lst[i].nodeType!=rowType) result+=lst[i].nodeType+'.';
+								result+=lst[i].id;
+							}
+							return result;
+						}
+						if (fieldName == '#markcount') {
+							var result=0;
+							if (rowType && rowType!='@parent') {
+								result=this.getMarkCountByNodeType(rowType);
+							}
+							else {
+								result=this.getMarkCount();
+							}
+							return result;
+						}
+						return false;
+					}
 					
 			        var node = null;
-			        if (rowType == '@mark') {
-			            node = this.getMarkNode();
-			        }
-			        else if (rowType == '@parent') {
+			        if (rowType == '@parent') {
 			            node = this.getFocusedParentNode();
 			        }
 			        else {
@@ -2472,7 +2604,6 @@ define(
 			        }
 			        if (!node) {
 			            if (propertyName == 'readonly') return true;
-			            //						if (fieldName=='id') return '-';
 			            return defValue;
 			        }
 			        if (fieldName == 'row') {

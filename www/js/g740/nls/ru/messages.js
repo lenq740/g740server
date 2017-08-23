@@ -106,7 +106,7 @@
 	requestExpand: 'Раскрыть узел дерева',
 	requestCollapse: 'Свернуть узел дерева',
 	requestMark: 'Пометить строку',
-    requestMarkClear: 'Очистить пометки',
+	requestUnMarkAll: 'Очистить все пометки',
 	
 	// Paginator
 	paginatorFirst: 'На первую страницу',

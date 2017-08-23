@@ -281,6 +281,8 @@ define(
 				buildDomItem: function(treeNode) {
 					if (!treeNode) return false;
 					if (!treeNode.info) return false;
+					var objRowSet=this.getRowSet();
+					if (!objRowSet) return false;
 					var info=treeNode.info;
 					
 					var domItemElement=info.domItemElement;
@@ -309,6 +311,19 @@ define(
 						domItemIcon.className='g740tree-item-icon';
 						domItemElement.appendChild(domItemIcon);
 						info.domItemIcon=domItemIcon;
+						dojo.on(domItemIcon, 'click', dojo.hitch(this, function(e){
+							var d=e.target;
+							var treeNode=null;
+							while(d) {
+								if (d.treeNode) {
+									treeNode=d.treeNode;
+									break;
+								}
+								d=d.parentNode;
+								if (d==this.domNode) break;
+							}
+							if (treeNode) this.doNodeIconClick(treeNode);
+						}));
 					}
 					if (!info.domItemText) {
 						var domItemText=document.createElement('div');
@@ -324,23 +339,18 @@ define(
 					var icon=node.nodeType;
 					var isFinal=node.isFinal?true:false;
 					var isEmpty=node.isEmpty?true:false;
-					var isMark=false;
-
-					var objRowSet=this.getRowSet();
+					
 					var fieldNameLabel = 'name';
 					var fieldNameDescription = 'name';
 					var nt = objRowSet.getNt(node.nodeType);
 					if (nt.name) fieldNameLabel = nt.name;
 					if (nt.description) fieldNameDescription = nt.description;
 					if (node.info) {
-						isMark=node.info['row.mark']
 						if (nt.fields[fieldNameLabel]) label=node.info[fieldNameLabel + '.value'];
 						if (nt.fields[fieldNameDescription]) description=node.info[fieldNameDescription + '.value'];
 						if (node.info['row.icon']) icon=node.info['row.icon'];
-						if (node.info['row.mark']) icon='mark';
-						if (objRowSet._markNode && objRowSet._markNode==node) icon='mark';
 					}
-					
+					if (objRowSet.getIsNodeMarked(node)) icon='mark';
 					if (isFinal || isEmpty) {
 						info.domItemExpander.className='g740tree-item-expander g740tree-item-expander-final';
 					}
@@ -482,6 +492,16 @@ define(
 						this.doNodeExpandCollapse();
 					}
 				},
+				doNodeIconClick: function(treeNode) {
+					if (!treeNode) return;
+					var objRowSet=this.getRowSet();
+					if (!objRowSet) return;
+					var info=treeNode.info;
+					if (!info) return;
+					objRowSet.setFocusedNode(info.node);
+					objRowSet.exec({requestName: 'mark'});
+				},
+				
 				onG740Focus: function() {
 					if (this.objForm) this.objForm.onG740ChangeFocusedPanel(this);
 					if (!dojo.hasClass(this.domNode,'focused')) dojo.addClass(this.domNode,'focused');
@@ -833,7 +853,6 @@ define(
 					var icon=node.nodeType;
 					var isFinal=node.isFinal?true:false;
 					var isEmpty=node.isEmpty?true:false;
-					var isMark=false;
 
 					var objRowSet=this.getRowSet();
 					var fieldNameLabel = 'name';
@@ -842,7 +861,6 @@ define(
 					if (nt.name) fieldNameLabel = nt.name;
 					if (nt.description) fieldNameDescription = nt.description;
 					if (node.info) {
-						isMark=node.info['row.mark']
 						if (nt.fields[fieldNameLabel]) label=node.info[fieldNameLabel + '.value'];
 						if (nt.fields[fieldNameDescription]) description=node.info[fieldNameDescription + '.value'];
 						if (node.info['row.icon']) icon=node.info['row.icon'];

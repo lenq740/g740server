@@ -24,9 +24,9 @@ class DataSource2_TreeMenu extends DataSource {
 	<request name="expand"/>
 	<request name="append" mode="into"/>
 	<request name="mark"/>
-	<request name="move" js_enabled="get('#this[@mark].id')">
-		<param name="from.id" js_value="get('#this[@mark].id')"/>
-		<param name="from.type" js_value="get('#this[@mark].row.type')"/>
+	<request name="unmarkall" js_enabled="get('#markcount')"/>
+	<request name="move" js_enabled="get('#markcount')">
+		<param name="from.id" js_value="get('#mark')"/>
 	</request>
 </requests>
 XML;
@@ -74,22 +74,44 @@ XML;
 	protected function execMove($params=Array()) {
 		if (!$this->getPerm('write','move',$params)) throw new Exception('У Вас нет прав на перенос строк в таблице '.$this->tableCaption);
 		$result=Array();
-		{	// создаем и сохраняем новую строку в $rec
+		{  // Находим подходящий ord
 			$p=Array();
 			$p['klsparent']=$params['id'];
 			$ord=$this->dataSourceSysMenu->getOrdAppendLast($p);
-			$p=Array();
-			$p['id']=$params['from.id'];
-			$p['ord']=$ord;
-			$p['klsparent']=$params['id'];
-			$lst=$this->dataSourceSysMenu->execUpdate($p);
-			if (count($lst)!=1) throw new Exception('Ошибка при переносе - не удалось перенести строку!!!');
-			$rec=$lst[0];
 		}
-		{	// пополняем $rec необходимыми атрибутами и возвращаем
-			$rec['row.destmode']='last';
-			$rec['row.focus']=1;
-			$result[]=$rec;
+		{  // Для избежания зацикливания, находим список родителей текущего узла
+			$id=$this->str2Sql($params['id']);
+			$parents=Array();
+			while($id) {
+				$parents[$id]=true;
+				$sql="select klsparent from sysmenu where id='{$id}'";
+				$rec=$this->pdoFetch($sql);
+				$id=$rec['klsparent'];
+			}
+		}
+		{  // Выполняем поток update
+			$klsParent=$this->str2Sql($params['id']);
+			$sqlUpdate='';
+			$sqlUpdateCount=0;
+			foreach(explode(',',$params['from.id']) as $id) {
+				$id=$this->str2Sql($id);
+				if ($parents[$id]) continue;
+				$sqlUpdate.="\n".<<<SQL
+update sysmenu set klsparent='{$klsParent}', ord='{$ord}' where id='{$id}';
+SQL;
+				$sqlUpdateCount++;
+				$ord+=100;
+				if ($sqlUpdateCount>500) {
+					$this->pdo($sqlUpdate);
+					$sqlUpdate='';
+					$sqlUpdateCount=0;
+				}
+			}
+			if ($sqlUpdateCount) {
+				$this->pdo($sqlUpdate);
+				$sqlUpdate='';
+				$sqlUpdateCount=0;
+			}
 		}
 		return $result;
 	}

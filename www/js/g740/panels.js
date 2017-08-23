@@ -327,8 +327,7 @@ define(
 				var objForm=objPanel.objForm;
 				if (!objForm) g740.systemError(procedureName, 'errorValueUndefined', 'objPanel.objForm');
 				var objRowSet=objForm.rowsets[objPanel.rowsetName];
-				//var lstDefa = ['undo', 'save', 'refresh', '-', 'append', 'append.into', 'link', 'delete', '-', 'copy', 'move', 'join', '-', 'mark', 'markclear', '-', 'shift.first', 'shift.before', 'shift.after', 'shift.last'];
-				var lstDefa=['undo','save','refresh','-','append','copy','-','append.into','move','link','-','delete','-','mark','-','shift.first','shift.before','shift.after','shift.last'];
+				var lstDefa=['undo','save','refresh','-','append','copy','-','append.into','move','link','-','delete','-','mark','unmarkall','-','shift.first','shift.before','shift.after','shift.last'];
 
 				var isPredAction=false;
 				var isPredSeparator=false;

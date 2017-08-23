@@ -58,23 +58,8 @@
 	width: 16px;
 	height: 16px;
 }
-.g740-icons-markclear {
-	background-image: url('markclear.png');
-	width: 16px;
-	height: 16px;
-}
-.g740-icons-mark-add {
-	background-image: url('mark-add.png');
-	width: 16px;
-	height: 16px;
-}
-.g740-icons-mark-remove {
-	background-image: url('mark-remove.png');
-	width: 16px;
-	height: 16px;
-}
-.g740-icons-mark-off {
-	background-image: url('mark-off.png');
+.g740-icons-unmarkall {
+	background-image: url('unmarkall.png');
 	width: 16px;
 	height: 16px;
 }
