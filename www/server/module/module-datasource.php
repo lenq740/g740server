@@ -317,20 +317,10 @@ XML;
 	public function execValidFields($params=Array()) {
 		$errorMessage='Ошибка при обращении к DataSource::execValidFields';
 		$id=$params['id'];
-		$sqlId=($this->isGUID)?$this->guid2Sql($id):$this->str2Sql($id);
-		
-		$select='';
-		$driverName=$this->getDriverName();
-		if ($driverName=='mysql') {
-			$select="select * from `{$this->tableName}` where id='{$sqlId}'";
-		}
-		else if ($driverName=='sqlsrv') {
-			$select="select * from [{$this->tableName}] where id='{$sqlId}'";
-		} else {
-			throw new Exception("Неизвестный драйвер базы данных '{$driverName}'");
-		}
-		
-		$rec=$this->pdoFetch($select);
+		if (!$id) throw new Exception($errorMessage." Не задан обязательный пареметр id");
+		$result=$this->execRefresh(Array('filter.id'=>$id));
+		if (count($result)!=1) throw new Exception("Не найдена строка таблицы");
+		$rec=$result[0];
 		$fields=$this->getFields();
 		foreach($fields as $key=>$fld) {
 			$alias=$this->tableName;
@@ -345,6 +335,7 @@ XML;
 			if ($fld['type']=='ref' && $rec[$sqlName]=='00000000-0000-0000-0000-000000000000') $isEmpty=true;
 			if ($isEmpty) throw new ExceptionNoReport('Не заполнено значение поля '.$fld['caption']);
 		}
+		return $result;
 	}
 	public function execSave($params=Array()) {
 		$errorMessage='Ошибка при обращении к DataSource::execSave';
