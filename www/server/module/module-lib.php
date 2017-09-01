@@ -756,9 +756,49 @@ function cryptPassword($password) {
 }
 
 //------------------------------------------------------------------------------
+// Пути
+//------------------------------------------------------------------------------
+/**
+Объеденить несколько элементов относительного пути
+@return	String зашифрованный пароль
+*/
+function pathConcat(
+	$item01='',$item02='',$item03='',$item04='',$item05='',
+	$item06='',$item07='',$item08='',$item09='',$item10='',
+	$item11='',$item12='',$item13='',$item14='',$item15=''
+	) {
+	$lst=Array();
+	if ($item01) $lst[]=$item01;
+	if ($item02) $lst[]=$item02;
+	if ($item03) $lst[]=$item03;
+	if ($item04) $lst[]=$item04;
+	if ($item05) $lst[]=$item05;
+	if ($item06) $lst[]=$item06;
+	if ($item07) $lst[]=$item07;
+	if ($item08) $lst[]=$item08;
+	if ($item09) $lst[]=$item09;
+	if ($item10) $lst[]=$item10;
+	if ($item11) $lst[]=$item11;
+	if ($item12) $lst[]=$item12;
+	if ($item13) $lst[]=$item13;
+	if ($item14) $lst[]=$item14;
+	if ($item15) $lst[]=$item15;
+	$result='';
+	foreach($lst as $item) {
+		$item=trim(str_replace('\\', '/', $item));
+		if (!$item) continue;
+		if (mb_substr($item,0,1)=='/') $item=mb_substr($item,1,mb_strlen($item,'utf-8')-1);
+		if (mb_substr($item,-1)=='/') $item=mb_substr($item,0,mb_strlen($item,'utf-8')-1);
+		if (!$item) continue;
+		if ($result) $result.='/';
+		$result.=$item;
+	}
+	return $result;
+}
+
+//------------------------------------------------------------------------------
 // Работа с XML
 //------------------------------------------------------------------------------
-
 /**
 Вернуть значение атрибута узла
 @param	Xml		$xml узел
