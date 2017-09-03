@@ -509,6 +509,9 @@ class PDODataConnectorAbstract extends PDO {
 		throw new Exception('Обращение к абстрактной функции PDODataConnectorAbstract::php2Sql');
 	}
 	public function pdo($sql, $errorMessage='', $params=Array()) {
+		global $isTraceSQL;
+		if ($isTraceSQL) trace($sql."\n");
+		
 		$result=$this->prepare($sql);
 		if (!$result) {
 			$errInfo=$this->errorInfo();

@@ -870,7 +870,7 @@ SQL;
 		$result[]=$recResult;
 		return $result;
 	}
-	protected function getOrdAppendFirst($params=Array()) {
+	public function getOrdAppendFirst($params=Array()) {
 		if (!$this->getField('ord')) return 0;
 		$select=$this->_getReorderSelect($params);
 		$ord=200;
@@ -881,7 +881,7 @@ SQL;
 		}
 		return $ord-100;
 	}
-	protected function getOrdAppendLast($params=Array()) {
+	public function getOrdAppendLast($params=Array()) {
 		if (!$this->getField('ord')) return 0;
 		$select=$this->_getReorderSelect($params);
 		$ord=0;

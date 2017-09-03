@@ -1589,6 +1589,16 @@ define(
 									para: {requestName: 'expand'}
 								});
 							}
+							if (r.name == 'link') {
+								this.objTreeStorage.collapseNode(node);
+								this._g740repaint={isFull: true, parentNode: this.objTreeStorage.rootNode};
+								g740.execDelay.go({
+									delay: 200,
+									obj: this,
+									func: this.exec,
+									para: {requestName: 'expand'}
+								});
+							}
 
 							if (requestName == 'expand') {
 								if (!node.childs) {
