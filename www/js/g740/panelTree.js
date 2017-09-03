@@ -16,7 +16,10 @@ define(
 				templateString: '<div class="g740tree-panel">'+
 					'<div data-dojo-attach-point="domNodeTitle"></div>'+
 					'<div data-dojo-attach-point="domNodeToolbar"></div>'+
-					'<input type="checkbox" class="g740-focused" data-dojo-attach-point="focusNode" data-dojo-attach-event="onkeypress: onKeyPress"></input>'+
+					'<input type="checkbox" class="g740-focused"'+
+						' data-dojo-attach-point="focusNode"'+
+						' data-dojo-attach-event="onkeypress: onKeyPress, onkeydown: onKeyDown"'+
+					'></input>'+
 					'<div class="g740tree-body" data-dojo-attach-point="domNodeBody">'+
 					'</div>'+
 					'<div data-dojo-attach-point="domNodeButtons"></div>'+
@@ -511,7 +514,7 @@ define(
 					if (dojo.hasClass(this.domNode,'focused')) dojo.removeClass(this.domNode,'focused');
 					return true;
 				},
-				onKeyPress: function(e) {
+				onKeyDown: function(e) {
 					var objRowSet=this.getRowSet();
 					if (!objRowSet) return;
 					if (!e.ctrlKey && !e.altKey && !e.shiftKey && e.keyCode==40) {
@@ -554,24 +557,6 @@ define(
 						}
 						dojo.stopEvent(e);
 					}
-					else if (!e.ctrlKey && !e.altKey && !e.shiftKey && e.keyChar=='+') {
-						var node=objRowSet.getFocusedNode();
-						if (node && !node.childs) {
-							objRowSet.exec({
-								requestName: 'expand'
-							});
-						}
-						dojo.stopEvent(e);
-					}
-					else if (!e.ctrlKey && !e.altKey && !e.shiftKey && e.keyChar=='-') {
-						var node=objRowSet.getFocusedNode();
-						if (node && node.childs) {
-							objRowSet.exec({
-								requestName: 'collapse'
-							});
-						}
-						dojo.stopEvent(e);
-					}
 					else if (!e.ctrlKey && !e.altKey && !e.shiftKey && e.keyCode==9) {
 						// Tab
 						dojo.stopEvent(e);
@@ -611,6 +596,31 @@ define(
 					else if (e.ctrlKey && !e.altKey && !e.shiftKey && e.keyCode==46) {
 						// Ctrl+Del
 						objRowSet.execConfirmDelete();
+						dojo.stopEvent(e);
+					}
+					else {
+						//console.log(e);
+					}
+				},
+				onKeyPress: function(e) {
+					var objRowSet=this.getRowSet();
+					if (!objRowSet) return;
+					if (!e.ctrlKey && !e.altKey && !e.shiftKey && e.keyChar=='+') {
+						var node=objRowSet.getFocusedNode();
+						if (node && !node.childs) {
+							objRowSet.exec({
+								requestName: 'expand'
+							});
+						}
+						dojo.stopEvent(e);
+					}
+					else if (!e.ctrlKey && !e.altKey && !e.shiftKey && e.keyChar=='-') {
+						var node=objRowSet.getFocusedNode();
+						if (node && node.childs) {
+							objRowSet.exec({
+								requestName: 'collapse'
+							});
+						}
 						dojo.stopEvent(e);
 					}
 					else {
