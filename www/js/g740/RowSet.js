@@ -1009,7 +1009,9 @@ define(
 						return this.objForm.exec(para);
 					}
 					if (para.requestName=='collapse') return this.collapseRow();
-					if (this.isFilter && para.requestName=='refresh') return this._execRefreshFilter();
+					if (this.isFilter && para.requestName=='refresh') {
+						return this._execRefreshFilter();
+					}
 					
 					this.isInActivity=false; // что-то где-то происходит (автоматическая перечитка в этом такте не нужна)
 					var r = this.getRequest(para.requestName, para.requestMode);
@@ -1269,6 +1271,13 @@ define(
 				_execRefreshFilter: function() {
 					var procedureName = 'g740.RowSet[' + this.name + ']._execRefreshFilter()';
 					if (!this.isFilter) return false;
+					if (this.objParent) {
+						var pNode = this.objParent.getFocusedNode();
+						if (!pNode) return true;
+						if (this.parentRowsetNodeType && pNode.nodeType != this.parentRowsetNodeType) return true;
+						if (this.objParent.getFocusedIsNew()) return true;
+					}
+					
 					this.isEnabled = true;
 					if (!this.getFocusedId()) {
 				        var parentNode = this.getFocusedParentNode();
@@ -2539,6 +2548,8 @@ define(
 					if (p.length==2) {
 						var isRowSet=false;
 						var s=p[0];
+						var n0 = s.indexOf('[');
+						if (n0>=0) s=p[0].substr(0, n0);
 						if (s=='#result' || s=='#this' || s=='#parent' || s=='#focus') isRowSet=true;
 						if (!isRowSet && this.objForm && this.objForm.rowsets[s]) isRowSet=true;
 						if (isRowSet) {
