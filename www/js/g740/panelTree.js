@@ -158,28 +158,34 @@ define(
 						}
 						this.doSync(treeNodeChild,nodeChild);
 					}
+
 					
 					// Сортируем дочерние элементы
 					for(var nodeChild=objNodes.getFirstChildNode(node); nodeChild; nodeChild=objNodes.getNextNode(nodeChild)) {
 						var id=nodeChild.id;
 						var nodeChildPrev=objNodes.getPrevNode(nodeChild);
+						var nodeChildNext=objNodes.getNextNode(nodeChild);
 						var idPrev=nodeChildPrev?nodeChildPrev.id:null;
+						var idNext=nodeChildNext?nodeChildNext.id:null;
 						
 						var treeNodeChild=this.objTreeNodes.getNode(id, treeNode);
 						var treeNodeChildPrev=this.objTreeNodes.getPrevNode(treeNodeChild);
 						var idTreePrev=treeNodeChildPrev?treeNodeChildPrev.id:null;
 						if (idPrev!=idTreePrev) {
-							var treeNodeChildPrev=this.objTreeNodes.getNode(idPrev);
+							var treeNodeChildPrev=this.objTreeNodes.getNode(idPrev, treeNode);
+							var treeNodeChildNext=this.objTreeNodes.getNode(idNext, treeNode);
 							this.objTreeNodes.cutNode(treeNodeChild);
-							this.objTreeNodes.pasteNode(treeNodeChild, treeNode, treeNodeChildPrev);
+							this.objTreeNodes.pasteNode(treeNodeChild, treeNode, treeNodeChildPrev, treeNodeChildNext);
+
 							var domItemNext=null;
 							var domItemParent=treeNodeChild.info.domItem.parentNode;
-							if (treeNodeChildPrev) {
-								domItemNext=treeNodeChildPrev.info.domItem.nextSibling;
+							if (treeNodeChildNext) {
+								domItemNext=treeNodeChildNext.info.domItem;
 							}
 							domItemParent.insertBefore(treeNodeChild.info.domItem, domItemNext);
 						}
 					}
+
 				},
 				_doUpdateTreeNode: function(treeNode, node) {
 					if (!treeNode.info) treeNode.info={};
