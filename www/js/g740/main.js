@@ -136,7 +136,7 @@ define(
 	        return result;
 	    };
 
-	    function get(name) {
+	    function get(name, defa) {
 	        var result = false;
 	        try {
 	            if (g740.js_eval_obj && g740.js_eval_obj.doG740Get) result = g740.js_eval_obj.doG740Get(name);
@@ -144,6 +144,7 @@ define(
 	        catch (e) {
 	            result = false;
 	        }
+			if (!result && defa) result=defa;
 	        return result;
 	    }
 
