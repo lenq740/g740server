@@ -2589,7 +2589,7 @@ define(
 						name += '.' + p[1] + '.' + p[2];
 						return objRowSet.doG740Get(name);
 					}
-
+/*
 					// Это временная заглужка для совместимости
 					if (fieldName == '#mark') {
 						fieldName = 'rowset';
@@ -2599,6 +2599,7 @@ define(
 						fieldName = 'rowset';
 						propertyName = 'markcount';
 					}
+*/
 					if (fieldName == 'rowset') {
 						if (propertyName == 'readonly') return this.getReadOnly();
 						if (propertyName == 'mark') {
