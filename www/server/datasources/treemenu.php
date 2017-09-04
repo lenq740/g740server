@@ -24,9 +24,9 @@ class DataSource2_TreeMenu extends DataSource {
 	<request name="expand"/>
 	<request name="append" mode="into"/>
 	<request name="mark"/>
-	<request name="unmarkall" js_enabled="get('#markcount')"/>
-	<request name="move" js_enabled="get('#markcount')">
-		<param name="from.id" js_value="get('#mark')"/>
+	<request name="unmarkall" js_enabled="get('rowset.markcount')"/>
+	<request name="move" js_enabled="get('rowset.markcount')">
+		<param name="from.id" js_value="get('rowset.mark')"/>
 	</request>
 </requests>
 XML;

@@ -26,7 +26,7 @@ class DataSource2_TreeDataModel extends DataSource {
 	<request name="append" mode="into"/>
 	<request name="delete"/>
 	<request name="save"/>
-	<request name="unmarkall" js_enabled="get('#markcount')"/>
+	<request name="unmarkall" js_enabled="get('rowset.markcount')"/>
 
 	<fields name="name" description="name">
 		<field name="name" type="string" caption="Имя"/>
@@ -38,8 +38,8 @@ XML;
 			$addRequests=<<<XML
 <requests>
 	<request name="shift"/>
-	<request name="move" js_enabled="get('#this[systable].#markcount')">
-		<param name="from.id" js_value="get('#this[systable].#mark')"/>
+	<request name="move" js_enabled="get('#this[systable].rowset.markcount')">
+		<param name="from.id" js_value="get('#this[systable].rowset.mark')"/>
 		<param name="from.type" value="systable"/>
 	</request>
 </requests>
