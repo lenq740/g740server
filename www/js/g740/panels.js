@@ -598,6 +598,9 @@ define(
 						if (g740.xml.isAttr(xmlParam,'js_value')) {
 							p.js_value=g740.xml.getAttrValue(xmlParam,'js_value','');
 						}
+						if (g740.xml.isAttr(xmlParam,'default')) {
+							p.def=g740.xml.getAttrValue(xmlParam,'default','');
+						}
 						if (g740.xml.isAttr(xmlParam,'result')) {
 							p.result=g740.xml.getAttrValue(xmlParam,'result','');
 						}

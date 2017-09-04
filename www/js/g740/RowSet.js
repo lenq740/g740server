@@ -296,6 +296,8 @@ define(
 //			p.name
 //			p.value
 //			p.js_value
+//			p.get
+//			p.def
 //			p.enabled
 //			p.js_enabled
 //			p.type
@@ -1235,10 +1237,10 @@ define(
 							value = g740.convertor.toG740(p.value, p.type);
 						}
 						else {
+							var v=null;
 							// Начитываем значение вычисленное по js_value
 							if (p.js_value) {
-								var v = g740.js_eval(objRowSet, p.js_value, null);
-								value = g740.convertor.toG740(v, p.type);
+								v=g740.js_eval(objRowSet, p.js_value, null);
 							}
 							else {
 								// Начитываем значение по имени поля, совпадающему с именем поля
@@ -1247,10 +1249,11 @@ define(
 									var fld = fields[paramName];
 									if (fld) {
 										var v = objRowSet.getFieldProperty({ fieldName: paramName });
-										value = g740.convertor.toG740(v, fld.type);
 									}
 								}
 							}
+							if (!v && p.def) v=p.def;
+							value=g740.convertor.toG740(v, p.type);
 						}
 						if (p.result) {
 							var name=p.result;
@@ -2118,7 +2121,7 @@ define(
 					var name = g740.xml.getAttrValue(xmlField, 'name', '');
 					if (!name) name = g740.xml.getAttrValue(xmlField, 'field', '');
 
-					if (!name || name == 'id' || name == 'row') {
+					if (!name || name == 'id' || name == 'row' || name == 'rowset') {
 						g740.trace.goBuilder({
 							formName: this.objForm.name,
 							rowsetName: this.name,
@@ -2528,70 +2531,83 @@ define(
 			        if (this.isObjectDestroed) return defValue;
 			        if (!this.objTreeStorage) return defValue;
 			        var p = name.split('.');
-			        if (p.length < 3) {
-			            var propertyName = p[p.length - 1];
-			            if (propertyName != 'value' && propertyName != 'oldvalue' && propertyName != 'readonly' && propertyName != 'type' && propertyName != 'icon' && propertyName != 'color') {
-			                propertyName = 'value';
-			                p.push(propertyName);
-			            }
-			        }
-			        var rowType = '';
-			        var fieldName = '';
-			        var propertyName = '';
-			        if (p.length >= 3) {
-			            var rowsetName = p[0];
-			            var n0 = rowsetName.indexOf('[');
-			            var n1 = rowsetName.indexOf(']');
-			            if (n0 >= 0 && n1 > n0) {
-			                rowType = p[0].substr(n0 + 1, n1 - n0 - 1);
-			                rowsetName = p[0].substr(0, n0);
-			            }
-			            if (rowsetName == '#result') {
-			                return this.objForm.doG740Get(name, defValue);
-			            }
-			            if (rowsetName == '#this') rowsetName = this.name;
-			            if (rowsetName == '#parent' && this.objParent) rowsetName = this.objParent.name;
-			            if (rowsetName == '#focus') {
-			                var objRowSet = this.objForm.getFocusedRowSet();
-			                if (!objRowSet) return defValue;
-			                rowsetName = objRowSet.name;
-			            }
-			            var objRowSet = this.objForm.rowsets[rowsetName];
-			            if (!objRowSet) return defValue;
-			            if (objRowSet != this) {
-			                var name = '#this';
-			                if (rowType) name += '[' + rowType + ']';
-			                name += '.' + p[1] + '.' + p[2];
-			                return objRowSet.doG740Get(name);
-			            }
-			            fieldName = p[1];
-			            propertyName = p[2];
-			        }
-			        if (p.length == 2) {
-			            fieldName = p[0];
-			            propertyName = p[1];
-			        }
-			        if (p.length == 1) return defValue;
 
-					if (fieldName == '#mark' || fieldName == '#markcount') {
-						if (fieldName == '#mark') {
-							var result='';
-							if (rowType && rowType!='@parent') {
+					if (p.length==1) {
+						p.unshift('#this');
+						p.push('value');
+					}
+					if (p.length==2) {
+						var isRowSet=false;
+						var s=p[0];
+						if (s=='#result' || s=='#this' || s=='#parent' || s=='#focus') isRowSet=true;
+						if (!isRowSet && this.objForm && this.objForm.rowsets[s]) isRowSet=true;
+						if (isRowSet) {
+							p.push('value');
+						}
+						else {
+							p.unshift('#this');
+						}
+					}
+					if (p.length<3) return defValue;
+					
+					var rowsetName = p[0];
+					var fieldName = p[1];
+					var propertyName = p[2];
+			        var rowType = '';
+					var n0 = rowsetName.indexOf('[');
+					var n1 = rowsetName.indexOf(']');
+					if (n0 >= 0 && n1 > n0) {
+						rowType = p[0].substr(n0 + 1, n1 - n0 - 1);
+						rowsetName = p[0].substr(0, n0);
+					}
+					if (rowsetName == '#result') {
+						return this.objForm.doG740Get(name, defValue);
+					}
+					if (rowsetName == '#this') rowsetName = this.name;
+					if (rowsetName == '#parent' && this.objParent) rowsetName = this.objParent.name;
+					if (rowsetName == '#focus') {
+						var objRowSet = this.objForm.getFocusedRowSet();
+						if (!objRowSet) return defValue;
+						rowsetName = objRowSet.name;
+					}
+					var objRowSet = this.objForm.rowsets[rowsetName];
+					if (!objRowSet) return defValue;
+					if (objRowSet != this) {
+						var name = '#this';
+						if (rowType) name += '[' + rowType + ']';
+						name += '.' + p[1] + '.' + p[2];
+						return objRowSet.doG740Get(name);
+					}
+
+					// Это временная заглужка для совместимости
+					if (fieldName == '#mark') {
+						fieldName = 'rowset';
+						propertyName = 'mark';
+					}
+					if (fieldName == '#markcount') {
+						fieldName = 'rowset';
+						propertyName = 'markcount';
+					}
+					if (fieldName == 'rowset') {
+						if (propertyName == 'readonly') return this.getReadOnly();
+						if (propertyName == 'mark') {
+							var result = '';
+							if (rowType) {
 								var lst=this.getMarkByNodeType(rowType);
 							}
 							else {
-								var lst=this.getMark(rowType);
+								var lst=this.getMark();
 							}
 							for(var i=0; i<lst.length; i++) {
 								if (result) result+=',';
-								if (lst[i].nodeType && lst[i].nodeType!=rowType) result+=lst[i].nodeType+'.';
+								if (lst[i].nodeType && rowType && lst[i].nodeType!=rowType) result+=lst[i].nodeType+'.';
 								result+=lst[i].id;
 							}
 							return result;
 						}
-						if (fieldName == '#markcount') {
+						if (propertyName == 'markcount') {
 							var result=0;
-							if (rowType && rowType!='@parent') {
+							if (rowType) {
 								result=this.getMarkCountByNodeType(rowType);
 							}
 							else {

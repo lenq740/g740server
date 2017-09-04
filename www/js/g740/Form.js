@@ -468,8 +468,12 @@ define(
 						if (typeof(p.value)!='undefined') {
 							value=g740.convertor.toG740(p.value,p.type);
 						} 
-						else if (typeof(p.js_value)!='undefined') {
-							var v=g740.js_eval(this, p.js_value, null);
+						else {
+							var v=null;
+							if (p.js_value) {
+								v=g740.js_eval(this, p.js_value, null);
+							}
+							if (!v && p.def) v=p.def;
 							value=g740.convertor.toG740(v,p.type);
 						}
 						if (p.result) {
