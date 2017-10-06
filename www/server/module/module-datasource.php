@@ -1404,7 +1404,7 @@ PHP;
 		}
 		$result=<<<PHP
 	{$D}result='';
-	if (array_key_exists('filter.id', {$D}params)) {
+	if ({$D}params['filter.id']!='') {
 		if ({$D}this->isGUID) {
 			{$D}value={$D}this->guid2Sql({$D}params['filter.id']);
 		}
