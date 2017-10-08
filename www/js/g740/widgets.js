@@ -1275,9 +1275,21 @@ define(
 					}
 				},
 				doG740Repaint: function(para) {
-					var isEnabled=false;
-					if (this.objAction) isEnabled=this.objAction.getEnabled();
+					//var isEnabled=false;
+					//if (this.objAction) isEnabled=this.objAction.getEnabled();
 					//this.set('disabled', !isEnabled);
+				},
+				_onDropDownClick: function(e) {
+					if (this.dropDown) {
+						var lst=this.dropDown.getChildren();
+						for (var i=0; i<lst.length; i++) {
+							var obj=lst[i];
+							if (obj.doG740Repaint) {
+								obj.doG740Repaint({});
+							}
+						}
+					}
+					this.inherited(arguments);
 				},
 				onG740Click: function() {
 					if (this.objAction) return this.objAction.exec();
@@ -1406,6 +1418,17 @@ define(
 			        }
 			        finally {
 			        }
+			    },
+			    doG740Repaint: function (para) {
+					if (this.popup) {
+						var lst=this.popup.getChildren();
+						for (var i=0; i<lst.length; i++) {
+							var obj=lst[i];
+							if (obj.doG740Repaint) {
+								obj.doG740Repaint(para);
+							}
+						}
+					}
 			    }
 			}
 		);
