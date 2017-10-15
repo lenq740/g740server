@@ -19,6 +19,7 @@ public function getFields() {
 		$fld['maxlength']='255';
 		$fld['len']='12';
 		$fld['notnull']='1';
+		$fld['stretch']='1';
 		$this->fields[]=$fld;
 	}
 	{	// ord - №пп
@@ -62,7 +63,7 @@ SQL;
 // Этот метод Этот метод возвращает секцию where для запроса select
 public function getSelectWhere($params=Array()) {
 	$result='';
-	if (array_key_exists('filter.id', $params)) {
+	if ($params['filter.id']!='') {
 		if ($this->isGUID) {
 			$value=$this->guid2Sql($params['filter.id']);
 		}
@@ -87,7 +88,7 @@ SQL;
 public function getStrXmlDefinitionFields($params=Array()) {
 	$result=<<<XML
 <fields>
-<field name="name" type="string" caption="Категория" notnull="1" len="12" maxlength="255"/>
+<field name="name" type="string" caption="Категория" notnull="1" stretch="1" len="12" maxlength="255"/>
 <field name="ord" type="num" caption="№пп" len="5"/>
 </fields>
 XML;

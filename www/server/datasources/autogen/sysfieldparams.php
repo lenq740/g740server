@@ -62,6 +62,7 @@ public function getFields() {
 		$fld['caption']='Описание поля';
 		$fld['maxlength']='255';
 		$fld['len']='25';
+		$fld['stretch']='1';
 		$fld['refname']='name';
 		$fld['refid']='klssysfield';
 		$this->fields[]=$fld;
@@ -136,7 +137,7 @@ SQL;
 // Этот метод Этот метод возвращает секцию where для запроса select
 public function getSelectWhere($params=Array()) {
 	$result='';
-	if (array_key_exists('filter.id', $params)) {
+	if ($params['filter.id']!='') {
 		if ($this->isGUID) {
 			$value=$this->guid2Sql($params['filter.id']);
 		}
@@ -175,7 +176,7 @@ public function getStrXmlDefinitionFields($params=Array()) {
 <field name="name" type="string" caption="Параметр" notnull="1" len="15" maxlength="255"/>
 <field name="val" type="string" caption="Значение" len="65" maxlength="255"/>
 <field name="sysfield_fieldname" type="string" caption="Поле" notnull="1" len="15" maxlength="255" refid="klssysfield" refname="fieldname"/>
-<field name="sysfield_name" type="string" caption="Описание поля" len="25" maxlength="255" refid="klssysfield" refname="name"/>
+<field name="sysfield_name" type="string" caption="Описание поля" stretch="1" len="25" maxlength="255" refid="klssysfield" refname="name"/>
 <field name="sysfield_klssysfieldtype" type="string" caption="Ссылка на тип поля" refid="klssysfield" refname="klssysfieldtype"/>
 <field name="sysfieldtype_name" type="string" caption="Тип" notnull="1" len="12" maxlength="255" readonly="1"/>
 <field name="sysfieldtype_g740type" type="string" caption="Тип в g740" len="15" maxlength="255" readonly="1"/>

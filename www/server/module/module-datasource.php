@@ -5,7 +5,6 @@
 @subpackage module-datasource
 */
 require_once('module-dsconnector.php');
-require_once('module-lib.php');
 
 /**
 Класс предок для источника данных

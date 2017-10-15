@@ -1,13 +1,21 @@
 <?php
 /**
-Библиотека функций общего назначения
+Библиотека функций - базовый набор
 @package module
-@subpackage module-lib
+@subpackage module-lib-base
 */
 
 //------------------------------------------------------------------------------
 // Преобразования для подстановок
 //------------------------------------------------------------------------------
+/**
+Преобразовать строку для подстановки в MySql
+@param	String	$str исходная строка
+@return	String преобразованная строка
+*/
+function str2MySql($str) {
+	return mysql_escape_string($str);
+}
 /**
 Преобразовать строку для Xml
 @param	String	$str исходная строка
@@ -35,79 +43,10 @@ function str2XmlAttr($str) {
 @return	String преобразованная строка
 */
 function str2Attr($str) {
-	return htmlspecialchars($str,ENT_QUOTES);
-}
-/**
-Преобразовать данные из G740 в PHP
-@param	String	$value данные в формате G740
-@param	String	$type тип данных в формате G740
-@return	AnyType преобразованные данные
-*/
-function g2php($value, $type) {
-	$result=$value;
-	if ($type=='date') {
-		try {
-			$result=null;
-			$value=trim($value);
-			$n=mb_strlen($value,'utf-8');
-			if (($n==10) && (mb_substr($value,4,1)=='-') && (mb_substr($value,7,1)=='-')) {
-				$y=mb_substr($value,0,4);
-				$m=mb_substr($value,5,2);
-				$d=mb_substr($value,8,2);
-				$result=new DateTime();
-				$result->setDate($y,$m,$d);
-			}
-		}
-		catch (Exception $e) {
-			$result=null;
-		}
-	}
-	if ($type=='check') {
-		$result=($value=='1');
-	}
-	return $result;
-}
-/**
-Преобразовать данные из PHP в G740
-@param	AnyType	$value данные
-@param	AnyType	$type тип данных
-@return	String данные преобразованные в формат G740
-*/
-function php2g($value, $type='') {
-	$result=$value;
-	if ($value===null) $result='';
-	if (!$type) {
-		$t=gettype($value);
-		if (t=='boolean') $type='check';
-		if ((t=='integer') || (t=='double')) $type='num';
-		if (t=='object') {
-			if (get_class($value)=='DateTime') $type='date';
-		}
-	}
-	if ($type=='string') {
-	} else if ($type=='date') {
-		try {
-			$t=gettype($value);
-			if ($value==null) $result='';
-			else {
-				$t=gettype($value);
-				if ($t=='string') {
-					$result=mb_substr($value,0,10);
-				} else if (t=='object' && get_class($value)=='DateTime') {
-					$result=$value->format('Y-m-d');
-				} else {
-					$result='';
-				}
-			}
-		}
-		catch (Exception $e) {
-			$result='';
-		}
-	} else if ($type=='check') {
-		$result='0';
-		if ($value) $result='1';
-	}
-	return $result;
+	$from=Array('&','"',"'",'<','>',"\n","\r","\t");
+	$to=Array('&amp;','&quot;','&apos;','&lt;','&gt;',' ','',' ');
+	return str_replace($from, $to, $str);
+	//return htmlspecialchars($str,ENT_QUOTES);
 }
 /**
 Преобразование строки к написанию для HTML
@@ -154,55 +93,6 @@ function str2Php($str) {
 	$to=Array("\\\\","\'",'');
 	return str_replace($from, $to, $str);
 }
-/**
-Преобразование даты формата YYYY-MM-DD к виду DD.MM.YYYY, подходит для вставки в HTML
-@param	String	$str исходная строка
-@return	String преобразованная строка
-*/
-function date2Html($str) {
-	if (!$str) return '';
-	$result=substr($str,8,2).'.'.substr($str,5,2).'.'.substr($str,0,4);
-	return str2Html($result);
-}
-/**
-Привести в порядок строковое представление времени, к виду hh:mm
-@param	String	$str исходная строка
-@return	String преобразованная строка
-*/
-function normTime($str) {
-	$result='';
-	for($i=0; $i<mb_strlen($str); $i++) {
-		$c=mb_substr($str,$i,1);
-		if ($c>='0' && $c<='9') $result.=$c;
-	}
-	if ($result=='') return $result;
-	while(mb_strlen($result)<4) $result='0'.$result;
-	$h=mb_substr($result,0,2);
-	$m=mb_substr($result,2,2);
-	if ($m>59) {
-		$h='00';
-		$m='00';
-	}
-	if ($h>=24) {
-		$h='00';
-		$m='00';
-	}
-	$result=$h.':'.$m;
-	return $result;
-}
-
-/**
-Проверка на корректность простого элемента, образующего URL:
-	используется для проверки, при задании пользователем url адреса сущности
-	допустимы маленькие латинские буквы, цифры, тире и подчеркивание
-	знаки '/','#','?','&' недопустимы, так как это разделители между элементами
-@param	String	$str исходная строка
-@return	Boolean признак корректности
-*/
-function testSimpleUrlItem($str) {
-	return preg_match("/^[a-z0-9\-_]+$/",$str);
-}
-
 /**
 Проговаривалка для чисел и их единиц измерения
 @param	Num		$value	число
@@ -368,125 +258,435 @@ function month2Txt($value) {
 	return $result;
 }
 
-//------------------------------------------------------------------------------
-// Работа с запросами
-//------------------------------------------------------------------------------
-$docRequest=null;		// Документ - запрос, который надо обработать
-$rootRequest=null;		// Корневой узел запроса
-
 /**
-Прочитать запрос в $docRequest
+Преобразование даты формата YYYY-MM-DD к виду DD.MM.YYYY, подходит для вставки в HTML
+@param	String	$str исходная строка
+@return	String преобразованная строка
 */
-function initDocRequest() {
-	global $docRequest;
-	global $rootRequest;
-	global $HTTP_RAW_POST_DATA;
-	$docRequest = new DOMDocument("1.0", "utf-8");
-	if (isset($HTTP_RAW_POST_DATA)) {
-		try {
-			$docRequest->loadXML($HTTP_RAW_POST_DATA);
-		}
-		catch (Exception $e) {
-		}
+function date2Html($str) {
+	if (!$str) return '';
+	$result=substr($str,8,2).'.'.substr($str,5,2).'.'.substr($str,0,4);
+	return str2Html($result);
+}
+/**
+Привести в порядок строковое представление времени, к виду hh:mm
+@param	String	$str исходная строка
+@return	String преобразованная строка
+*/
+function normTime($str) {
+	$result='';
+	for($i=0; $i<mb_strlen($str); $i++) {
+		$c=mb_substr($str,$i,1);
+		if ($c>='0' && $c<='9') $result.=$c;
+	}
+	if ($result=='') return $result;
+	while(mb_strlen($result)<4) $result='0'.$result;
+	$h=mb_substr($result,0,2);
+	$m=mb_substr($result,2,2);
+	if ($m>59) {
+		$h='00';
+		$m='00';
+	}
+	if ($h>=24) {
+		$h='00';
+		$m='00';
+	}
+	$result=$h.':'.$m;
+	return $result;
+}
+/**
+Приведение телефонного номера России к стандартному виду 8(903)550-25-12
+@param	String	$str исходная строка
+@return	String преобразованная строка
+*/
+function getTelNorm($str) {
+	$n=mb_strlen($str,'utf-8');
+	$result='';
+	for($i=0; $i<$n; $i++) {
+		$c=mb_substr($str,$i,1,'utf-8');
+		if (($c>='0') && ($c<='9')) $result.=$c;
+	}
+	$n=mb_strlen($result,'utf-8');
+	if ($n<10) return '';
+	if ($n==10) $result='8'.$result;
+	if ($n>11) $result=mb_substr($result,$n-11,11,'utf-8');
+	if (mb_substr($result,0,1,'utf-8')=='7') $result='8'.mb_substr($result,1,10,'utf-8');
+	if (mb_substr($result,0,1,'utf-8')!='8') return '';
+	return mb_substr($result,0,1,'utf-8').'('.mb_substr($result,1,3,'utf-8').')'.mb_substr($result,4,3,'utf-8').'-'.mb_substr($result,7,2,'utf-8').'-'.mb_substr($result,9,2,'utf-8');
+}
+/**
+Приведение e-mail к стандартному виду
+@param	String	$str исходная строка
+@return	String преобразованная строка
+*/
+function getEMailNorm($str) {
+	return trim(mb_strtolower($str,'utf-8'));
+}
+/**
+Вытаскиваем подстроку по словам, не длинее заданного значения, с ... на конце если не уместилось
+@param	String	$str исходная строка
+@param	Integer	$maxLength максимальная длина
+@return	String преобразованная строка
+*/
+function substrByWord($str, $maxLength) {
+	$str=str_replace("\n",' ',$str);
+	$str=str_replace("\r",' ',$str);
+	$str=str_replace("\t",' ',$str);
+	$str=str_replace('.',' ',$str);
+	$str=str_replace(',',' ',$str);
+	$str=str_replace('!',' ',$str);
+	$str=str_replace(':',' ',$str);
+	$str=str_replace('"',' ',$str);
+	$str=str_replace("'",' ',$str);
+	$str=str_replace('+',' ',$str);
+	$str=str_replace('-',' ',$str);
+	$str=str_replace('(',' ',$str);
+	$str=str_replace(')',' ',$str);
+	
+	$arr=Array();
+	foreach(explode(' ',$str) as $key=>$value) {
+		$value=trim($value);
+		if ($value=='') continue;
+		$arr[]=$value;
+	}
+	$result='';
+	$nn=count($arr);
+	$eln='...';
+	for ($i=0; $i<$nn; $i++) {
+		$value=$arr[$i];
+		$s=$result;
+		if ($s!='') $s.=' ';
+		$s.=trim($value);
+		if (mb_strlen($s.$eln,'utf-8')>$maxLength) break;
+		if ($i==($nn-1)) $eln='';
+		$result=$s;
+	}
+	if ($result!='') {
+		$result.=$eln;
 	}
 	else {
-		 throw new Exception('HTTP_RAW_POST_DATA не задано');
+		$result=mb_substr($str, 0, $maxLength, 'utf-8');
 	}
-	if (!is_object($docRequest)) throw new Exception('Системная ошибка! Не передан запрос!');
-	$rootRequest=$docRequest->documentElement;
-	if (!is_object($rootRequest)) throw new Exception('Системная ошибка! Не передан запрос!');
-	if ($rootRequest->nodeName!='root') throw new Exception('Системная ошибка! У xml документа запроса корневой узел не root!');
-	if (xmlGetAttr($rootRequest,'type','')!='g740') throw new Exception('Системная ошибка! У xml документа запроса атрибут type не g740!');
-	return $docRequest;
+	return $result;
+}
+
+/**
+Преобразование строки к ESCAPE, utf-8
+@param	String	$str исходная строка
+@return	String преобразованная строка
+*/
+function escape($str) {
+    $escape_chars = "%u0410 %u0430 %u0411 %u0431 %u0412 %u0432 %u0413 %u0433 %u0490 %u0491 %u0414 %u0434 %u0415 %u0435 %u0401 %u0451 %u0404 %u0454 %u0416 %u0436 %u0417 %u0437 %u0418 %u0438 %u0406 %u0456 %u0419 %u0439 %u041A %u043A %u041B %u043B %u041C %u043C %u041D %u043D %u041E %u043E %u041F %u043F %u0420 %u0440 %u0421 %u0441 %u0422 %u0442 %u0423 %u0443 %u0424 %u0444 %u0425 %u0445 %u0426 %u0446 %u0427 %u0447 %u0428 %u0448 %u0429 %u0449 %u042A %u044A %u042B %u044B %u042C %u044C %u042D %u044D %u042E %u044E %u042F %u044F";
+    $russian_chars = "А а Б б В в Г г Ґ ґ Д д Е е Ё ё Є є Ж ж З з И и І і Й й К к Л л М м Н н О о П п Р р С с Т т У у Ф ф Х х Ц ц Ч ч Ш ш Щ щ Ъ ъ Ы ы Ь ь Э э Ю ю Я я";
+    $e = explode(" ",$escape_chars);
+    $r = explode(" ",$russian_chars);
+    $rus_array = str_split($str);
+    $new_word = str_replace($r,$e,$rus_array);
+    $new_word = str_replace(" ","%20",$new_word);
+    $new_word = implode("",$new_word);
+    return ($new_word);
 }
 /**
-Построить ассоциативный массив из параметров запроса
-@param	Xml		$xmlRequest XML узел запроса
-@return	mixed[] начитанные параметры запроса
+Обратное преобразование ESCAPE
+@param	String	$str исходная строка
+@return	String преобразованная строка
 */
-function getParams($xmlRequest) {
-	$result=Array();
-	$result['id']=xmlGetAttr($xmlRequest,'id','');
-	for ($xmlParam=$xmlRequest->firstChild; $xmlParam!=null; $xmlParam=$xmlParam->nextSibling) {
-		if ($xmlParam->nodeName!='param') continue;
-		$name=xmlGetAttr($xmlParam, 'name', '');
-		if (!$name) continue;
-		$t=xmlGetAttr($xmlParam,'type','');
-		$value='';
-		for ($xmlParamChild=$xmlParam->firstChild; $xmlParamChild!=null; $xmlParamChild=$xmlParamChild->nextSibling) {
-			if ($xmlParamChild->nodeType==XML_CDATA_SECTION_NODE || $xmlParamChild->nodeType==XML_TEXT_NODE) {
-				$value=$xmlParamChild->data;
-				break;
-			}
-		}
-		$result[$name]=g2php($value,$t);
+function unescape($str){
+    $escape_chars = "0410 0430 0411 0431 0412 0432 0413 0433 0490 0491 0414 0434 0415 0435 0401 0451 0404 0454 0416 0436 0417 0437 0418 0438 0406 0456 0419 0439 041A 043A 041B 043B 041C 043C 041D 043D 041E 043E 041F 043F 0420 0440 0421 0441 0422 0442 0423 0443 0424 0444 0425 0445 0426 0446 0427 0447 0428 0448 0429 0449 042A 044A 042B 044B 042C 044C 042D 044D 042E 044E 042F 044F";
+    $russian_chars = "А а Б б В в Г г Ґ ґ Д д Е е Ё ё Є є Ж ж З з И и І і Й й К к Л л М м Н н О о П п Р р С с Т т У у Ф ф Х х Ц ц Ч ч Ш ш Щ щ Ъ ъ Ы ы Ь ь Э э Ю ю Я я";
+    $e = explode(" ",$escape_chars);
+    $r = explode(" ",$russian_chars);
+    $rus_array = explode("%u",$str);
+    $new_word = str_replace($e,$r,$rus_array);
+    $new_word = str_replace("%20"," ",$new_word);
+    return (implode("",$new_word));
+}
+
+//------------------------------------------------------------------------------
+// Работа со строками
+//------------------------------------------------------------------------------
+/**
+Проверка на корректность простого элемента, образующего URL:
+	используется для проверки, при задании пользователем url адреса сущности
+	допустимы маленькие латинские буквы, цифры, тире и подчеркивание
+	знаки '/','#','?','&' недопустимы, так как это разделители между элементами
+@param	String	$str исходная строка
+@return	Boolean признак корректности
+*/
+function testSimpleUrlItem($str) {
+	return preg_match("/^[a-z0-9\-_]+$/",$str);
+}
+/**
+Проверить, начинается ли $str с $s
+@param	String	$str исходная строка
+@param	String	$s подстрока
+@return	Boolean результат проверки
+*/
+function isStrStarting($str, $s) {
+	$strLen=mb_strlen($str,'utf-8');
+	$sLen=mb_strlen($s,'utf-8');
+	if ($strLen<sLen) return false;
+	return mb_substr($str, 0, $sLen,'utf-8')==$s;
+}
+/**
+Проверить, заканчивается ли $str на $s
+@param	String	$str исходная строка
+@param	String	$s подстрока
+@return	Boolean результат проверки
+*/
+function isStrEnding($str, $strSubstr) {
+	$strLen=mb_strlen($str,'utf-8');
+	$sLen=mb_strlen($s,'utf-8');
+	if ($strLen<sLen) return false;
+	return mb_substr($str, $strLen-$sLen, $sLen,'utf-8')==$s;
+}
+/**
+Сгенерить GUID
+@return	String GUID
+*/
+function getGUID(){
+    if (function_exists('com_create_guid')) {
+        return com_create_guid();
+    }
+	else {
+        mt_srand((double)microtime()*10000); //optional for php 4.2.0 and up.
+        $charid = strtoupper(md5(uniqid(rand(), true)));
+        $uuid = 
+            substr($charid, 0, 8).'-'.
+            substr($charid, 8, 4).'-'.
+            substr($charid,12, 4).'-'.
+            substr($charid,16, 4).'-'.
+            substr($charid,20,12);
+        return $uuid;
+    }
+}
+/**
+Шифруем пароль
+@return	String зашифрованный пароль
+*/
+function cryptPassword($password) {
+	return md5($password . getCfg('crypt.md5.key'));
+}
+
+//------------------------------------------------------------------------------
+// Конфигурационные настройки
+//------------------------------------------------------------------------------
+/**
+Вернуть значение настроечной константы
+@param	String	$name имя настройки
+@param	String	$default значение по умолчанию
+@return	String значение настроечной константы
+*/
+function getCfg($name, $default='') {
+	global $config;
+	if (isset($config[$name])) return $config[$name];
+	return $default;
+}
+//------------------------------------------------------------------------------
+// Пути
+//------------------------------------------------------------------------------
+/**
+Объеденить несколько элементов относительного пути
+@return	String зашифрованный пароль
+*/
+function pathConcat(
+	$item01='',$item02='',$item03='',$item04='',$item05='',
+	$item06='',$item07='',$item08='',$item09='',$item10='',
+	$item11='',$item12='',$item13='',$item14='',$item15=''
+	) {
+	$lst=Array();
+	if ($item01) $lst[]=$item01;
+	if ($item02) $lst[]=$item02;
+	if ($item03) $lst[]=$item03;
+	if ($item04) $lst[]=$item04;
+	if ($item05) $lst[]=$item05;
+	if ($item06) $lst[]=$item06;
+	if ($item07) $lst[]=$item07;
+	if ($item08) $lst[]=$item08;
+	if ($item09) $lst[]=$item09;
+	if ($item10) $lst[]=$item10;
+	if ($item11) $lst[]=$item11;
+	if ($item12) $lst[]=$item12;
+	if ($item13) $lst[]=$item13;
+	if ($item14) $lst[]=$item14;
+	if ($item15) $lst[]=$item15;
+	$result='';
+	foreach($lst as $item) {
+		$item=trim(str_replace('\\', '/', $item));
+		if (!$item) continue;
+		if (mb_substr($item,0,1)=='/') $item=mb_substr($item,1,mb_strlen($item,'utf-8')-1);
+		if (mb_substr($item,-1)=='/') $item=mb_substr($item,0,mb_strlen($item,'utf-8')-1);
+		if (!$item) continue;
+		if ($result) $result.='/';
+		$result.=$item;
 	}
 	return $result;
 }
 
 //------------------------------------------------------------------------------
-// Работа с ответами
+// Работа с XML
 //------------------------------------------------------------------------------
-$docTemp=new DOMDocument("1.0", "utf-8");
-$docTemp->loadXml('<temp></temp>');
-
-$objResponseWriter=null;
-function initObjResponseWriter() {
-	global $objResponseWriter;
-	$objResponseWriter=new XMLWriter();
-	$objResponseWriter->openMemory();
-	$objResponseWriter->startDocument('1.0', 'UTF-8');
-	$objResponseWriter->startElement('root');
-	$objResponseWriter->writeAttribute('type','g740');
-	return $objResponseWriter;
-}
-function writeXml($str) {
-	global $objResponseWriter;
-	$objResponseWriter->writeRaw($str);
-}
-function writeXmlForm($fileName, $params=null) {
-	global $pathXmlForm;
-	$fileNameFull=$pathXmlForm.'/'.$fileName;
-	if (!file_exists($fileNameFull)) throw new Exception('Не найден файл с XML описанием экранной формы '.$fileNameFull);
-	$strForm=file_get_contents($fileNameFull);
-	if ($params) {
-		$from=Array();
-		$to=Array();
-		foreach($params as $key=>$value) {
-			if (substr($key,0,1)=='%') {
-				$from[]=str2Attr($key);
-				$to[]=str2Attr($value);
-			} else {
-				$from[]=$key;
-				$to[]=$value;
-			}
-		}
-		$strForm=str_replace($from, $to, $strForm);
-	}
-	writeXml($strForm);
+/**
+Вернуть значение атрибута узла
+@param	Xml		$xml узел
+@param	String	$attributeName имя атрибута
+@param	String	$defValue значение по умолчанию
+@return	String значение атрибута
+*/
+function xmlGetAttr($xml, $attributeName, $defValue) {
+	if (!is_object($xml)) return $defValue;
+	return xmlNodeValue($xml->getAttributeNode($attributeName), $defValue);
 }
 /**
-Парсер строки в XML элемент документа $docTemp
-@param	String	$strXml текст XML
-@return	Xml узел $docTemp
+Проверить наличие аттрибута у узла
+@param	Xml		$xml узел
+@param	String	$attributeName имя атрибута
+@return	Boolean наличие атрибута
 */
-function strXml2DomXml($strXml) {
-	global $docTemp;
-	$dd=new DOMDocument("1.0", "utf-8");
-	$dd->preserveWhiteSpace=false;
-	try {
-		$dd->loadXML($strXml);
+function xmlIsAttr($xml, $attributeName) {
+	if (!is_object($xml)) return false;
+	if (!is_object($xml->getAttributeNode($attributeName))) return false;
+	return true;
+}
+/**
+Задать значение атрибута
+@param	Xml		$xml узел
+@param	String	$attributeName имя атрибута
+@param	String	$attributeValue значение атрибута
+@return	Boolean успешность выполнения операции
+*/
+function xmlSetAttr($xml, $attributeName, $attributeValue) {
+	if (!is_object($xml)) return false;
+	if (!mb_check_encoding($attributeValue,'UTF-8')) return false;
+	$xml->setAttribute($attributeName, $attributeValue);
+	return true;
+}
+/**
+Вернуть текстовое значение узла
+@param	Xml		$xml узел
+@param	String	$defValue текстовое значение по умолчанию
+@return	String текстовое значение
+*/
+function xmlNodeValue($xml, $defValue) {
+	$result=null;
+	if (!is_object($xml)) return $defValue;
+	//attribute
+	if ($xml->nodeType==2) {
+		return $xml->value;
 	}
-	catch (Exception $e) {
-		throw new Exception('Ошибка в XML описании '.$strXml);
+	//text, cdatasection, comment
+	if ($xml->nodeType==3 || $xml->nodeType==4 || $xml->nodeType==8) {
+		$result=$xml->nodeValue;
 	}
-	$result=$docTemp->importNode($dd->documentElement, true);
-	unset($dd);
+	if ($result===null) return $defValue;
 	return $result;
 }
-function domXml2StrXml($domXml) {
-	global $docTemp;
-	return $docTemp->saveXML($domXml);
+function xmlGetText($xml) {
+	$result='';
+	if (!is_object($xml)) return $result;
+	for ($xmlItem=$xml->firstChild; $xmlItem!=null; $xmlItem=$xmlItem->nextSibling) {
+		if ($xmlItem->nodeType==XML_TEXT_NODE) $result.=$xmlItem->nodeValue;
+	}
+	return $result;
+}
+/**
+Вернуть первый дочерний узел по $tagName
+@param	Xml		$xml узел
+@param	String	$tagName имя узла
+@return	Xml первый подходящий дочерний узел
+*/
+function xmlGetChild($xml, $tagName) {
+	if (!is_object($xml)) return null;
+	for ($xmlItem=$xml->firstChild; $xmlItem!=null; $xmlItem=$xmlItem->nextSibling) {
+		if ($xmlItem->nodeName==$tagName) return $xmlItem;
+	}
+	return null;
+}
+/**
+Вернуть первый дочерний узел по $tagName и значению атрибута
+@param	Xml		$xml узел
+@param	String	$tagName имя узла
+@param	String	$atrName имя атрибута
+@param	String	$atrValue значение атрибута
+@return	Xml первый подходящий дочерний узел
+*/
+function xmlGetChildByAttr($xml, $tagName, $atrName, $atrValue) {
+	if (!is_object($xml)) return null;
+	for ($xmlItem=$xml->firstChild; $xmlItem!=null; $xmlItem=$xmlItem->nextSibling) {
+		if ($xmlItem->nodeName==$tagName) {
+			if ($xmlItem->getAttribute($atrName)==$atrValue) return $xmlItem;
+		}
+	}
+	return null;
+}
+/**
+Создать XML документ
+@return	Xml документ XML
+*/
+function xmlCreateDoc() {
+	return new DOMDocument("1.0","utf-8");
+}
+/**
+Создать и вставить узел
+@param	Xml		$xmlOwner узел
+@param	String	$tagName имя создаваемого узла
+@param	Xml		$xmlBefore узел, перед которым вставить новый
+@return	Xml созданный Xml узел
+*/
+function xmlCreateNode($xmlOwner, $tagName, $xmlBefore=null) {
+	if (!is_object($xmlOwner)) return null;
+	$xmlDoc=$xmlOwner->ownerDocument;
+	if (!isset($xmlDoc)) $xmlDoc=$xmlOwner;
+	$elem=$xmlDoc->createElement($tagName);
+	if (is_object($xmlBefore)) {
+		$xmlOwner->insertBefore($elem, $xmlBefore);
+	}
+	else {
+		$xmlOwner->appendChild($elem);
+	}
+	return $elem;
+}
+/**
+Создать и вставить текст
+@param	Xml		$xmlOwner узел
+@param	String	$text текст
+@return	Xml созданный Xml текстовый узел
+*/
+function xmlCreateText($xmlOwner, $text) {
+	if (!is_object($xmlOwner)) return null;
+	$xmlDoc=$xmlOwner->ownerDocument;
+	if (!isset($xmlDoc)) $xmlDoc=$xmlOwner;
+	$elem=$xmlDoc->createTextNode($text);
+	$xmlOwner->appendChild($elem);
+	return $elem;
+}
+/**
+Создать и вставить комментарий
+@param	Xml		$xmlOwner узел
+@param	String	$comment комментарий
+@return	Xml созданный Xml комментарий
+*/
+function xmlCreateComment($xmlOwner, $comment) {
+	if (!is_object($xmlOwner)) return null;
+	$xmlDoc=$xmlOwner->ownerDocument;
+	if (!isset($xmlDoc)) $xmlDoc=$xmlOwner;
+	$elem=$xmlDoc->createComment($comment);
+	$xmlOwner->appendChild($elem);
+	return $elem;
+}
+/**
+Создать и вставить CDATASection
+@param	Xml		$xmlOwner узел
+@param	String	$text CDATASection
+@return	Xml созданный Xml CDATASection
+*/
+function xmlCreateCDATASection($xmlOwner, $text) {
+	if (!is_object($xmlOwner)) return null;
+	$xmlDoc=$xmlOwner->ownerDocument;
+	if (!isset($xmlDoc)) $xmlDoc=$xmlOwner;
+	$elem=$xmlDoc->createCDATASection($text);
+	$xmlOwner->appendChild($elem);
+	return $elem;
 }
 
 //------------------------------------------------------------------------------
@@ -704,296 +904,33 @@ SQL;
 }
 
 //------------------------------------------------------------------------------
-// Работа со строками
+// Трассировка
 //------------------------------------------------------------------------------
-/**
-Проверить, начинается ли $str с $s
-@param	String	$str исходная строка
-@param	String	$s подстрока
-@return	Boolean результат проверки
-*/
-function isStrStarting($str, $s) {
-	$strLen=mb_strlen($str,'utf-8');
-	$sLen=mb_strlen($s,'utf-8');
-	if ($strLen<sLen) return false;
-	return mb_substr($str, 0, $sLen,'utf-8')==$s;
-}
-/**
-Проверить, заканчивается ли $str на $s
-@param	String	$str исходная строка
-@param	String	$s подстрока
-@return	Boolean результат проверки
-*/
-function isStrEnding($str, $strSubstr) {
-	$strLen=mb_strlen($str,'utf-8');
-	$sLen=mb_strlen($s,'utf-8');
-	if ($strLen<sLen) return false;
-	return mb_substr($str, $strLen-$sLen, $sLen,'utf-8')==$s;
-}
-/**
-Сгенерить GUID
-@return	String GUID
-*/
-function getGUID(){
-    if (function_exists('com_create_guid')) {
-        return com_create_guid();
-    }
-	else {
-        mt_srand((double)microtime()*10000); //optional for php 4.2.0 and up.
-        $charid = strtoupper(md5(uniqid(rand(), true)));
-        $uuid = 
-            substr($charid, 0, 8).'-'.
-            substr($charid, 8, 4).'-'.
-            substr($charid,12, 4).'-'.
-            substr($charid,16, 4).'-'.
-            substr($charid,20,12);
-        return $uuid;
-    }
-}
-/**
-Шифруем пароль
-@return	String зашифрованный пароль
-*/
-function cryptPassword($password) {
-	return md5($password.'сороктысячшироко');
-}
-
-//------------------------------------------------------------------------------
-// Пути
-//------------------------------------------------------------------------------
-/**
-Объеденить несколько элементов относительного пути
-@return	String зашифрованный пароль
-*/
-function pathConcat(
-	$item01='',$item02='',$item03='',$item04='',$item05='',
-	$item06='',$item07='',$item08='',$item09='',$item10='',
-	$item11='',$item12='',$item13='',$item14='',$item15=''
-	) {
-	$lst=Array();
-	if ($item01) $lst[]=$item01;
-	if ($item02) $lst[]=$item02;
-	if ($item03) $lst[]=$item03;
-	if ($item04) $lst[]=$item04;
-	if ($item05) $lst[]=$item05;
-	if ($item06) $lst[]=$item06;
-	if ($item07) $lst[]=$item07;
-	if ($item08) $lst[]=$item08;
-	if ($item09) $lst[]=$item09;
-	if ($item10) $lst[]=$item10;
-	if ($item11) $lst[]=$item11;
-	if ($item12) $lst[]=$item12;
-	if ($item13) $lst[]=$item13;
-	if ($item14) $lst[]=$item14;
-	if ($item15) $lst[]=$item15;
-	$result='';
-	foreach($lst as $item) {
-		$item=trim(str_replace('\\', '/', $item));
-		if (!$item) continue;
-		if (mb_substr($item,0,1)=='/') $item=mb_substr($item,1,mb_strlen($item,'utf-8')-1);
-		if (mb_substr($item,-1)=='/') $item=mb_substr($item,0,mb_strlen($item,'utf-8')-1);
-		if (!$item) continue;
-		if ($result) $result.='/';
-		$result.=$item;
-	}
-	return $result;
-}
-
-//------------------------------------------------------------------------------
-// Работа с XML
-//------------------------------------------------------------------------------
-/**
-Вернуть значение атрибута узла
-@param	Xml		$xml узел
-@param	String	$attributeName имя атрибута
-@param	String	$defValue значение по умолчанию
-@return	String значение атрибута
-*/
-function xmlGetAttr($xml, $attributeName, $defValue) {
-	if (!is_object($xml)) return $defValue;
-	return xmlNodeValue($xml->getAttributeNode($attributeName), $defValue);
-}
-/**
-Проверить наличие аттрибута у узла
-@param	Xml		$xml узел
-@param	String	$attributeName имя атрибута
-@return	Boolean наличие атрибута
-*/
-function xmlIsAttr($xml, $attributeName) {
-	if (!is_object($xml)) return false;
-	if (!is_object($xml->getAttributeNode($attributeName))) return false;
-	return true;
-}
-/**
-Задать значение атрибута
-@param	Xml		$xml узел
-@param	String	$attributeName имя атрибута
-@param	String	$attributeValue значение атрибута
-@return	Boolean успешность выполнения операции
-*/
-function xmlSetAttr($xml, $attributeName, $attributeValue) {
-	if (!is_object($xml)) return false;
-	if (!mb_check_encoding($attributeValue,'UTF-8')) return false;
-	$xml->setAttribute($attributeName, $attributeValue);
-	return true;
-}
-/**
-Вернуть текстовое значение узла
-@param	Xml		$xml узел
-@param	String	$defValue текстовое значение по умолчанию
-@return	String текстовое значение
-*/
-function xmlNodeValue($xml, $defValue) {
-	$result=null;
-	if (!is_object($xml)) return $defValue;
-	//attribute
-	if ($xml->nodeType==2) {
-		return $xml->value;
-	}
-	//text, cdatasection, comment
-	if ($xml->nodeType==3 || $xml->nodeType==4 || $xml->nodeType==8) {
-		$result=$xml->nodeValue;
-	}
-	if ($result===null) return $defValue;
-	return $result;
-}
-function xmlGetText($xml) {
-	$result='';
-	if (!is_object($xml)) return $result;
-	for ($xmlItem=$xml->firstChild; $xmlItem!=null; $xmlItem=$xmlItem->nextSibling) {
-		if ($xmlItem->nodeType==XML_TEXT_NODE) $result.=$xmlItem->nodeValue;
-	}
-	return $result;
-}
-/**
-Вернуть первый дочерний узел по $tagName
-@param	Xml		$xml узел
-@param	String	$tagName имя узла
-@return	Xml первый подходящий дочерний узел
-*/
-function xmlGetChild($xml, $tagName) {
-	if (!is_object($xml)) return null;
-	for ($xmlItem=$xml->firstChild; $xmlItem!=null; $xmlItem=$xmlItem->nextSibling) {
-		if ($xmlItem->nodeName==$tagName) return $xmlItem;
-	}
-	return null;
-}
-/**
-Вернуть первый дочерний узел по $tagName и значению атрибута
-@param	Xml		$xml узел
-@param	String	$tagName имя узла
-@param	String	$atrName имя атрибута
-@param	String	$atrValue значение атрибута
-@return	Xml первый подходящий дочерний узел
-*/
-function xmlGetChildByAttr($xml, $tagName, $atrName, $atrValue) {
-	if (!is_object($xml)) return null;
-	for ($xmlItem=$xml->firstChild; $xmlItem!=null; $xmlItem=$xmlItem->nextSibling) {
-		if ($xmlItem->nodeName==$tagName) {
-			if ($xmlItem->getAttribute($atrName)==$atrValue) return $xmlItem;
-		}
-	}
-	return null;
-}
-/**
-Создать XML документ
-@return	Xml документ XML
-*/
-function xmlCreateDoc() {
-	return new DOMDocument("1.0","utf-8");
-}
-/**
-Создать и вставить узел
-@param	Xml		$xmlOwner узел
-@param	String	$tagName имя создаваемого узла
-@param	Xml		$xmlBefore узел, перед которым вставить новый
-@return	Xml созданный Xml узел
-*/
-function xmlCreateNode($xmlOwner, $tagName, $xmlBefore=null) {
-	if (!is_object($xmlOwner)) return null;
-	$xmlDoc=$xmlOwner->ownerDocument;
-	if (!isset($xmlDoc)) $xmlDoc=$xmlOwner;
-	$elem=$xmlDoc->createElement($tagName);
-	if (is_object($xmlBefore)) {
-		$xmlOwner->insertBefore($elem, $xmlBefore);
-	}
-	else {
-		$xmlOwner->appendChild($elem);
-	}
-	return $elem;
-}
-/**
-Создать и вставить текст
-@param	Xml		$xmlOwner узел
-@param	String	$text текст
-@return	Xml созданный Xml текстовый узел
-*/
-function xmlCreateText($xmlOwner, $text) {
-	if (!is_object($xmlOwner)) return null;
-	$xmlDoc=$xmlOwner->ownerDocument;
-	if (!isset($xmlDoc)) $xmlDoc=$xmlOwner;
-	$elem=$xmlDoc->createTextNode($text);
-	$xmlOwner->appendChild($elem);
-	return $elem;
-}
-/**
-Создать и вставить комментарий
-@param	Xml		$xmlOwner узел
-@param	String	$comment комментарий
-@return	Xml созданный Xml комментарий
-*/
-function xmlCreateComment($xmlOwner, $comment) {
-	if (!is_object($xmlOwner)) return null;
-	$xmlDoc=$xmlOwner->ownerDocument;
-	if (!isset($xmlDoc)) $xmlDoc=$xmlOwner;
-	$elem=$xmlDoc->createComment($comment);
-	$xmlOwner->appendChild($elem);
-	return $elem;
-}
-/**
-Создать и вставить CDATASection
-@param	Xml		$xmlOwner узел
-@param	String	$text CDATASection
-@return	Xml созданный Xml CDATASection
-*/
-function xmlCreateCDATASection($xmlOwner, $text) {
-	if (!is_object($xmlOwner)) return null;
-	$xmlDoc=$xmlOwner->ownerDocument;
-	if (!isset($xmlDoc)) $xmlDoc=$xmlOwner;
-	$elem=$xmlDoc->createCDATASection($text);
-	$xmlOwner->appendChild($elem);
-	return $elem;
-}
-
-/**
-Класс ошибки, не требующей логирования
-*/
-class ExceptionNoReport extends Exception {
-	protected $responseExec=Array();
-	public function addResponseExec($exec) {
-		$this->responseExec[]=$exec;
-	}
-	public function getResponseExec() {
-		return $this->responseExec;
-	}
-}
-
-//------------------------------------------------------------------------------
-// Всяко полезное
-//------------------------------------------------------------------------------
-/**
-Трассировка в файл trace.txt
-@param	String	$value
-*/
+// Трасировка
 function trace($value) {
-	if (!$handle = fopen('trace.txt', 'a')) throw new Exception("Не удалось открыть файл trace.txt");
+	if (!is_dir('log')) mkdir('log');
+	if (!$handle = fopen('log/trace.txt', 'a')) throw new Exception("Не удалось открыть файл 'log/trace.txt'");
 	if (gettype($value)=='string') {
 		$str=$value;
 	} else {
 		$str=var_export($value, true);
 	}
 	$str.="\n";
-	if (fwrite($handle, $str) === FALSE) throw new Exception("Не удалось произвести запись файл trace.txt");
+	$str.="--------------------------\n";
+	if (fwrite($handle, $str) === FALSE) throw new Exception("Не удалось произвести запись файл log/trace.txt");
+	fclose($handle);
+}
+
+// Логирование ошибок
+function errorLog($e) {
+	if (!is_dir('log')) mkdir('log');
+	if (!$handle = fopen('log/logerr.txt', 'a')) throw new Exception("Не удалось открыть файл 'log/logerr.txt'");
+	$result=date("[d-M-Y H:i:s e]").' PHP Exception: '.$e->getMessage().' in '.$e->getFile().' on '.$e->getLine()."\n";
+	$lst=$e->getTrace();
+	foreach($lst as $index=>$item) {
+		$result.="\t{$item['file']}\t{$item['function']}\t{$item['line']}\n";
+	}
+	if (fwrite($handle, $result) === FALSE) throw new Exception("Не удалось произвести запись файл log/logerr.txt");
 	fclose($handle);
 }
 ?>

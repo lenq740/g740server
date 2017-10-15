@@ -98,6 +98,7 @@ public function getFields() {
 		$fld['maxlength']='255';
 		$fld['len']='12';
 		$fld['notnull']='1';
+		$fld['stretch']='1';
 		$fld['refname']='name';
 		$fld['refid']='klssystablecategory';
 		$this->fields[]=$fld;
@@ -146,7 +147,7 @@ SQL;
 // Этот метод Этот метод возвращает секцию where для запроса select
 public function getSelectWhere($params=Array()) {
 	$result='';
-	if (array_key_exists('filter.id', $params)) {
+	if ($params['filter.id']!='') {
 		if ($this->isGUID) {
 			$value=$this->guid2Sql($params['filter.id']);
 		}
@@ -167,17 +168,14 @@ public function getSelectWhere($params=Array()) {
 		$value=$this->php2Sql($params['filter.klssystablecategory.tmptable']);
 		$result.="\n"."and `systable`.`klssystablecategory` in (select value from tmptablelist where tmptablelist.list='{$value}')";
 	}
-	if (isset($params['filter.isstatic'])) {
-		$value=$this->php2Sql($params['filter.isstatic']);
-		$result.="\n"."and `systable`.`isstatic`='{$value}'";
+	if ($params['filter.isstatic']) {
+		$result.="\n"."and `systable`.`isstatic`='1'";
 	}
-	if (isset($params['filter.isdynamic'])) {
-		$value=$this->php2Sql($params['filter.isdynamic']);
-		$result.="\n"."and `systable`.`isdynamic`='{$value}'";
+	if ($params['filter.isdynamic']) {
+		$result.="\n"."and `systable`.`isdynamic`='1'";
 	}
-	if (isset($params['filter.issystem'])) {
-		$value=$this->php2Sql($params['filter.issystem']);
-		$result.="\n"."and `systable`.`issystem`='{$value}'";
+	if ($params['filter.issystem']) {
+		$result.="\n"."and `systable`.`issystem`='1'";
 	}
 	return $result;
 }
@@ -202,7 +200,7 @@ public function getStrXmlDefinitionFields($params=Array()) {
 <field name="orderby" type="memo" caption="Сортировка" stretch="1"/>
 <field name="fields" type="memo" caption="Дополнительные поля" stretch="1"/>
 <field name="permmode" type="string" caption="Режим по правам" len="12" maxlength="255"/>
-<field name="systablecategory_name" type="string" caption="Категория" notnull="1" len="12" maxlength="255" refid="klssystablecategory" refname="name"/>
+<field name="systablecategory_name" type="string" caption="Категория" notnull="1" stretch="1" len="12" maxlength="255" refid="klssystablecategory" refname="name"/>
 </fields>
 XML;
 	return $result;

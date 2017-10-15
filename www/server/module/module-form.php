@@ -5,7 +5,6 @@
 @subpackage module-form
 */
 
-require_once('module-lib.php');
 /**
 Класс предок для экранной формы
 @package module

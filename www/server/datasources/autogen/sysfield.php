@@ -37,6 +37,7 @@ public function getFields() {
 		$fld['caption']='Описание поля';
 		$fld['maxlength']='255';
 		$fld['len']='25';
+		$fld['stretch']='1';
 		$this->fields[]=$fld;
 	}
 	{	// isnotempty - Не пусто
@@ -278,7 +279,7 @@ SQL;
 // Этот метод Этот метод возвращает секцию where для запроса select
 public function getSelectWhere($params=Array()) {
 	$result='';
-	if (array_key_exists('filter.id', $params)) {
+	if ($params['filter.id']!='') {
 		if ($this->isGUID) {
 			$value=$this->guid2Sql($params['filter.id']);
 		}
@@ -299,17 +300,14 @@ public function getSelectWhere($params=Array()) {
 		$value=$this->php2Sql($params['filter.klssystable.tmptable']);
 		$result.="\n"."and `sysfield`.`klssystable` in (select value from tmptablelist where tmptablelist.list='{$value}')";
 	}
-	if (isset($params['filter.isnotempty'])) {
-		$value=$this->php2Sql($params['filter.isnotempty']);
-		$result.="\n"."and `sysfield`.`isnotempty`='{$value}'";
+	if ($params['filter.isnotempty']) {
+		$result.="\n"."and `sysfield`.`isnotempty`='1'";
 	}
-	if (isset($params['filter.ismain'])) {
-		$value=$this->php2Sql($params['filter.ismain']);
-		$result.="\n"."and `sysfield`.`ismain`='{$value}'";
+	if ($params['filter.ismain']) {
+		$result.="\n"."and `sysfield`.`ismain`='1'";
 	}
-	if (isset($params['filter.isstretch'])) {
-		$value=$this->php2Sql($params['filter.isstretch']);
-		$result.="\n"."and `sysfield`.`isstretch`='{$value}'";
+	if ($params['filter.isstretch']) {
+		$result.="\n"."and `sysfield`.`isstretch`='1'";
 	}
 	if ($params['filter.klssysfieldtype']!='') {
 		$value=$this->php2Sql($params['filter.klssysfieldtype']);
@@ -327,21 +325,17 @@ public function getSelectWhere($params=Array()) {
 		$value=$this->php2Sql($params['filter.klsreftable.tmptable']);
 		$result.="\n"."and `sysfield`.`klsreftable` in (select value from tmptablelist where tmptablelist.list='{$value}')";
 	}
-	if (isset($params['filter.isrefrestrict'])) {
-		$value=$this->php2Sql($params['filter.isrefrestrict']);
-		$result.="\n"."and `sysfield`.`isrefrestrict`='{$value}'";
+	if ($params['filter.isrefrestrict']) {
+		$result.="\n"."and `sysfield`.`isrefrestrict`='1'";
 	}
-	if (isset($params['filter.isrefcascade'])) {
-		$value=$this->php2Sql($params['filter.isrefcascade']);
-		$result.="\n"."and `sysfield`.`isrefcascade`='{$value}'";
+	if ($params['filter.isrefcascade']) {
+		$result.="\n"."and `sysfield`.`isrefcascade`='1'";
 	}
-	if (isset($params['filter.isrefclear'])) {
-		$value=$this->php2Sql($params['filter.isrefclear']);
-		$result.="\n"."and `sysfield`.`isrefclear`='{$value}'";
+	if ($params['filter.isrefclear']) {
+		$result.="\n"."and `sysfield`.`isrefclear`='1'";
 	}
-	if (isset($params['filter.isref121'])) {
-		$value=$this->php2Sql($params['filter.isref121']);
-		$result.="\n"."and `sysfield`.`isref121`='{$value}'";
+	if ($params['filter.isref121']) {
+		$result.="\n"."and `sysfield`.`isref121`='1'";
 	}
 	return $result;
 }
@@ -359,7 +353,7 @@ public function getStrXmlDefinitionFields($params=Array()) {
 	<ref datasource="systable"/>
 </field>
 <field name="fieldname" type="string" caption="Поле" notnull="1" len="15" maxlength="255"/>
-<field name="name" type="string" caption="Описание поля" len="25" maxlength="255"/>
+<field name="name" type="string" caption="Описание поля" stretch="1" len="25" maxlength="255"/>
 <field name="isnotempty" type="check" caption="Не пусто" len="5"/>
 <field name="ismain" type="check" caption="Main" len="5"/>
 <field name="isstretch" type="check" caption="Stretch" len="5"/>

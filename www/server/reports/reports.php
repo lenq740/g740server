@@ -6,7 +6,8 @@ header("Content-type: text/html; charset=utf-8");
 header("Cache-Control: no-store, no-cache, must-revalidate");
 header("Cache-Control: post-check=0, pre-check=0", false);
 require_once('../config/.config.php');
-require_once('../module/module-lib.php');
+require_once('../module/module-lib-base.php');
+require_once('../module/module-lib-g740server.php');
 require_once('../module/module-perm.php');
 require_once('../module/module-datasource.php');
 

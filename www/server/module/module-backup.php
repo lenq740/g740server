@@ -4,7 +4,6 @@
 @package module
 @subpackage module-backup
 */
-require_once('module-lib.php');
 
 /**
 Сохранение таблицы в XML

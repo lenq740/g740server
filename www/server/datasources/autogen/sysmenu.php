@@ -69,6 +69,7 @@ public function getFields() {
 		$fld['caption']='Права, режим';
 		$fld['maxlength']='255';
 		$fld['len']='10';
+		$fld['stretch']='1';
 		$this->fields[]=$fld;
 	}
 	{	// permoper - Права, операция
@@ -78,6 +79,7 @@ public function getFields() {
 		$fld['caption']='Права, операция';
 		$fld['maxlength']='255';
 		$fld['len']='10';
+		$fld['stretch']='1';
 		$this->fields[]=$fld;
 	}
 	{	// ord - №пп
@@ -141,7 +143,7 @@ SQL;
 // Этот метод Этот метод возвращает секцию where для запроса select
 public function getSelectWhere($params=Array()) {
 	$result='';
-	if (array_key_exists('filter.id', $params)) {
+	if ($params['filter.id']!='') {
 		if ($this->isGUID) {
 			$value=$this->guid2Sql($params['filter.id']);
 		}
@@ -181,8 +183,8 @@ public function getStrXmlDefinitionFields($params=Array()) {
 <field name="form" type="string" caption="Экранная форма" len="15" maxlength="255"/>
 <field name="icon" type="string" caption="Иконка" len="10" maxlength="255"/>
 <field name="params" type="memo" caption="Параметры вызова" stretch="1"/>
-<field name="permmode" type="string" caption="Права, режим" len="10" maxlength="255"/>
-<field name="permoper" type="string" caption="Права, операция" len="10" maxlength="255"/>
+<field name="permmode" type="string" caption="Права, режим" stretch="1" len="10" maxlength="255"/>
+<field name="permoper" type="string" caption="Права, операция" stretch="1" len="10" maxlength="255"/>
 <field name="ord" type="num" caption="№пп" len="5"/>
 <field name="sysmenu_1_name" type="string" caption="Пункт меню" notnull="1" len="25" maxlength="255" refid="klsparent" refname="name"/>
 </fields>

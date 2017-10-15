@@ -11,15 +11,10 @@ $config['datasourceIsGUID']=false;					// не использовать GUID в 
 $config['pathDataSources']='datasources';			// Путь до источников данных от точки входа сервера
 $config['pathForm']='forms';						// Путь до экранных форм от точки входа сервера
 
-/**
-Вернуть значение настроечной константы
-@param	String	$name имя настройки
-@param	String	$default значение по умолчанию
-@return	String значение настроечной константы
-*/
-function getCfg($name, $default='') {
-	global $config;
-	if (isset($config[$name])) return $config[$name];
-	return $default;
-}
+// Ключ шифрования md5
+$config['crypt.md5.key']='1234567890';
+
+// Пути относительно server
+$config['path.import']='import';
+$config['path.import.backup']='backup';
 ?>
