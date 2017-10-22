@@ -211,6 +211,108 @@ HTML;
 	return $expr;
 }
 
+/**
+Выкидывание из текстового абзаца специфики HTML
+@param	String	$str исходная строка
+@return	String преобращованная строка
+*/
+function str2ExtText($str) {
+	$str=_str2ExtTextSimpleReplace($str);	// Выполняем простые замены
+	$str=_str2TextCfg($str);				// Обрабатываем $$cfg$$
+	$str=_str2TextH2($str);					// Обрабатываем заголовки h2
+	$str=_str2TextDoubleBrace($str);		// Обрабатываем макроподстановку в двойных фигурных скобках
+	$str=trim($str);
+	return $str;
+}
+// Преобразование текстового абзаца
+function _str2ExtTextSimpleReplace($str) {
+	$from=['<b>','</b>','**',"\r","\n","\t",'{{noindex}}','{{/noindex}}'];
+	$to=['','','','',' ',' ','',''];
+	$str=str_replace($from,$to,$str);
+	$str=str_replace('  ',' ',$str);
+	return $str;
+}
+// Преобразование текстового абзаца, обработка $$cfg$$
+function _str2TextCfg($str) {
+	$regExpr=
+	'{'.'\$\$.*?\$\$'.'}';
+	$str=preg_replace_callback($regExpr, '_str2TextCallback', $str);
+	return $str;
+}
+// Преобразование текстового абзаца, обработка h2
+function _str2TextH2($str) {
+	$regExpr=
+	'{'.'^[\040]*===.*?===$'.'}m';
+	$str=preg_replace_callback($regExpr, '_str2TextCallback', $str);
+	return $str;
+}
+// Преобразование текстового абзаца, обработка макроподстановки {{}}
+function _str2TextDoubleBrace($str) {
+	$regExpr='{'.'\{\{.*?\}\}'.'}';
+	$str=preg_replace_callback($regExpr, '_str2TextCallbackDoubleBrace', $str);
+	return $str;
+}
+// Преобразование текстового абзаца в HTML, универсальная функция обратного вызова
+function _str2TextCallback($matches) {
+	$expr=$matches[0];
+	if (trim($expr,' ')=='') return '';
+	if (substr(trim($expr),0,2)=="$$") {
+		$expr=trim($expr);
+		$name=mb_substr($expr,2,mb_strlen($expr)-4);
+		return getCfg($name);
+	}
+	if (substr(trim($expr),0,3)=="===") {
+		$expr=trim($expr);
+		return mb_substr($expr,3,mb_strlen($expr)-6);
+	}
+	if (substr($expr,0,2)=="- ") return substr($expr,2,strlen($expr)-2);
+	return $expr;
+}
+// Преобразование текстового абзаца в HTML, функция обратного вызова макроса {{}}
+function  _str2TextCallbackDoubleBrace($matches) {
+	$expr=$matches[0];
+	if (substr($expr,0,2)=='{{') {
+		$regExpr=
+'{^\{\{'.
+	'(?:'.
+		'\h*'.'|'.
+		'href="(?<href>.*?)"'.'|'.
+		'tel="(?<tel>.*?)"'.'|'.
+		'mailto="(?<mailto>.*?)"'.'|'.
+		
+		'mode="(?<mode>.*?)"'.'|'.
+		'klstrade="(?<klstrade>.*?)"'.'|'.
+		'klstrades2s="(?<klstrades2s>.*?)"'.'|'.
+		'klstradesection="(?<klstradesection>.*?)"'.'|'.
+		'klstraderubric="(?<klstraderubric>.*?)"'.'|'.
+		'page="(?<page>.*?)"'.'|'.
+		
+		'text="(?<text>.*?)"'.'|'.
+		'cfg="(?<cfg>.*?)"'.'|'.
+		'nofollow="(?<nofollow>.*?)"'.'|'.
+		'\w*="\w*"'.
+	')*'.
+'\}\}}';
+		$res=Array();
+		preg_match($regExpr, $expr, $res);
+		if ($res['cfg']) {
+			return getCfg($res['cfg']);
+		}
+		else {
+			if ($res['tel']) {
+				return $res['tel'];
+			}
+			else if ($res['mailto']) {
+				return $res['mailto'];
+			}
+			else if ($res['text']) {
+				return $res['text'];
+			}
+		}
+	}
+	return '';
+}
+
 // Сдвиг текстового блока вправо на заданное кол-во знаков табуляции
 function strTabShift($str, $tabShift) {
 	$strTab='';
