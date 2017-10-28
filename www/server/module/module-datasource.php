@@ -1454,8 +1454,9 @@ PHP;
 				}
 			} else if ($filterType=='check') {
 				$result.="\n".<<<PHP
-	if ({$D}params['filter.{$fld['name']}']) {
-		{$D}result.="\\n"."and {$fullFieldName}='1'";
+	if ({$D}params['filter.{$fld['name']}']!='') {
+		{$D}value={$D}this->php2Sql({$D}params['filter.{$fld['name']}']);
+		{$D}result.="\\n"."and {$fullFieldName}='{{$D}value}'";
 	}
 PHP;
 			}
