@@ -313,29 +313,6 @@ XML;
 		}
 		return $result;
 	}
-	public function execValidFields($params=Array()) {
-		$errorMessage='Ошибка при обращении к DataSource::execValidFields';
-		$id=$params['id'];
-		if (!$id) throw new Exception($errorMessage." Не задан обязательный пареметр id");
-		$result=$this->execRefresh(Array('filter.id'=>$id));
-		if (count($result)!=1) throw new Exception("Не найдена строка таблицы");
-		$rec=$result[0];
-		$fields=$this->getFields();
-		foreach($fields as $key=>$fld) {
-			$alias=$this->tableName;
-			if ($fld['table']) $alias=$fld['table'];
-			if ($fld['alias']) $alias=$fld['alias'];
-			if ($alias!=$this->tableName) continue;
-			
-			if ($fld['notnull']!=1) continue;
-			$name=$fld['name'];
-			$sqlName=strtolower($name);
-			$isEmpty=!$rec[$sqlName];
-			if ($fld['type']=='ref' && $rec[$sqlName]=='00000000-0000-0000-0000-000000000000') $isEmpty=true;
-			if ($isEmpty) throw new ExceptionNoReport('Не заполнено значение поля '.$fld['caption']);
-		}
-		return $result;
-	}
 	public function execSave($params=Array()) {
 		$errorMessage='Ошибка при обращении к DataSource::execSave';
 		if (!$this->getPerm('write','save',$params)) throw new ExceptionNoReport('У Вас нет прав на внесение изменений в строку таблицы '.$this->tableCaption);
@@ -393,11 +370,12 @@ XML;
 			}
 			$this->pdo($sqlUpdate, 'Ошибка при правке строки таблицы '.$this->tableCaption);
 		}
-		$p=$params;
-		$p['id']=$id;
-		$p['filter.id']=$id;
-		$this->execValidFields($p);
-		return $this->execRefresh($p);
+		
+		if (!$id) $id='0';
+		$result=$this->execRefresh(Array('filter.id'=>$id));
+		$result=$this->onValid($result);
+		$result=$this->onAfterSave($result);
+		return $result;
 	}
 	public function execInsert($params=Array()) {
 		$errorMessage='Ошибка при обращении к DataSource::execInsert';
@@ -455,11 +433,11 @@ XML;
 		} else {
 			$lastId=$this->getPDO()->lastInsertId();
 		}
-		$p=Array();
-		$p['id']=$lastId;
-		$p['filter.id']=$lastId;
-		$this->execValidFields($p);
-		return $this->execRefresh($p);
+		if (!$id) $id='0';
+		$result=$this->execRefresh(Array('filter.id'=>$id));
+		$result=$this->onValid($result);
+		$result=$this->onAfterSave($result);
+		return $result;
 	}
 	public function execCopy($params=Array()) {
 		$errorMessage='Ошибка при обращении к DataSource::execCopy';
@@ -497,6 +475,31 @@ XML;
 		$result=Array();
 		return $result;
 	}
+	
+	// Обработка событий, в качестве параметра - результат операции
+	protected function onValid($result=Array()) {
+		$fields=$this->getFields();
+		foreach($result as $rec) {
+			foreach($fields as $fld) {
+				$alias=$this->tableName;
+				if ($fld['table']) $alias=$fld['table'];
+				if ($fld['alias']) $alias=$fld['alias'];
+				if ($alias!=$this->tableName) continue;
+				
+				if ($fld['notnull']!=1) continue;
+				$name=$fld['name'];
+				$sqlName=strtolower($name);
+				$isEmpty=!$rec[$sqlName];
+				if ($fld['type']=='ref' && $rec[$sqlName]=='00000000-0000-0000-0000-000000000000') $isEmpty=true;
+				if ($isEmpty) throw new ExceptionNoReport('Не заполнено значение поля '.$fld['caption']);
+			}
+		}
+		return $result;
+	}
+	protected function onAfterSave($result=Array()) {
+		return $result;
+	}
+	
 	
 	public function execDelete($params=Array()) {
 		$errorMessage='Ошибка при обращении к DataSource::execDelete';
