@@ -433,8 +433,8 @@ XML;
 		} else {
 			$lastId=$this->getPDO()->lastInsertId();
 		}
-		if (!$id) $id='0';
-		$result=$this->execRefresh(Array('filter.id'=>$id));
+		if (!$lastId) $lastId='0';
+		$result=$this->execRefresh(Array('filter.id'=>$lastId));
 		$result=$this->onValid($result);
 		$result=$this->onAfterSave($result);
 		return $result;
