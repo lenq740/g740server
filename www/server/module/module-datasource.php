@@ -374,7 +374,7 @@ XML;
 		if (!$id) $id='0';
 		$result=$this->execRefresh(Array('filter.id'=>$id));
 		$result=$this->onValid($result);
-		$result=$this->onAfterSave($result);
+		$result=$this->onAfterSave($result, $params);
 		return $result;
 	}
 	public function execInsert($params=Array()) {
@@ -436,7 +436,7 @@ XML;
 		if (!$lastId) $lastId='0';
 		$result=$this->execRefresh(Array('filter.id'=>$lastId));
 		$result=$this->onValid($result);
-		$result=$this->onAfterSave($result);
+		$result=$this->onAfterSave($result, $params);
 		return $result;
 	}
 	public function execCopy($params=Array()) {
@@ -496,7 +496,7 @@ XML;
 		}
 		return $result;
 	}
-	protected function onAfterSave($result=Array()) {
+	protected function onAfterSave($result=Array(), $params=Array()) {
 		return $result;
 	}
 	
