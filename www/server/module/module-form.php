@@ -88,8 +88,9 @@ class FormController {
 		}
 		
 		if ($result) {
+			if ($_SESSION['connect_login']) $login=str2Attr($_SESSION['connect_login']);
 			$result=<<<XML
-<menubar>
+<menubar login="{$login}">
 {$result}
 </menubar>
 XML;

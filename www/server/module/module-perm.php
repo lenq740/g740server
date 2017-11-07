@@ -45,10 +45,12 @@ function execConnect($params) {
 	if ($params['login']=='root' && $params['password']=='1') {
 		$_SESSION['connect_ok']=true;
 		$_SESSION['connect_sys']=true;
+		$_SESSION['connect_login']='root';
 	}
 	if ($params['login']=='admin' && $params['password']=='1') {
 		$_SESSION['connect_ok']=true;
 		$_SESSION['connect_adm']=true;
+		$_SESSION['connect_login']='admin';
 	}
 	return true;
 }
@@ -63,6 +65,7 @@ function execDisconnect() {
 	unset($_SESSION['connect_ok']);
 	unset($_SESSION['connect_sys']);
 	unset($_SESSION['connect_adm']);
+	unset($_SESSION['connect_login']);
 	return true;
 }
 ?>
