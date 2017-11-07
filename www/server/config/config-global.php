@@ -11,6 +11,10 @@ $config['datasourceIsGUID']=false;					// не использовать GUID в 
 $config['pathDataSources']='datasources';			// Путь до источников данных от точки входа сервера
 $config['pathForm']='forms';						// Путь до экранных форм от точки входа сервера
 
+// Отладка
+$config['trace.sql']=false;			// трассировать все SQL запросы
+$config['trace.error.sql']=false;	// логировать все ошибки SQL запросов
+
 // Ключ шифрования md5
 $config['crypt.md5.key']='1234567890';
 

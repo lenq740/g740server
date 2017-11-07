@@ -46,7 +46,16 @@ class DataSource extends DSConnector{
 			if ($requestName=='refresh') {
 				if (!$paginatorFrom) $paginatorFrom=0;
 				$sql=$this->getSelectCount($params);
-				$rec=$this->pdoFetch($sql);
+				
+				$errorMessage='Ошибка выполнения SQL запроса при подсчете кол-ва строк в таблице '.$this->tableCaption;
+				try {
+					$rec=$this->pdoFetch($sql, $errorMessage);
+				}
+				catch (Exception $e) {
+					$this->getSelect($params);
+					throw new Exception($errorMessage);
+				}
+				
 				$paginatorAll=$rec['n'];
 				$objResponseWriter->writeAttribute('paginator.from', $paginatorFrom);
 				$objResponseWriter->writeAttribute('paginator.all', $paginatorAll);
@@ -289,7 +298,15 @@ XML;
 			$fields[$key]=$fld;
 		}
 		$result=Array();
-		$q=$this->pdo($select);
+		
+		$errorMessage='Ошибка выполнения SQL запроса при чтении строк в таблице '.$this->tableCaption;
+		try {
+			$q=$this->pdo($select, $errorMessage);
+		}
+		catch (Exception $e) {
+			throw new Exception($errorMessage);
+		}
+		
 		while ($rec=$this->pdoFetch($q)) {
 			$res=Array();
 			if (isset($rec['id'])) $res['id']=$rec['id'];
@@ -368,7 +385,14 @@ XML;
 			} else {
 				throw new Exception("Неизвестный драйвер базы данных '{$driverName}'");
 			}
-			$this->pdo($sqlUpdate, 'Ошибка при правке строки таблицы '.$this->tableCaption);
+			
+			$errorMessage='Ошибка выполнения SQL запроса при правке строки таблицы '.$this->tableCaption;
+			try {
+				$this->pdo($sqlUpdate, $errorMessage);
+			}
+			catch (Exception $e) {
+				throw new Exception($errorMessage);
+			}
 		}
 		
 		if (!$id) $id='0';
@@ -426,8 +450,15 @@ XML;
 		} else {
 			throw new Exception("Неизвестный драйвер базы данных '{$driverName}'");
 		}
-		$this->pdo($sqlInsert, 'Ошибка при вставке строки таблицы '.$this->tableCaption);
 		
+		$errorMessage='Ошибка выполнения SQL запроса при вставке строки таблицы '.$this->tableCaption;
+		try {
+			$this->pdo($sqlInsert, $errorMessage);
+		}
+		catch (Exception $e) {
+			throw new Exception($errorMessage);
+		}
+
 		if ($this->isGUID) {
 			$lastId=$params['id'];
 		} else {

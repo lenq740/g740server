@@ -709,18 +709,19 @@ class PDODataConnectorAbstract extends PDO {
 		throw new Exception('Обращение к абстрактной функции PDODataConnectorAbstract::php2Sql');
 	}
 	public function pdo($sql, $errorMessage='', $params=Array()) {
-		global $isTraceSQL;
-		if ($isTraceSQL) trace($sql."\n");
+		if (getCfg('trace.sql')) trace($sql."\n");
 		
 		$result=$this->prepare($sql);
 		if (!$result) {
 			$errInfo=$this->errorInfo();
 			$errorMessage.=' Ошибка в SQL запросе '.$errInfo[2]."\n".$sql;
+			if (getCfg('trace.error.sql')) errorLog($errorMessage);
 			throw new Exception($errorMessage);
 		}
 		if (!$result->execute($params)) {
 			$errInfo=$result->errorInfo();
 			$errorMessage.=' Ошибка в SQL запросе '.$errInfo[2]."\n".$sql;
+			if (getCfg('trace.error.sql')) errorLog($errorMessage);
 			throw new Exception($errorMessage);
 		}
 		return $result;
@@ -925,10 +926,15 @@ function trace($value) {
 function errorLog($e) {
 	if (!is_dir('log')) mkdir('log');
 	if (!$handle = fopen('log/logerr.txt', 'a')) throw new Exception("Не удалось открыть файл 'log/logerr.txt'");
-	$result=date("[d-M-Y H:i:s e]").' PHP Exception: '.$e->getMessage().' in '.$e->getFile().' on '.$e->getLine()."\n";
-	$lst=$e->getTrace();
-	foreach($lst as $index=>$item) {
-		$result.="\t{$item['file']}\t{$item['function']}\t{$item['line']}\n";
+	if (is_string($e)) {
+		$result=date("[d-M-Y H:i:s e]").' Error'."\n".$e."\n".'------------'."\n";
+	}
+	else {
+		$result=date("[d-M-Y H:i:s e]").' PHP Exception: '.$e->getMessage().' in '.$e->getFile().' on '.$e->getLine()."\n";
+		$lst=$e->getTrace();
+		foreach($lst as $index=>$item) {
+			$result.="\t{$item['file']}\t{$item['function']}\t{$item['line']}\n";
+		}
 	}
 	if (fwrite($handle, $result) === FALSE) throw new Exception("Не удалось произвести запись файл log/logerr.txt");
 	fclose($handle);
