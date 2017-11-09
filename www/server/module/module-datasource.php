@@ -167,6 +167,8 @@ XML;
 	public function getStrXmlDefinitionFields($params=Array()) {
 		return $this->autoGenXmlDefinitionFields();
 	}
+	
+	// Старый вариант построения секции описания дерева
 	public function getStrXmlDefItem($params=Array(), $dataSource, $rowType, $treeName='name', $treeDescription='name', $strXmlAddRequests='', $strXmlAddFields='') {
 		$requests=$dataSource->getRequests();
 		$r=$requests['refresh'];
@@ -199,6 +201,52 @@ XML;
 XML;
 		return $result;
 	}
+
+	// Новый вариант построения секции описания дерева
+	public function getStrXmlDefinitionTreeSection($params=Array(), $dataSource) {
+		$rowType=$params['row.type'];
+		$treeName=$params['tree.name'];
+		$treeDescription=$params['tree.description'];
+		$treeDefaultIcon=$params['tree.default.icon'];
+		$treeDefaultFinal=$params['tree.default.final'];
+		$strXmlAddRequests=$params['xml.requests'];
+		$strXmlAddFields=$params['xml.fields'];
+		
+		$requests=$dataSource->getRequests();
+		$r=$requests['refresh'];
+		$r['name']='expand';
+		$requests['expand']=$r;
+		unset($requests['refreshrow']);
+		
+		$strXmlR=$dataSource->getStrXmlDefinitionRequests($params, $requests);
+		if ($strXmlAddRequests) {
+			$xmlR=strXml2DomXml($strXmlR);
+			$xmlAdd=strXml2DomXml($strXmlAddRequests);
+			while ($xmlAdd->firstChild) $xmlR->appendChild($xmlAdd->firstChild);
+			$strXmlR=domXml2StrXml($xmlR);
+		}
+		
+		$strXmlF=$dataSource->getStrXmlDefinitionFields($params);
+		$xmlF=strXml2DomXml($strXmlF);
+		if ($strXmlAddFields) {
+			$xmlAdd=strXml2DomXml($strXmlAddFields);
+			while ($xmlAdd->firstChild) $xmlF->appendChild($xmlAdd->firstChild);
+		}
+		if ($treeName) xmlSetAttr($xmlF, 'name', $treeName);
+		if ($treeDescription) xmlSetAttr($xmlF, 'description', $treeDescription);
+		if ($treeDefaultIcon) xmlSetAttr($xmlF, 'default.icon', $treeDefaultIcon);
+		if ($treeDefaultFinal) xmlSetAttr($xmlF, 'default.final', '1');
+		$strXmlF=domXml2StrXml($xmlF);
+		$attrRowType=str2Attr($rowType);
+		$result=<<<XML
+<section row.type="{$attrRowType}">
+{$strXmlR}
+{$strXmlF}
+</section>
+XML;
+		return $result;
+	}
+
 	
 	protected $fields=null;
 	public function getFields() {
