@@ -300,14 +300,17 @@ public function getSelectWhere($params=Array()) {
 		$value=$this->php2Sql($params['filter.klssystable.tmptable']);
 		$result.="\n"."and `sysfield`.`klssystable` in (select value from tmptablelist where tmptablelist.list='{$value}')";
 	}
-	if ($params['filter.isnotempty']) {
-		$result.="\n"."and `sysfield`.`isnotempty`='1'";
+	if ($params['filter.isnotempty']!='') {
+		$value=$this->php2Sql($params['filter.isnotempty']);
+		$result.="\n"."and `sysfield`.`isnotempty`='{$value}'";
 	}
-	if ($params['filter.ismain']) {
-		$result.="\n"."and `sysfield`.`ismain`='1'";
+	if ($params['filter.ismain']!='') {
+		$value=$this->php2Sql($params['filter.ismain']);
+		$result.="\n"."and `sysfield`.`ismain`='{$value}'";
 	}
-	if ($params['filter.isstretch']) {
-		$result.="\n"."and `sysfield`.`isstretch`='1'";
+	if ($params['filter.isstretch']!='') {
+		$value=$this->php2Sql($params['filter.isstretch']);
+		$result.="\n"."and `sysfield`.`isstretch`='{$value}'";
 	}
 	if ($params['filter.klssysfieldtype']!='') {
 		$value=$this->php2Sql($params['filter.klssysfieldtype']);
@@ -325,17 +328,21 @@ public function getSelectWhere($params=Array()) {
 		$value=$this->php2Sql($params['filter.klsreftable.tmptable']);
 		$result.="\n"."and `sysfield`.`klsreftable` in (select value from tmptablelist where tmptablelist.list='{$value}')";
 	}
-	if ($params['filter.isrefrestrict']) {
-		$result.="\n"."and `sysfield`.`isrefrestrict`='1'";
+	if ($params['filter.isrefrestrict']!='') {
+		$value=$this->php2Sql($params['filter.isrefrestrict']);
+		$result.="\n"."and `sysfield`.`isrefrestrict`='{$value}'";
 	}
-	if ($params['filter.isrefcascade']) {
-		$result.="\n"."and `sysfield`.`isrefcascade`='1'";
+	if ($params['filter.isrefcascade']!='') {
+		$value=$this->php2Sql($params['filter.isrefcascade']);
+		$result.="\n"."and `sysfield`.`isrefcascade`='{$value}'";
 	}
-	if ($params['filter.isrefclear']) {
-		$result.="\n"."and `sysfield`.`isrefclear`='1'";
+	if ($params['filter.isrefclear']!='') {
+		$value=$this->php2Sql($params['filter.isrefclear']);
+		$result.="\n"."and `sysfield`.`isrefclear`='{$value}'";
 	}
-	if ($params['filter.isref121']) {
-		$result.="\n"."and `sysfield`.`isref121`='1'";
+	if ($params['filter.isref121']!='') {
+		$value=$this->php2Sql($params['filter.isref121']);
+		$result.="\n"."and `sysfield`.`isref121`='{$value}'";
 	}
 	return $result;
 }

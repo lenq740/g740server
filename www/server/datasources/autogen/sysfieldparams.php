@@ -33,9 +33,8 @@ public function getFields() {
 	{	// val - Значение
 		$fld=Array();
 		$fld['name']='val';
-		$fld['type']='string';
+		$fld['type']='memo';
 		$fld['caption']='Значение';
-		$fld['maxlength']='255';
 		$fld['len']='65';
 		$this->fields[]=$fld;
 	}
@@ -174,7 +173,7 @@ public function getStrXmlDefinitionFields($params=Array()) {
 	<ref datasource="sysfield"/>
 </field>
 <field name="name" type="string" caption="Параметр" notnull="1" len="15" maxlength="255"/>
-<field name="val" type="string" caption="Значение" len="65" maxlength="255"/>
+<field name="val" type="memo" caption="Значение" len="65"/>
 <field name="sysfield_fieldname" type="string" caption="Поле" notnull="1" len="15" maxlength="255" refid="klssysfield" refname="fieldname"/>
 <field name="sysfield_name" type="string" caption="Описание поля" stretch="1" len="25" maxlength="255" refid="klssysfield" refname="name"/>
 <field name="sysfield_klssysfieldtype" type="string" caption="Ссылка на тип поля" refid="klssysfield" refname="klssysfieldtype"/>

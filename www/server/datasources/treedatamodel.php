@@ -35,7 +35,12 @@ class DataSource2_TreeDataModel extends DataSource {
 XML;
 		}
 		{	// section systablecategory
-			$addRequests=<<<XML
+			$p=Array(
+				'row.type'=>'systablecategory',
+				'tree.name'=>'name',
+				'tree.description'=>'name',
+				'tree.default.icon'=>'folder',
+				'xml.requests'=><<<XML
 <requests>
 	<request name="shift"/>
 	<request name="move" js_enabled="get('#this[systable].rowset.markcount')">
@@ -43,24 +48,38 @@ XML;
 		<param name="from.type" value="systable"/>
 	</request>
 </requests>
-XML;
-			$result.="\n".$this->getStrXmlDefItem($params, $this->dataSourceSysTableCategory, 'systablecategory', 'name', 'name', $addRequests);
+XML
+			);
+			$result.="\n".$this->getStrXmlDefinitionTreeSection($p, $this->dataSourceSysTableCategory);
 		}
 		{	// section systable
-			$addRequests=<<<XML
+			$p=Array(
+				'row.type'=>'systable',
+				'tree.name'=>'tablename',
+				'tree.description'=>'name',
+				'tree.default.icon'=>'dbtable',
+				'xml.requests'=><<<XML
 <requests>
 	<request name="mark"/>
 </requests>
-XML;
-			$result.="\n".$this->getStrXmlDefItem($params, $this->dataSourceSysTable, 'systable', 'tablename', 'name', $addRequests);
+XML
+			);
+			$result.="\n".$this->getStrXmlDefinitionTreeSection($p, $this->dataSourceSysTable);
 		}
 		{	// section sysfield
-			$addRequests=<<<XML
+			$p=Array(
+				'row.type'=>'sysfield',
+				'tree.name'=>'fieldname',
+				'tree.description'=>'name',
+				'tree.default.icon'=>'drivecd',
+				'tree.default.final'=>true,
+				'xml.requests'=><<<XML
 <requests>
 	<request name="shift"/>
 </requests>
-XML;
-			$result.="\n".$this->getStrXmlDefItem($params, $this->dataSourceSysField, 'sysfield', 'fieldname', 'name', $addRequests);
+XML
+			);
+			$result.="\n".$this->getStrXmlDefinitionTreeSection($p, $this->dataSourceSysField);
 		}
 		return $result;
 	}

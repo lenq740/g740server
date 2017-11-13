@@ -33,7 +33,6 @@ public function getFields() {
 		$fld['caption']='Пункт меню';
 		$fld['maxlength']='255';
 		$fld['len']='25';
-		$fld['notnull']='1';
 		$this->fields[]=$fld;
 	}
 	{	// form - Экранная форма
@@ -99,7 +98,6 @@ public function getFields() {
 		$fld['caption']='Пункт меню';
 		$fld['maxlength']='255';
 		$fld['len']='25';
-		$fld['notnull']='1';
 		$fld['refname']='name';
 		$fld['refid']='klsparent';
 		$this->fields[]=$fld;
@@ -179,14 +177,14 @@ public function getStrXmlDefinitionFields($params=Array()) {
 <field name="klsparent" type="ref" caption="Ссылка на родителя">
 	<ref datasource="sysmenu"/>
 </field>
-<field name="name" type="string" caption="Пункт меню" notnull="1" len="25" maxlength="255"/>
+<field name="name" type="string" caption="Пункт меню" len="25" maxlength="255"/>
 <field name="form" type="string" caption="Экранная форма" len="15" maxlength="255"/>
 <field name="icon" type="string" caption="Иконка" len="10" maxlength="255"/>
 <field name="params" type="memo" caption="Параметры вызова" stretch="1"/>
 <field name="permmode" type="string" caption="Права, режим" stretch="1" len="10" maxlength="255"/>
 <field name="permoper" type="string" caption="Права, операция" stretch="1" len="10" maxlength="255"/>
 <field name="ord" type="num" caption="№пп" len="5"/>
-<field name="sysmenu_1_name" type="string" caption="Пункт меню" notnull="1" len="25" maxlength="255" refid="klsparent" refname="name"/>
+<field name="sysmenu_1_name" type="string" caption="Пункт меню" len="25" maxlength="255" refid="klsparent" refname="name"/>
 </fields>
 XML;
 	return $result;

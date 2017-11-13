@@ -168,14 +168,17 @@ public function getSelectWhere($params=Array()) {
 		$value=$this->php2Sql($params['filter.klssystablecategory.tmptable']);
 		$result.="\n"."and `systable`.`klssystablecategory` in (select value from tmptablelist where tmptablelist.list='{$value}')";
 	}
-	if ($params['filter.isstatic']) {
-		$result.="\n"."and `systable`.`isstatic`='1'";
+	if ($params['filter.isstatic']!='') {
+		$value=$this->php2Sql($params['filter.isstatic']);
+		$result.="\n"."and `systable`.`isstatic`='{$value}'";
 	}
-	if ($params['filter.isdynamic']) {
-		$result.="\n"."and `systable`.`isdynamic`='1'";
+	if ($params['filter.isdynamic']!='') {
+		$value=$this->php2Sql($params['filter.isdynamic']);
+		$result.="\n"."and `systable`.`isdynamic`='{$value}'";
 	}
-	if ($params['filter.issystem']) {
-		$result.="\n"."and `systable`.`issystem`='1'";
+	if ($params['filter.issystem']!='') {
+		$value=$this->php2Sql($params['filter.issystem']);
+		$result.="\n"."and `systable`.`issystem`='{$value}'";
 	}
 	return $result;
 }

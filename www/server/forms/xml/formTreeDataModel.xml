@@ -1,14 +1,17 @@
 <form name="%form%" caption="Описание структуры базы данных">
 	<rowsets>
 		<rowset name="treedatamodel">
-			<rowset name="systable" parent.row.type="systablecategory">
+			<rowset name="systable" parent.row.type="systablecategory" parent.sync.row.type="systable">
 				<param name="filter.klssystablecategory" js_value="get('#parent[systablecategory].id')"/>
 			</rowset>
-			<rowset name="sysfield" parent.row.type="systable">
+			<rowset name="sysfield" parent.row.type="systable" parent.sync.row.type="sysfield">
 				<param name="filter.klssystable" js_value="get('#parent[systable].id')"/>
 				<rowset name="sysfield-params" datasource="sysfieldparams">
 					<param name="filter.klssysfield" js_value="get('#parent.id')"/>
 				</rowset>
+			</rowset>
+			<rowset name="sysfieldparams" parent.row.type="sysfield">
+				<param name="filter.klssysfield" js_value="get('#parent[sysfield].id')"/>
 			</rowset>
 		</rowset>
 	</rowsets>
@@ -72,7 +75,7 @@
 			<panel type="panel" rowset="treedatamodel" border="1">
 				<panel type="tab" bestchild="1">
 					<panel type="panel" row.type="systablecategory">
-						<panel type="fields" align="top" caption="Анкета категории" border="1">
+						<panel type="fields" align="top" caption="Анкета категории" border="1" padding="10px">
 							<field field="name" stretch="1" caption="Категория"/>
 						</panel>
 						<panel type="grid" rowset="systable" caption="Список таблиц в категории">
@@ -89,13 +92,13 @@
 						<panel type="memo" rowset="systable" caption="Поля" align="bottom" border="1" field="fields" height="100px"/>
 					</panel>
 					<panel type="panel" row.type="systable">
-						<panel align="top" height="100px">
-							<panel type="fields" row.type="systable" caption="Анкета таблицы" border="1">
+						<panel align="top" height="110px">
+							<panel type="fields" row.type="systable" caption="Анкета таблицы" border="1" padding="10px">
 								<field name="tablename" stretch="1" len="5"/>
 								<field name="name" stretch="1" len="5"/>
 								<field name="permmode" stretch="1" len="5"/>
 							</panel>
-							<panel type="fields" caption="Дополн" align="right" width="80px" border="1">
+							<panel type="fields" caption="Дополн" align="right" width="80px" border="1" padding="10px">
 								<field name="issystem" caption="Систем" len="6"/>
 								<field name="isstatic" caption="Статич" len="6"/>
 								<field name="isdynamic" caption="Динам" len="6"/>
@@ -130,22 +133,28 @@
 						</panel>
 					</panel>
 					<panel type="panel" row.type="sysfield">
-						<panel type="fields" align="top" row.type="sysfield" caption="Анкета поля">
-							<field name="fieldname" stretch="1"/>
-							<field name="name" stretch="1"/>
-							<field name="ismain"/>
-							<field name="sysfieldtype_name" stretch="1"/>
-							<field name="maxlength"/>
-							<field name="len"/>
-							<field name="dec"/>
-							<field name="isstretch"/>
-							<field name="isnotempty"/>
-							<field name="reflink" stretch="1"/>
-							<field name="reftable_tablename" stretch="1"/>
-							<field name="isrefrestrict"/>
-							<field name="isrefcascade"/>
-							<field name="isrefclear"/>
-							<field name="isref121"/>
+						<panel type="fields" align="top" row.type="sysfield" caption="Анкета поля" captionup="1" padding="10px" border="1">
+							<field name="fieldname" line="field"/>
+							<field name="name" line="field"/>
+							<field name="sysfieldtype_name" line="field"/>
+							<field name="ismain" line="field"/>
+							
+							<field name="maxlength" caption="max" line="attr"/>
+							<field name="len" caption="len" line="attr"/>
+							<field name="dec" caption="dec" line="attr"/>
+							<field name="isstretch" line="attr"/>
+							<field name="isnotempty" line="attr"/>
+							
+							<field name="reflink" line="is"/>
+							<field name="reftable_tablename" line="is"/>
+							<field name="isrefrestrict" caption="restrict" len="6" line="is"/>
+							<field name="isrefcascade" caption="cascade" len="6" line="is"/>
+							<field name="isrefclear" caption="clear" len="6" line="is"/>
+							<field name="isref121" caption="1 к 1" len="6" line="is"/>
+						</panel>
+						<panel type="grid" rowset="sysfieldparams" caption="Параметры поля" border="1">
+							<field name="name"/>
+							<field name="val"/>
 						</panel>
 					</panel>
 				</panel>

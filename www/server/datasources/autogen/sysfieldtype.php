@@ -142,20 +142,25 @@ public function getSelectWhere($params=Array()) {
 		$value=$this->php2Sql($params['filter.id.tmptable']);
 		$result.="\n"."and `sysfieldtype`.id in (select value from tmptablelist where tmptablelist.list='{$value}')";
 	}
-	if ($params['filter.isid']) {
-		$result.="\n"."and `sysfieldtype`.`isid`='1'";
+	if ($params['filter.isid']!='') {
+		$value=$this->php2Sql($params['filter.isid']);
+		$result.="\n"."and `sysfieldtype`.`isid`='{$value}'";
 	}
-	if ($params['filter.isref']) {
-		$result.="\n"."and `sysfieldtype`.`isref`='1'";
+	if ($params['filter.isref']!='') {
+		$value=$this->php2Sql($params['filter.isref']);
+		$result.="\n"."and `sysfieldtype`.`isref`='{$value}'";
 	}
-	if ($params['filter.isdec']) {
-		$result.="\n"."and `sysfieldtype`.`isdec`='1'";
+	if ($params['filter.isdec']!='') {
+		$value=$this->php2Sql($params['filter.isdec']);
+		$result.="\n"."and `sysfieldtype`.`isdec`='{$value}'";
 	}
-	if ($params['filter.isstr']) {
-		$result.="\n"."and `sysfieldtype`.`isstr`='1'";
+	if ($params['filter.isstr']!='') {
+		$value=$this->php2Sql($params['filter.isstr']);
+		$result.="\n"."and `sysfieldtype`.`isstr`='{$value}'";
 	}
-	if ($params['filter.isdat']) {
-		$result.="\n"."and `sysfieldtype`.`isdat`='1'";
+	if ($params['filter.isdat']!='') {
+		$value=$this->php2Sql($params['filter.isdat']);
+		$result.="\n"."and `sysfieldtype`.`isdat`='{$value}'";
 	}
 	return $result;
 }
