@@ -97,7 +97,7 @@ try {
 			{
 				// Обработка запроса на авторизацию
 				if ($requestName=='connect') {
-					execConnect($params);
+					if (!execConnect($params)) throw new Exception('');
 					$objResponseWriter->startElement('response');
 					$objResponseWriter->writeAttribute('name', 'ok');
 					$objResponseWriter->endElement();

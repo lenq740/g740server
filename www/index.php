@@ -59,12 +59,13 @@ header("Cache-Control: post-check=0, pre-check=0", false);
 					var conf=g740.config;
 					conf['urlServer']='server/';					// Точка входа для управляющих серверных скриптов
 					//conf['mainFormName']='formMain';				// Имя главной формы приложения
-					conf['mainFormName']='formMainWithMenuBar';	// Вариант главной экранной формы приложения с верхним меню вместо древовидного
+					conf['mainFormName']='formMainWithMenuBar';		// Вариант главной экранной формы приложения с верхним меню вместо древовидного
 					conf['mainFormDomNode']='FormPanelMain';		// Узел DOM, в ктором размещается главная форма приложения
 					
 					// Настройка диалога авторизации
 					var confDialogLogin=conf['dialogLogin'];
-					confDialogLogin.loginUrl='resource/logoscreen/';	// Путь до HTML страницы, на фоне которой должен работать диалог авторизации
+					confDialogLogin.loginUrl='resource/logoscreen/';	// Путь до HTML страницы, на фоне которой должен работать диалог аунтетификации
+					confDialogLogin.isReloadBeforeLogin=false;			// Перед аунтетификацией не надо выполнять полную перечитку
 				}
 
 // Расширяем стандартный набор иконок, которые можно использовать в кнопочках и узлах дерева

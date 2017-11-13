@@ -46,13 +46,15 @@ function execConnect($params) {
 		$_SESSION['connect_ok']=true;
 		$_SESSION['connect_sys']=true;
 		$_SESSION['connect_login']='root';
+		return true;
 	}
 	if ($params['login']=='admin' && $params['password']=='1') {
 		$_SESSION['connect_ok']=true;
 		$_SESSION['connect_adm']=true;
 		$_SESSION['connect_login']='admin';
+		return true;
 	}
-	return true;
+	return false;
 }
 /**
 Отлогиниться
