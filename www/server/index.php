@@ -97,7 +97,7 @@ try {
 			{
 				// Обработка запроса на авторизацию
 				if ($requestName=='connect') {
-					if (!execConnect($params)) throw new Exception('');
+					if (!execConnect($params)) throw new Exception('Неверный логин, пароль ...');
 					$objResponseWriter->startElement('response');
 					$objResponseWriter->writeAttribute('name', 'ok');
 					$objResponseWriter->endElement();

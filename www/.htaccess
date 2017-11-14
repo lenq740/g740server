@@ -4,10 +4,5 @@ Options -Indexes -ExecCGI
 order deny,allow
 allow from all
 
-#Отключаем кэширование CSS
-<FilesMatch "\.(css)$">
-Header set Cache-Control "no-store, no-cache, must-revalidate"
-</FilesMatch>
-
 #Отключаем механизм переадресации
 RewriteEngine off

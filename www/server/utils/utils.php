@@ -21,10 +21,10 @@ function goBackup($params) {
 	echo '<h2>Выполнение резервного копирования</h2>'; flush();
 	if (!getPerm('sys','write')) throw new Exception('У Вас нет прав на выполнение этой операции...');
 	
-	$path='../../import/backup';
+	$path='../'.getCfg('path.import','import').'/'.getCfg('path.import.backup','backup');
+	$path=str_replace("\\","/",realpath($path));
 	if (!is_dir($path)) mkdir($path);
-	$fullpath=str_replace("\\","/",realpath($path));
-	$fileName=$fullpath.'/backup.xml';
+	$fileName=$path.'/backup.xml';
 	
 	$xmlWriter = new XMLWriter();
 	$xmlWriter->openURI($fileName);
@@ -158,9 +158,9 @@ Restore
 function goRestore($params) {
 	global $pdoDB;
 
-	$path='../../import/backup/backup.xml';
-	if (!is_file($path)) throw new Exception("Файл '{$path}' не найден");
+	$path='../'.getCfg('path.import','import').'/'.getCfg('path.import.backup','backup').'/backup.xml';
 	$fileName=str_replace("\\","/",realpath($path));
+	if (!is_file($fileName)) throw new Exception("Файл '{$fileName}' не найден");
 
 	echo '<h2>Выполнение восстановления из резервной копии</h2>'; flush();
 	if (!getPerm('sys','write')) throw new Exception('У Вас нет прав на выполнение этой операции...');
