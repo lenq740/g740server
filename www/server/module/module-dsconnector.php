@@ -36,5 +36,9 @@ class DSConnector {
 		$pdoDB=$this->getPDO();
 		return $pdoDB->pdoFetch($sql, $errorMessage, $params);
 	}
+	public function pdoRowCount() {
+		$pdoDB=$this->getPDO();
+		return $pdoDB->rowCount();
+	}
 }
 ?>
