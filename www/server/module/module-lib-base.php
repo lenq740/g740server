@@ -708,10 +708,8 @@ class PDODataConnectorAbstract extends PDO {
 	public function php2Sql($value) {
 		throw new Exception('Обращение к абстрактной функции PDODataConnectorAbstract::php2Sql');
 	}
-	public function rowCount() {
-		return $this->_rowCount;
-	}
-	protected $_rowCount=0;
+
+	protected $_lastQuery=null;
 	public function pdo($sql, $errorMessage='', $params=Array()) {
 		if (getCfg('trace.sql')) trace($sql."\n");
 		
@@ -728,7 +726,7 @@ class PDODataConnectorAbstract extends PDO {
 			if (getCfg('trace.error.sql')) errorLog($errorMessage);
 			throw new Exception($errorMessage);
 		}
-		$this->_rowCount=$result->rowCount();
+		$this->_lastQuery=$result;
 		return $result;
 	}
 	public function pdoFetch($sql, $errorMessage='', $params=Array()) {
@@ -742,6 +740,12 @@ class PDODataConnectorAbstract extends PDO {
 		}
 		return $q->fetch(PDO::FETCH_ASSOC);
 	}
+	public function rowCount() {
+		$result=0;
+		if ($this->_lastQuery) $result=$this->_lastQuery->rowCount();
+		return $result;
+	}
+	
 	public function openConnection() {
 	}
 	public function closeConnection() {
