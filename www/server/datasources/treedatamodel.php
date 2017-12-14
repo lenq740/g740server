@@ -85,12 +85,11 @@ XML
 	}
 	
 	public function exec($params=Array()) {
-		$pdoDB=$this->getPDO();
 		$rowParentType=$params['row.parenttype'];
 		$requestName=$params['#request.name'];
 		if ($requestName=='move') {
 			$rowFromType=$params['from.type'];
-			$rowFromId=$pdoDB->str2Sql($params['from.id']);
+			$rowFromId=$this->str2Sql($params['from.id']);
 			$rowType=$params['row.type'];
 			if ($rowType=='systablecategory' && $rowFromType=='systable') {
 				return $this->execSysTableMove($params);

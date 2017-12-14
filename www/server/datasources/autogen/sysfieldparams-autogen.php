@@ -8,9 +8,8 @@ function __construct() {
 	$this->isGUID=false;
 }
 // Тут описываются поля источника данных
-public function getFields() {
-	if ($this->fields) return $this->fields;
-	$this->fields=Array();
+protected function initFields() {
+	$result=Array();
 	{	// klssysfield - Ссылка на поле
 		$fld=Array();
 		$fld['name']='klssysfield';
@@ -18,7 +17,7 @@ public function getFields() {
 		$fld['caption']='Ссылка на поле';
 		$fld['notnull']='1';
 		$fld['reftable']='sysfield';
-		$this->fields[]=$fld;
+		$result[]=$fld;
 	}
 	{	// name - Параметр
 		$fld=Array();
@@ -28,7 +27,7 @@ public function getFields() {
 		$fld['maxlength']='255';
 		$fld['len']='15';
 		$fld['notnull']='1';
-		$this->fields[]=$fld;
+		$result[]=$fld;
 	}
 	{	// val - Значение
 		$fld=Array();
@@ -36,7 +35,7 @@ public function getFields() {
 		$fld['type']='memo';
 		$fld['caption']='Значение';
 		$fld['len']='65';
-		$this->fields[]=$fld;
+		$result[]=$fld;
 	}
 	{	// sysfield_fieldname - Поле
 		$fld=Array();
@@ -50,7 +49,7 @@ public function getFields() {
 		$fld['notnull']='1';
 		$fld['refname']='fieldname';
 		$fld['refid']='klssysfield';
-		$this->fields[]=$fld;
+		$result[]=$fld;
 	}
 	{	// sysfield_name - Описание поля
 		$fld=Array();
@@ -64,7 +63,7 @@ public function getFields() {
 		$fld['stretch']='1';
 		$fld['refname']='name';
 		$fld['refid']='klssysfield';
-		$this->fields[]=$fld;
+		$result[]=$fld;
 	}
 	{	// sysfield_klssysfieldtype - Ссылка на тип поля
 		$fld=Array();
@@ -76,7 +75,7 @@ public function getFields() {
 		$fld['reftable']='sysfieldtype';
 		$fld['refname']='klssysfieldtype';
 		$fld['refid']='klssysfield';
-		$this->fields[]=$fld;
+		$result[]=$fld;
 	}
 	{	// sysfieldtype_name - Тип
 		$fld=Array();
@@ -90,7 +89,7 @@ public function getFields() {
 		$fld['notnull']='1';
 		$fld['refname']='name';
 		$fld['refid']='sysfield_klssysfieldtype';
-		$this->fields[]=$fld;
+		$result[]=$fld;
 	}
 	{	// sysfieldtype_g740type - Тип в g740
 		$fld=Array();
@@ -103,13 +102,22 @@ public function getFields() {
 		$fld['len']='15';
 		$fld['refname']='g740type';
 		$fld['refid']='sysfield_klssysfieldtype';
-		$this->fields[]=$fld;
+		$result[]=$fld;
 	}
-	return $this->fields;
+	return $result;
 }
 // Тут описываются связи с другими источниками данных для реализации ссылочной целостности
-public function getReferences() {
+protected function initReferences() {
 	$result=Array();
+	{	//  sysfieldparams.klssysfield -> sysfield.id
+		$ref=Array();
+		$ref['mode']='cascade';
+		$ref['from.table']='sysfieldparams';
+		$ref['from.field']='klssysfield';
+		$ref['to.table']='sysfield';
+		$ref['to.field']='id';
+		$result['sysfieldparams.klssysfield']=$ref;
+	}
 	return $result;
 }
 // Этот метод возвращает список полей для запроса select
@@ -136,26 +144,13 @@ SQL;
 // Этот метод Этот метод возвращает секцию where для запроса select
 public function getSelectWhere($params=Array()) {
 	$result='';
-	if ($params['filter.id']!='') {
-		if ($this->isGUID) {
-			$value=$this->guid2Sql($params['filter.id']);
-		}
-		else {
-			$value=$this->php2Sql($params['filter.id']);
-		}
-		$result.="\n"."and `sysfieldparams`.id='{$value}'";
+	if (isset($params['filter.id'])) {
+		$value=$this->php2SqlIn($params['filter.id']);
+		if ($value!='') $result.="\n"."and `sysfieldparams`.id in ({$value})";
 	}
-	if ($params['filter.id.tmptable']!='') {
-		$value=$this->php2Sql($params['filter.id.tmptable']);
-		$result.="\n"."and `sysfieldparams`.id in (select value from tmptablelist where tmptablelist.list='{$value}')";
-	}
-	if ($params['filter.klssysfield']!='') {
-		$value=$this->php2Sql($params['filter.klssysfield']);
-		$result.="\n"."and `sysfieldparams`.`klssysfield`='{$value}'";
-	}
-	if ($params['filter.klssysfield.tmptable']!='') {
-		$value=$this->php2Sql($params['filter.klssysfield.tmptable']);
-		$result.="\n"."and `sysfieldparams`.`klssysfield` in (select value from tmptablelist where tmptablelist.list='{$value}')";
+	if (isset($params['filter.klssysfield'])) {
+		$value=$this->php2SqlIn($params['filter.klssysfield']);
+		if ($value!='') $result.="\n"."and `sysfieldparams`.`klssysfield` in ({$value})";
 	}
 	return $result;
 }

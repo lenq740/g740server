@@ -1,7 +1,7 @@
 <?php
 /**
 Библиотека для BackUp, Restore таблиц базы данных через XML
-@package module
+@package module-lib
 @subpackage module-backup
 */
 
@@ -15,7 +15,7 @@
 */
 function saveTableToXmlWriter($para) {
 	if (!$para) throw new Exception('Не задан para');
-	global $pdoDB;
+	$pdoDB=getPDO();
 	$xmlWriter=$para['xmlWriter'];
 	$tableName=$para['tableName'];
 	$isEcho=$para['isEcho'];
@@ -116,7 +116,7 @@ function loadTablesFromXmlReader($para) {
 */
 function _loadTableFromXmlReader($para) {
 	if (!$para) throw new Exception('Не задан para');
-	global $pdoDB;
+	$pdoDB=getPDO();
 	$xmlReader=$para['xmlReader'];
 	$tableName=$para['tableName'];
 	$fields=$para['fields'];
@@ -224,7 +224,7 @@ function _loadTableFromXmlReader($para) {
 @param	String	$tableName
 */
 function opimizeTable($tableName) {
-	global $pdoDB;
+	$pdoDB=getPDO();
 	$sql='check table '.$tableName;
 	$q=$pdoDB->pdo($sql);
 	$sql='optimize table '.$tableName;

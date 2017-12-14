@@ -8,9 +8,8 @@ function __construct() {
 	$this->isGUID=false;
 }
 // Тут описываются поля источника данных
-public function getFields() {
-	if ($this->fields) return $this->fields;
-	$this->fields=Array();
+protected function initFields() {
+	$result=Array();
 	{	// name - Тип
 		$fld=Array();
 		$fld['name']='name';
@@ -19,7 +18,7 @@ public function getFields() {
 		$fld['maxlength']='255';
 		$fld['len']='12';
 		$fld['notnull']='1';
-		$this->fields[]=$fld;
+		$result[]=$fld;
 	}
 	{	// isid - id
 		$fld=Array();
@@ -27,7 +26,7 @@ public function getFields() {
 		$fld['type']='check';
 		$fld['caption']='id';
 		$fld['len']='5';
-		$this->fields[]=$fld;
+		$result[]=$fld;
 	}
 	{	// isref - Ссылка
 		$fld=Array();
@@ -35,7 +34,7 @@ public function getFields() {
 		$fld['type']='check';
 		$fld['caption']='Ссылка';
 		$fld['len']='6';
-		$this->fields[]=$fld;
+		$result[]=$fld;
 	}
 	{	// isdec - Число
 		$fld=Array();
@@ -43,7 +42,7 @@ public function getFields() {
 		$fld['type']='check';
 		$fld['caption']='Число';
 		$fld['len']='5';
-		$this->fields[]=$fld;
+		$result[]=$fld;
 	}
 	{	// isstr - Строка
 		$fld=Array();
@@ -51,7 +50,7 @@ public function getFields() {
 		$fld['type']='check';
 		$fld['caption']='Строка';
 		$fld['len']='6';
-		$this->fields[]=$fld;
+		$result[]=$fld;
 	}
 	{	// isdat - Дата
 		$fld=Array();
@@ -59,7 +58,7 @@ public function getFields() {
 		$fld['type']='check';
 		$fld['caption']='Дата';
 		$fld['len']='5';
-		$this->fields[]=$fld;
+		$result[]=$fld;
 	}
 	{	// defvalue - Значение по умолчанию
 		$fld=Array();
@@ -68,7 +67,7 @@ public function getFields() {
 		$fld['caption']='Значение по умолчанию';
 		$fld['maxlength']='255';
 		$fld['len']='15';
-		$this->fields[]=$fld;
+		$result[]=$fld;
 	}
 	{	// jstype - Тип в JavaScript
 		$fld=Array();
@@ -77,7 +76,7 @@ public function getFields() {
 		$fld['caption']='Тип в JavaScript';
 		$fld['maxlength']='255';
 		$fld['len']='15';
-		$this->fields[]=$fld;
+		$result[]=$fld;
 	}
 	{	// g740type - Тип в g740
 		$fld=Array();
@@ -86,7 +85,7 @@ public function getFields() {
 		$fld['caption']='Тип в g740';
 		$fld['maxlength']='255';
 		$fld['len']='15';
-		$this->fields[]=$fld;
+		$result[]=$fld;
 	}
 	{	// ord - №пп
 		$fld=Array();
@@ -94,21 +93,21 @@ public function getFields() {
 		$fld['type']='num';
 		$fld['caption']='№пп';
 		$fld['len']='5';
-		$this->fields[]=$fld;
+		$result[]=$fld;
 	}
-	return $this->fields;
+	return $result;
 }
 // Тут описываются связи с другими источниками данных для реализации ссылочной целостности
-public function getReferences() {
+protected function initReferences() {
 	$result=Array();
-	{	// sysfield.klssysfieldtype --restrict--> sysfieldtype.id
+	{	//  sysfieldtype.id -> sysfield.klssysfieldtype
 		$ref=Array();
 		$ref['mode']='restrict';
-		$ref['from.table']='sysfield';
-		$ref['from.field']='klssysfieldtype';
-		$ref['to.table']='sysfieldtype';
-		$ref['to.field']='id';
-		$result[]=$ref;
+		$ref['from.table']='sysfieldtype';
+		$ref['from.field']='id';
+		$ref['to.table']='sysfield';
+		$ref['to.field']='klssysfieldtype';
+		$result['sysfield.klssysfieldtype']=$ref;
 	}
 	return $result;
 }
@@ -129,18 +128,9 @@ SQL;
 // Этот метод Этот метод возвращает секцию where для запроса select
 public function getSelectWhere($params=Array()) {
 	$result='';
-	if ($params['filter.id']!='') {
-		if ($this->isGUID) {
-			$value=$this->guid2Sql($params['filter.id']);
-		}
-		else {
-			$value=$this->php2Sql($params['filter.id']);
-		}
-		$result.="\n"."and `sysfieldtype`.id='{$value}'";
-	}
-	if ($params['filter.id.tmptable']!='') {
-		$value=$this->php2Sql($params['filter.id.tmptable']);
-		$result.="\n"."and `sysfieldtype`.id in (select value from tmptablelist where tmptablelist.list='{$value}')";
+	if (isset($params['filter.id'])) {
+		$value=$this->php2SqlIn($params['filter.id']);
+		if ($value!='') $result.="\n"."and `sysfieldtype`.id in ({$value})";
 	}
 	if ($params['filter.isid']!='') {
 		$value=$this->php2Sql($params['filter.isid']);

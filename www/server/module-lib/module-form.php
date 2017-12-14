@@ -1,13 +1,13 @@
 <?php
 /**
 Библиотека источников данных
-@package module
+@package module-lib
 @subpackage module-form
 */
 
 /**
 Класс предок для экранной формы
-@package module
+@package module-lib
 @subpackage module-form
 */
 class FormController {
@@ -43,7 +43,7 @@ class FormController {
 		$form=$params['#request.form'];
 		$fileName=$macro['%TemplateFileName%'];
 		if (!$fileName) {
-			$pathForm=getCfg('pathForm');
+			$pathForm=getCfg('path.forms');
 			$fileName="{$pathForm}/xml/{$form}.xml";
 		}
 		if (!file_exists($fileName)) throw new Exception('Не найден файл с XML описанием экранной формы '.$fileName);
@@ -86,15 +86,18 @@ class FormController {
 			if ($result) $result.="\n<separator/>\n";
 			$result.=$resultChild;
 		}
-		
-		if ($result) {
-			if ($_SESSION['connect_login']) $login=str2Attr($_SESSION['connect_login']);
+		if (!$result) {
 			$result=<<<XML
+<request caption="|">
+</request>
+XML;
+		}
+		if ($_SESSION['connect_login']) $login=str2Attr($_SESSION['connect_login']);
+		$result=<<<XML
 <menubar login="{$login}">
 {$result}
 </menubar>
 XML;
-		}
 		return $result;
 	}
 	protected function _getSysMenuBarRecursive($id, &$items) {
@@ -151,7 +154,7 @@ XML;
 
 function getFormController($name) {
 	global $registerFormController;
-	$pathForm=getCfg('pathForm');
+	$pathForm=getCfg('path.forms');
 	
 	$str=$name;
 	$str=str_replace('"','',$str);

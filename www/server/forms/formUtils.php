@@ -3,7 +3,7 @@
 class FormUtils extends FormController {
 	protected function getDefinitionTemplate($params=Array(), $macro=Array()) {
 		$form=$params['#request.form'];
-		$url="server/utils/utils.php";
+		$url="server/utils.php";
 		
 		$delimiter='?';
 		foreach($params as $key=>$value) {

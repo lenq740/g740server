@@ -1,7 +1,7 @@
 <?php
 /**
 Библиотека функций - базовый набор
-@package module
+@package module-lib
 @subpackage module-lib-base
 */
 
@@ -692,10 +692,9 @@ function xmlCreateCDATASection($xmlOwner, $text) {
 //------------------------------------------------------------------------------
 // Работа с базой данных через PDO
 //------------------------------------------------------------------------------
-$pdoDB=null;
 /**
 Класс расширения функционала PDO
-@package module
+@package module-lib
 @subpackage module-lib
 */
 class PDODataConnectorAbstract extends PDO {
@@ -745,15 +744,10 @@ class PDODataConnectorAbstract extends PDO {
 		if ($this->_lastQuery) $result=$this->_lastQuery->rowCount();
 		return $result;
 	}
-	
-	public function openConnection() {
-	}
-	public function closeConnection() {
-	}
 }
 /**
 Класс расширения функционала PDO для MySql
-@package module
+@package module-lib
 @subpackage module-lib
 */
 class PDODataConnectorMySql extends PDODataConnectorAbstract {
@@ -795,26 +789,10 @@ class PDODataConnectorMySql extends PDODataConnectorAbstract {
 		}
 		return $result;
 	}
-	public function openConnection() {
-		$sql=<<<SQL
-create temporary table if not exists tmptablelist (
-	list varchar(36) not null,
-	value varchar(36) not null,
-	index (list)
-);
-SQL;
-		$this->pdo($sql);
-	}
-	public function closeConnection() {
-		$sql=<<<SQL
-truncate table tmptablelist;
-SQL;
-		$this->pdo($sql);
-	}
 }
 /**
 Класс расширения функционала PDO для PostgreSQL
-@package module
+@package module-lib
 @subpackage module-lib
 */
 class PDODataConnectorPgSql extends PDODataConnectorAbstract {
@@ -858,7 +836,7 @@ class PDODataConnectorPgSql extends PDODataConnectorAbstract {
 }
 /**
 Класс расширения функционала PDO для MSSQL
-@package module
+@package module-lib
 @subpackage module-lib
 */
 class PDODataConnectorMSSql extends PDODataConnectorAbstract {
@@ -892,25 +870,73 @@ class PDODataConnectorMSSql extends PDODataConnectorAbstract {
 		}
 		return $result;
 	}
-	public function openConnection() {
-		$sql="select object_id('tempdb..[##tmptablelist]') as objectid";
-		$rec=$this->pdoFetch($sql);
-		if (!$rec['objectid']) {
-			$sql=<<<SQL
-create table ##tmptablelist (
-	list uniqueidentifier not null,
-	value varchar(36) not null
-);
-SQL;
-			$this->pdo($sql);
+}
+
+//------------------------------------------------------------------------------
+// Работа с иллюстрациями
+//------------------------------------------------------------------------------
+function getRisFileNameFromId($klsris) {
+	$name=str_pad(ltrim($klsris),2,'0',STR_PAD_LEFT);
+	$dir=str_pad(substr($name,0,strlen($name)-2),3,'0',STR_PAD_LEFT);
+	return $dir.'/'.ltrim($klsris);
+}
+function doRisResize($sourceFileName, $resultFileName, $resWidth, $resHeight, $isCover) {
+	$imgQuality=85;
+	$result=true;
+	try {
+		$sourceImgSize=getimagesize($sourceFileName);
+		if (!$sourceImgSize) throw new Exception('Ошибка при открытии файла иллюстрации!!!');
+		$sourceWidth=$sourceImgSize[0];
+		$sourceHeight=$sourceImgSize[1];
+		if (($sourceWidth<=0) || ($sourceHeight<=0)) throw new Exception('Не удалось определить размеры изображения!');
+		$img=@imagecreatefromjpeg($sourceFileName);
+		if (!$img) throw new Exception('Ошибка при открытии файла!');
+		
+		if ($isCover) {
+			$srcWidth=$sourceWidth;
+			$srcHeight=$sourceHeight;
+			if (floor($sourceHeight*($resWidth/$resHeight))<$srcWidth) $srcWidth=floor($sourceHeight*($resWidth/$resHeight));
+			if (floor($sourceWidth*($resHeight/$resWidth))<$srcHeight) $srcHeight=floor($sourceWidth*($resHeight/$resWidth));
+			$resImg=imagecreatetruecolor($resWidth,$resHeight);
+			imagecopyresampled(
+				$resImg,
+				$img,
+				0,0,floor(($sourceWidth-$srcWidth)/2),floor(($sourceHeight-$srcHeight)/2),
+				$resWidth,$resHeight,$srcWidth,$srcHeight
+			);
+			imagejpeg($resImg, $resultFileName, $imgQuality);
+			imagedestroy($resImg);
+		} 
+		else {
+			$kX=$resWidth/$sourceWidth;
+			$kY=$resHeight/$sourceHeight;
+			$k=$kX;
+			if ($k>$kY) $k=$kY;
+			if ($k>1) {
+				copy($sourceFileName, $resultFileName);
+			}
+			else {
+				$resWidth=floor($sourceWidth*$k);
+				$resHeight=floor($sourceHeight*$k);
+				$resImg=imagecreatetruecolor($resWidth,$resHeight);
+				imagecopyresampled(
+					$resImg,
+					$img,
+					0,0,
+					0,0,
+					$resWidth,$resHeight,
+					$sourceWidth,$sourceHeight
+				);
+				imagejpeg($resImg, $resultFileName, $imgQuality);
+				imagedestroy($resImg);
+			}
 		}
+		imagedestroy($img);
 	}
-	public function closeConnection() {
-		$sql=<<<SQL
-delete from ##tmptablelist;
-SQL;
-		$this->pdo($sql);
+	catch (Exception $e) {
+		$result=false;
 	}
+	return $result;
 }
 
 //------------------------------------------------------------------------------

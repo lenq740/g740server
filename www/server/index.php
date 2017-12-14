@@ -6,11 +6,12 @@ header("Content-type: text/xml; charset=utf-8");
 header("Cache-Control: no-store, no-cache, must-revalidate");
 header("Cache-Control: post-check=0, pre-check=0", false);
 require_once('config/.config.php');
-require_once('module/module-lib-base.php');
-require_once('module/module-lib-g740server.php');
-require_once('module/module-perm.php');
-require_once('module/module-datasource.php');
-require_once('module/module-form.php');
+require_once('module-lib/module-lib-base.php');
+require_once('module-lib/module-lib-g740server.php');
+require_once('module-lib/module-datasource.php');
+require_once('module-lib/module-form.php');
+require_once('module-lib/module-perm.php');
+require_once('module-prj/prj-perm.php');
 $objResponseWriter=initObjResponseWriter();
 try {
 	initDocRequest();				// Считываем запрос
@@ -21,9 +22,9 @@ try {
 		getCfg('sqlCharSet'),
 		getCfg('sqlHost')
 	); // Устанавливаем соединение с базой данных
+	regPDO($pdoDB,'default');
 	$pdoDB->beginTransaction();
 	try {
-		$pdoDB->openConnection();
 		for ($xmlRequest=$rootRequest->firstChild; $xmlRequest!=null; $xmlRequest=$xmlRequest->nextSibling) {
 			if ($xmlRequest->nodeName!='request') continue;
 
@@ -97,7 +98,7 @@ try {
 			{
 				// Обработка запроса на авторизацию
 				if ($requestName=='connect') {
-					if (!execConnect($params)) throw new Exception('Неверный логин, пароль ...');
+					if (!execConnect($params['login'],$params['password'])) throw new Exception('Неверный логин, пароль ...');
 					$objResponseWriter->startElement('response');
 					$objResponseWriter->writeAttribute('name', 'ok');
 					$objResponseWriter->endElement();
@@ -143,7 +144,6 @@ try {
 			}
 			throw new Exception("Неизвестный запрос {$requestName}");
 		}
-		$pdoDB->closeConnection();
 		if ($pdoDB->inTransaction()) $pdoDB->commit();
 	}
 	catch (Exception $e) {

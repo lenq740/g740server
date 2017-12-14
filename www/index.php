@@ -15,7 +15,7 @@ header("Cache-Control: post-check=0, pre-check=0", false);
 
 	<link rel="stylesheet" type="text/css" href="js/g740/cssdojo/main.css"/>
 	<link rel="stylesheet" type="text/css" href="js/g740/main.css"/>
-	<link rel="stylesheet" type="text/css" href="resource/icons.css"/>
+	<link rel="stylesheet" type="text/css" href="resource/icons/icons.css"/>
 
 <!-- подключаем сжатую версию Dojo -->
 	<script type="text/javascript">
@@ -65,7 +65,7 @@ header("Cache-Control: post-check=0, pre-check=0", false);
 					// Настройка диалога авторизации
 					var confDialogLogin=conf['dialogLogin'];
 					confDialogLogin.loginUrl='resource/logoscreen/';	// Путь до HTML страницы, на фоне которой должен работать диалог аунтетификации
-					confDialogLogin.isReloadBeforeLogin=false;			// Перед аунтетификацией не надо выполнять полную перечитку
+					confDialogLogin.isReloadBeforeLogin=true;			// Перед аунтетификацией не надо выполнять полную перечитку
 				}
 
 // Расширяем стандартный набор иконок, которые можно использовать в кнопочках и узлах дерева

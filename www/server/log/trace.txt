@@ -1,0 +1,2635 @@
+select
+	`sysmenu`.*,
+	`sysmenu_1`.`name` as `sysmenu_1_name`,
+case when exists(select * from sysmenu child where child.klsparent=sysmenu.id)  then 0 else 1 end as row_empty,
+"menuitem" as row_type,
+sysmenu.icon as row_icon
+
+from
+	`sysmenu`
+		left join `sysmenu` `sysmenu_1` on `sysmenu_1`.id=`sysmenu`.`klsparent`
+order by sysmenu.klsparent, sysmenu.ord, sysmenu.id
+
+--------------------------
+select
+	`systablecategory`.*
+from
+	`systablecategory`
+order by systablecategory.ord, systablecategory.id
+
+--------------------------
+select
+	`systable`.*,
+	`systablecategory`.`name` as `systablecategory_name`
+from
+	`systable`
+		left join `systablecategory` on `systablecategory`.id=`systable`.`klssystablecategory`
+where
+	1=1
+
+and `systable`.`klssystablecategory` in ('1')
+order by systable.klssystablecategory, systable.tablename, systable.id
+
+--------------------------
+select
+	`sysmenu`.*,
+	`sysmenu_1`.`name` as `sysmenu_1_name`,
+case when exists(select * from sysmenu child where child.klsparent=sysmenu.id)  then 0 else 1 end as row_empty,
+"menuitem" as row_type,
+sysmenu.icon as row_icon
+
+from
+	`sysmenu`
+		left join `sysmenu` `sysmenu_1` on `sysmenu_1`.id=`sysmenu`.`klsparent`
+order by sysmenu.klsparent, sysmenu.ord, sysmenu.id
+
+--------------------------
+select
+	`systablecategory`.*
+from
+	`systablecategory`
+order by systablecategory.ord, systablecategory.id
+
+--------------------------
+select
+	`systable`.*,
+	`systablecategory`.`name` as `systablecategory_name`
+from
+	`systable`
+		left join `systablecategory` on `systablecategory`.id=`systable`.`klssystablecategory`
+where
+	1=1
+
+and `systable`.`klssystablecategory` in ('1')
+order by systable.klssystablecategory, systable.tablename, systable.id
+
+--------------------------
+select
+	systable.*
+from
+	systable
+		left join systablecategory on systablecategory.id=systable.klssystablecategory
+order by systablecategory.ord, systablecategory.id, systable.tablename, systable.id
+
+--------------------------
+select * from systable where tablename='sysfield'
+
+--------------------------
+select 
+	sysfield.*,
+	sysfieldtype.g740type as sysfieldtype_g740type,
+	reftable.tablename as reftable_tablename
+from 
+	sysfield
+		left join sysfieldtype on sysfieldtype.id=sysfield.klssysfieldtype
+		left join systable reftable on reftable.id=sysfield.klsreftable
+where 
+	sysfield.klssystable='1'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='25'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='26'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='27'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='28'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='29'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='30'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='31'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='32'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='33'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='34'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='35'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='36'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='37'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='38'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='39'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='40'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='41'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='42'
+
+--------------------------
+select * from systable where tablename='sysfieldparams'
+
+--------------------------
+select 
+	sysfield.*,
+	sysfieldtype.g740type as sysfieldtype_g740type,
+	reftable.tablename as reftable_tablename
+from 
+	sysfield
+		left join sysfieldtype on sysfieldtype.id=sysfield.klssysfieldtype
+		left join systable reftable on reftable.id=sysfield.klsreftable
+where 
+	sysfield.klssystable='2'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='43'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='44'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='45'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='46'
+
+--------------------------
+select * from systable where tablename='sysfieldtype'
+
+--------------------------
+select 
+	sysfield.*,
+	sysfieldtype.g740type as sysfieldtype_g740type,
+	reftable.tablename as reftable_tablename
+from 
+	sysfield
+		left join sysfieldtype on sysfieldtype.id=sysfield.klssysfieldtype
+		left join systable reftable on reftable.id=sysfield.klsreftable
+where 
+	sysfield.klssystable='3'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='14'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='15'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='16'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='17'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='18'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='19'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='20'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='21'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='22'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='23'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='24'
+
+--------------------------
+select * from systable where tablename='systable'
+
+--------------------------
+select 
+	sysfield.*,
+	sysfieldtype.g740type as sysfieldtype_g740type,
+	reftable.tablename as reftable_tablename
+from 
+	sysfield
+		left join sysfieldtype on sysfieldtype.id=sysfield.klssysfieldtype
+		left join systable reftable on reftable.id=sysfield.klsreftable
+where 
+	sysfield.klssystable='4'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='4'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='5'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='6'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='7'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='8'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='9'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='10'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='11'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='12'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='13'
+
+--------------------------
+select * from systable where tablename='systablecategory'
+
+--------------------------
+select 
+	sysfield.*,
+	sysfieldtype.g740type as sysfieldtype_g740type,
+	reftable.tablename as reftable_tablename
+from 
+	sysfield
+		left join sysfieldtype on sysfieldtype.id=sysfield.klssysfieldtype
+		left join systable reftable on reftable.id=sysfield.klsreftable
+where 
+	sysfield.klssystable='5'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='1'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='2'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='3'
+
+--------------------------
+select * from systable where tablename='sysmenu'
+
+--------------------------
+select 
+	sysfield.*,
+	sysfieldtype.g740type as sysfieldtype_g740type,
+	reftable.tablename as reftable_tablename
+from 
+	sysfield
+		left join sysfieldtype on sysfieldtype.id=sysfield.klssysfieldtype
+		left join systable reftable on reftable.id=sysfield.klsreftable
+where 
+	sysfield.klssystable='6'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='47'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='48'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='49'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='50'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='51'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='52'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='53'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='54'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='55'
+
+--------------------------
+select
+	systable.*
+from
+	systable
+		left join systablecategory on systablecategory.id=systable.klssystablecategory
+order by systablecategory.ord, systablecategory.id, systable.tablename, systable.id
+
+--------------------------
+select * from systable where tablename='sysfield'
+
+--------------------------
+select 
+	sysfield.*,
+	sysfieldtype.g740type as sysfieldtype_g740type,
+	reftable.tablename as reftable_tablename
+from 
+	sysfield
+		left join sysfieldtype on sysfieldtype.id=sysfield.klssysfieldtype
+		left join systable reftable on reftable.id=sysfield.klsreftable
+where 
+	sysfield.klssystable='1'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='25'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='26'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='27'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='28'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='29'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='30'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='31'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='32'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='33'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='34'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='35'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='36'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='37'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='38'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='39'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='40'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='41'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='42'
+
+--------------------------
+select * from systable where tablename='sysfieldparams'
+
+--------------------------
+select 
+	sysfield.*,
+	sysfieldtype.g740type as sysfieldtype_g740type,
+	reftable.tablename as reftable_tablename
+from 
+	sysfield
+		left join sysfieldtype on sysfieldtype.id=sysfield.klssysfieldtype
+		left join systable reftable on reftable.id=sysfield.klsreftable
+where 
+	sysfield.klssystable='2'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='43'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='44'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='45'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='46'
+
+--------------------------
+select * from systable where tablename='sysfieldtype'
+
+--------------------------
+select 
+	sysfield.*,
+	sysfieldtype.g740type as sysfieldtype_g740type,
+	reftable.tablename as reftable_tablename
+from 
+	sysfield
+		left join sysfieldtype on sysfieldtype.id=sysfield.klssysfieldtype
+		left join systable reftable on reftable.id=sysfield.klsreftable
+where 
+	sysfield.klssystable='3'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='14'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='15'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='16'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='17'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='18'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='19'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='20'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='21'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='22'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='23'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='24'
+
+--------------------------
+select * from systable where tablename='systable'
+
+--------------------------
+select 
+	sysfield.*,
+	sysfieldtype.g740type as sysfieldtype_g740type,
+	reftable.tablename as reftable_tablename
+from 
+	sysfield
+		left join sysfieldtype on sysfieldtype.id=sysfield.klssysfieldtype
+		left join systable reftable on reftable.id=sysfield.klsreftable
+where 
+	sysfield.klssystable='4'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='4'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='5'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='6'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='7'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='8'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='9'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='10'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='11'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='12'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='13'
+
+--------------------------
+select * from systable where tablename='systablecategory'
+
+--------------------------
+select 
+	sysfield.*,
+	sysfieldtype.g740type as sysfieldtype_g740type,
+	reftable.tablename as reftable_tablename
+from 
+	sysfield
+		left join sysfieldtype on sysfieldtype.id=sysfield.klssysfieldtype
+		left join systable reftable on reftable.id=sysfield.klsreftable
+where 
+	sysfield.klssystable='5'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='1'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='2'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='3'
+
+--------------------------
+select * from systable where tablename='sysmenu'
+
+--------------------------
+select 
+	sysfield.*,
+	sysfieldtype.g740type as sysfieldtype_g740type,
+	reftable.tablename as reftable_tablename
+from 
+	sysfield
+		left join sysfieldtype on sysfieldtype.id=sysfield.klssysfieldtype
+		left join systable reftable on reftable.id=sysfield.klsreftable
+where 
+	sysfield.klssystable='6'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='47'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='48'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='49'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='50'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='51'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='52'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='53'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='54'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='55'
+
+--------------------------
+select
+	`sysmenu`.*,
+	`sysmenu_1`.`name` as `sysmenu_1_name`,
+case when exists(select * from sysmenu child where child.klsparent=sysmenu.id)  then 0 else 1 end as row_empty,
+"menuitem" as row_type,
+sysmenu.icon as row_icon
+
+from
+	`sysmenu`
+		left join `sysmenu` `sysmenu_1` on `sysmenu_1`.id=`sysmenu`.`klsparent`
+order by sysmenu.klsparent, sysmenu.ord, sysmenu.id
+
+--------------------------
+select
+	`sysmenu`.*,
+	`sysmenu_1`.`name` as `sysmenu_1_name`,
+case when exists(select * from sysmenu child where child.klsparent=sysmenu.id)  then 0 else 1 end as row_empty,
+"menuitem" as row_type,
+sysmenu.icon as row_icon
+
+from
+	`sysmenu`
+		left join `sysmenu` `sysmenu_1` on `sysmenu_1`.id=`sysmenu`.`klsparent`
+order by sysmenu.klsparent, sysmenu.ord, sysmenu.id
+
+--------------------------
+select
+	`sysmenu`.*,
+	`sysmenu_1`.`name` as `sysmenu_1_name`,
+case when exists(select * from sysmenu child where child.klsparent=sysmenu.id)  then 0 else 1 end as row_empty,
+"menuitem" as row_type,
+sysmenu.icon as row_icon
+
+from
+	`sysmenu`
+		left join `sysmenu` `sysmenu_1` on `sysmenu_1`.id=`sysmenu`.`klsparent`
+order by sysmenu.klsparent, sysmenu.ord, sysmenu.id
+
+--------------------------
+select
+	`sysmenu`.*,
+	`sysmenu_1`.`name` as `sysmenu_1_name`,
+case when exists(select * from sysmenu child where child.klsparent=sysmenu.id)  then 0 else 1 end as row_empty,
+"menuitem" as row_type,
+sysmenu.icon as row_icon
+
+from
+	`sysmenu`
+		left join `sysmenu` `sysmenu_1` on `sysmenu_1`.id=`sysmenu`.`klsparent`
+order by sysmenu.klsparent, sysmenu.ord, sysmenu.id
+
+--------------------------
+select
+	`sysmenu`.*,
+	`sysmenu_1`.`name` as `sysmenu_1_name`,
+case when exists(select * from sysmenu child where child.klsparent=sysmenu.id)  then 0 else 1 end as row_empty,
+"menuitem" as row_type,
+sysmenu.icon as row_icon
+
+from
+	`sysmenu`
+		left join `sysmenu` `sysmenu_1` on `sysmenu_1`.id=`sysmenu`.`klsparent`
+order by sysmenu.klsparent, sysmenu.ord, sysmenu.id
+
+--------------------------
+select
+	`systablecategory`.*
+from
+	`systablecategory`
+order by systablecategory.ord, systablecategory.id
+
+--------------------------
+select
+	`systable`.*,
+	`systablecategory`.`name` as `systablecategory_name`
+from
+	`systable`
+		left join `systablecategory` on `systablecategory`.id=`systable`.`klssystablecategory`
+where
+	1=1
+
+and `systable`.`klssystablecategory` in ('1')
+order by systable.klssystablecategory, systable.tablename, systable.id
+
+--------------------------
+select * from systablecategory
+
+--------------------------
+check table systablecategory
+
+--------------------------
+optimize table systablecategory
+
+--------------------------
+select * from systable
+
+--------------------------
+check table systable
+
+--------------------------
+optimize table systable
+
+--------------------------
+select * from sysfieldtype
+
+--------------------------
+check table sysfieldtype
+
+--------------------------
+optimize table sysfieldtype
+
+--------------------------
+select * from sysfield
+
+--------------------------
+check table sysfield
+
+--------------------------
+optimize table sysfield
+
+--------------------------
+select * from sysfieldparams
+
+--------------------------
+check table sysfieldparams
+
+--------------------------
+optimize table sysfieldparams
+
+--------------------------
+lock table systablecategory write
+
+--------------------------
+alter table systablecategory disable keys
+
+--------------------------
+TRUNCATE TABLE systablecategory
+
+--------------------------
+check table systablecategory
+
+--------------------------
+optimize table systablecategory
+
+--------------------------
+insert into systablecategory (`id`,`name`,`ord`) values ('1','Структура базы','0')
+
+--------------------------
+insert into systablecategory (`id`,`name`,`ord`) values ('2','Системное','0')
+
+--------------------------
+alter table systablecategory enable keys
+
+--------------------------
+unlock tables
+
+--------------------------
+select max(id) as id from systablecategory
+
+--------------------------
+ALTER TABLE systablecategory AUTO_INCREMENT=2
+
+--------------------------
+check table systablecategory
+
+--------------------------
+optimize table systablecategory
+
+--------------------------
+lock table systable write
+
+--------------------------
+alter table systable disable keys
+
+--------------------------
+TRUNCATE TABLE systable
+
+--------------------------
+check table systable
+
+--------------------------
+optimize table systable
+
+--------------------------
+insert into systable (`id`,`klssystablecategory`,`tablename`,`name`,`isstatic`,`isdynamic`,`issystem`,`orderby`,`permmode`) values ('1','1','sysfield','Поле таблицы','0','0','1','sysfield.klssystable, sysfield.ord, sysfield.id','sys')
+
+--------------------------
+insert into systable (`id`,`klssystablecategory`,`tablename`,`name`,`isstatic`,`isdynamic`,`issystem`,`orderby`,`permmode`) values ('2','1','sysfieldparams','Параметр поля','0','0','1','sysfieldparams.klssysfield, sysfieldparams.name','sys')
+
+--------------------------
+insert into systable (`id`,`klssystablecategory`,`tablename`,`name`,`isstatic`,`isdynamic`,`issystem`,`orderby`,`permmode`) values ('3','1','sysfieldtype','Тип поля','0','0','1','sysfieldtype.ord, sysfieldtype.id','sys')
+
+--------------------------
+insert into systable (`id`,`klssystablecategory`,`tablename`,`name`,`isstatic`,`isdynamic`,`issystem`,`orderby`,`permmode`) values ('4','1','systable','Таблица','0','0','1','systable.klssystablecategory, systable.tablename, systable.id','sys')
+
+--------------------------
+insert into systable (`id`,`klssystablecategory`,`tablename`,`name`,`isstatic`,`isdynamic`,`issystem`,`orderby`,`permmode`) values ('5','1','systablecategory','Категория таблицы','0','0','1','systablecategory.ord, systablecategory.id','sys')
+
+--------------------------
+insert into systable (`id`,`klssystablecategory`,`tablename`,`name`,`isstatic`,`isdynamic`,`issystem`,`orderby`,`permmode`,`fields`) values ('6','2','sysmenu','Главное меню системы','0','0','1','sysmenu.klsparent, sysmenu.ord, sysmenu.id','sysref','case when exists(select * from sysmenu child where child.klsparent=sysmenu.id)  then 0 else 1 end as row_empty,\n"menuitem" as row_type,\nsysmenu.icon as row_icon\n')
+
+--------------------------
+alter table systable enable keys
+
+--------------------------
+unlock tables
+
+--------------------------
+select max(id) as id from systable
+
+--------------------------
+ALTER TABLE systable AUTO_INCREMENT=6
+
+--------------------------
+check table systable
+
+--------------------------
+optimize table systable
+
+--------------------------
+lock table sysfieldtype write
+
+--------------------------
+alter table sysfieldtype disable keys
+
+--------------------------
+TRUNCATE TABLE sysfieldtype
+
+--------------------------
+check table sysfieldtype
+
+--------------------------
+optimize table sysfieldtype
+
+--------------------------
+insert into sysfieldtype (`id`,`name`,`isid`,`isref`,`isdec`,`isstr`,`isdat`,`jstype`,`g740type`,`ord`) values ('1','Строка','0','0','0','1','0','edit','string','10')
+
+--------------------------
+insert into sysfieldtype (`id`,`name`,`isid`,`isref`,`isdec`,`isstr`,`isdat`,`jstype`,`g740type`,`ord`) values ('2','Memo','0','0','0','1','0','memo','memo','20')
+
+--------------------------
+insert into sysfieldtype (`id`,`name`,`isid`,`isref`,`isdec`,`isstr`,`isdat`,`defvalue`,`jstype`,`g740type`,`ord`) values ('3','Число','0','0','1','0','0','0','num','num','30')
+
+--------------------------
+insert into sysfieldtype (`id`,`name`,`isid`,`isref`,`isdec`,`isstr`,`isdat`,`defvalue`,`jstype`,`g740type`,`ord`) values ('4','Дата','0','0','0','0','1','null','date','date','40')
+
+--------------------------
+insert into sysfieldtype (`id`,`name`,`isid`,`isref`,`isdec`,`isstr`,`isdat`,`defvalue`,`jstype`,`g740type`,`ord`) values ('6','Галочка','0','0','0','0','0','0','check','check','60')
+
+--------------------------
+insert into sysfieldtype (`id`,`name`,`isid`,`isref`,`isdec`,`isstr`,`isdat`,`defvalue`,`jstype`,`g740type`,`ord`) values ('7','Ссылка','0','1','0','0','0','0','ref','ref','70')
+
+--------------------------
+insert into sysfieldtype (`id`,`name`,`isid`,`isref`,`isdec`,`isstr`,`isdat`,`defvalue`,`jstype`,`g740type`,`ord`) values ('8','Id','1','0','1','0','0','0','id','id','5')
+
+--------------------------
+insert into sysfieldtype (`id`,`name`,`isid`,`isref`,`isdec`,`isstr`,`isdat`,`jstype`,`g740type`,`ord`) values ('9','Список','0','0','0','0','0','list','list','137')
+
+--------------------------
+insert into sysfieldtype (`id`,`name`,`isid`,`isref`,`isdec`,`isstr`,`isdat`,`jstype`,`g740type`,`ord`) values ('10','Иконки','0','0','0','0','0','icons','icons','204')
+
+--------------------------
+insert into sysfieldtype (`id`,`name`,`isid`,`isref`,`isdec`,`isstr`,`isdat`,`jstype`,`g740type`,`ord`) values ('11','Радиогруппа','0','0','0','0','0','radio','radio','271')
+
+--------------------------
+insert into sysfieldtype (`id`,`name`,`isid`,`isref`,`isdec`,`isstr`,`isdat`,`jstype`,`g740type`,`ord`) values ('12','Список множественный','0','0','0','0','0','reflist','reflist','338')
+
+--------------------------
+insert into sysfieldtype (`id`,`name`,`isid`,`isref`,`isdec`,`isstr`,`isdat`,`jstype`,`g740type`,`ord`) values ('13','Дерево множественное','0','0','0','0','0','reftree','reftree','405')
+
+--------------------------
+alter table sysfieldtype enable keys
+
+--------------------------
+unlock tables
+
+--------------------------
+select max(id) as id from sysfieldtype
+
+--------------------------
+ALTER TABLE sysfieldtype AUTO_INCREMENT=13
+
+--------------------------
+check table sysfieldtype
+
+--------------------------
+optimize table sysfieldtype
+
+--------------------------
+lock table sysfield write
+
+--------------------------
+alter table sysfield disable keys
+
+--------------------------
+TRUNCATE TABLE sysfield
+
+--------------------------
+check table sysfield
+
+--------------------------
+optimize table sysfield
+
+--------------------------
+insert into sysfield (`id`,`klssystable`,`fieldname`,`name`,`isnotempty`,`klssysfieldtype`,`maxlength`,`len`,`dec`,`klsreftable`,`isrefrestrict`,`isrefcascade`,`isrefclear`,`isref121`,`ord`,`ismain`,`isstretch`) values ('1','5','id','Id','1','8','0','0','0','0','0','0','0','0','0','0','0')
+
+--------------------------
+insert into sysfield (`id`,`klssystable`,`fieldname`,`name`,`isnotempty`,`klssysfieldtype`,`maxlength`,`len`,`dec`,`klsreftable`,`isrefrestrict`,`isrefcascade`,`isrefclear`,`isref121`,`ord`,`ismain`,`isstretch`) values ('2','5','name','Категория','1','1','255','12','0','0','0','0','0','0','67','1','1')
+
+--------------------------
+insert into sysfield (`id`,`klssystable`,`fieldname`,`name`,`isnotempty`,`klssysfieldtype`,`maxlength`,`len`,`dec`,`klsreftable`,`isrefrestrict`,`isrefcascade`,`isrefclear`,`isref121`,`ord`,`ismain`,`isstretch`) values ('3','5','ord','№пп','0','3','0','5','0','0','0','0','0','0','134','0','0')
+
+--------------------------
+insert into sysfield (`id`,`klssystable`,`fieldname`,`name`,`isnotempty`,`klssysfieldtype`,`maxlength`,`len`,`dec`,`klsreftable`,`isrefrestrict`,`isrefcascade`,`isrefclear`,`isref121`,`ord`,`ismain`,`isstretch`) values ('4','4','id','Id','1','8','0','0','0','0','0','0','0','0','0','0','0')
+
+--------------------------
+insert into sysfield (`id`,`klssystable`,`fieldname`,`name`,`isnotempty`,`klssysfieldtype`,`maxlength`,`len`,`dec`,`klsreftable`,`isrefrestrict`,`isrefcascade`,`isrefclear`,`isref121`,`ord`,`ismain`,`isstretch`) values ('5','4','tablename','Таблица','1','1','255','12','0','0','0','0','0','0','67','1','0')
+
+--------------------------
+insert into sysfield (`id`,`klssystable`,`fieldname`,`name`,`isnotempty`,`klssysfieldtype`,`maxlength`,`len`,`dec`,`klsreftable`,`isrefrestrict`,`isrefcascade`,`isrefclear`,`isref121`,`ord`,`ismain`,`isstretch`) values ('6','4','name','Описание','0','1','255','25','0','0','0','0','0','0','134','1','0')
+
+--------------------------
+insert into sysfield (`id`,`klssystable`,`fieldname`,`name`,`isnotempty`,`klssysfieldtype`,`maxlength`,`len`,`dec`,`klsreftable`,`isrefrestrict`,`isrefcascade`,`isrefclear`,`isref121`,`ord`,`ismain`,`isstretch`) values ('7','4','klssystablecategory','Ссылка на категорию таблицы','1','7','0','0','0','5','1','0','0','0','201','0','0')
+
+--------------------------
+insert into sysfield (`id`,`klssystable`,`fieldname`,`name`,`isnotempty`,`klssysfieldtype`,`maxlength`,`len`,`dec`,`klsreftable`,`isrefrestrict`,`isrefcascade`,`isrefclear`,`isref121`,`ord`,`ismain`,`isstretch`) values ('8','4','isstatic','Статичная таблица','0','6','0','4','0','0','0','0','0','0','268','0','0')
+
+--------------------------
+insert into sysfield (`id`,`klssystable`,`fieldname`,`name`,`isnotempty`,`klssysfieldtype`,`maxlength`,`len`,`dec`,`klsreftable`,`isrefrestrict`,`isrefcascade`,`isrefclear`,`isref121`,`ord`,`ismain`,`isstretch`) values ('9','4','isdynamic','Динамичная таблица','0','6','0','4','0','0','0','0','0','0','335','0','0')
+
+--------------------------
+insert into sysfield (`id`,`klssystable`,`fieldname`,`name`,`isnotempty`,`klssysfieldtype`,`maxlength`,`len`,`dec`,`klsreftable`,`isrefrestrict`,`isrefcascade`,`isrefclear`,`isref121`,`ord`,`ismain`,`isstretch`) values ('10','4','issystem','Системная таблица','0','6','0','4','0','0','0','0','0','0','402','0','0')
+
+--------------------------
+insert into sysfield (`id`,`klssystable`,`fieldname`,`name`,`isnotempty`,`klssysfieldtype`,`maxlength`,`len`,`dec`,`klsreftable`,`isrefrestrict`,`isrefcascade`,`isrefclear`,`isref121`,`ord`,`ismain`,`isstretch`) values ('11','4','orderby','Сортировка','0','2','0','0','0','0','0','0','0','0','469','0','0')
+
+--------------------------
+insert into sysfield (`id`,`klssystable`,`fieldname`,`name`,`isnotempty`,`klssysfieldtype`,`maxlength`,`len`,`dec`,`klsreftable`,`isrefrestrict`,`isrefcascade`,`isrefclear`,`isref121`,`ord`,`ismain`,`isstretch`) values ('12','4','fields','Дополнительные поля','0','2','0','0','0','0','0','0','0','0','536','0','0')
+
+--------------------------
+insert into sysfield (`id`,`klssystable`,`fieldname`,`name`,`isnotempty`,`klssysfieldtype`,`maxlength`,`len`,`dec`,`klsreftable`,`isrefrestrict`,`isrefcascade`,`isrefclear`,`isref121`,`ord`,`ismain`,`isstretch`) values ('13','4','permmode','Режим по правам','0','1','255','12','0','0','0','0','0','0','603','0','0')
+
+--------------------------
+insert into sysfield (`id`,`klssystable`,`fieldname`,`name`,`isnotempty`,`klssysfieldtype`,`maxlength`,`len`,`dec`,`klsreftable`,`isrefrestrict`,`isrefcascade`,`isrefclear`,`isref121`,`ord`,`ismain`,`isstretch`) values ('14','3','id','Id','1','8','0','0','0','0','0','0','0','0','0','0','0')
+
+--------------------------
+insert into sysfield (`id`,`klssystable`,`fieldname`,`name`,`isnotempty`,`klssysfieldtype`,`maxlength`,`len`,`dec`,`klsreftable`,`isrefrestrict`,`isrefcascade`,`isrefclear`,`isref121`,`ord`,`ismain`,`isstretch`) values ('15','3','name','Тип','1','1','255','12','0','0','0','0','0','0','67','1','0')
+
+--------------------------
+insert into sysfield (`id`,`klssystable`,`fieldname`,`name`,`isnotempty`,`klssysfieldtype`,`maxlength`,`len`,`dec`,`klsreftable`,`isrefrestrict`,`isrefcascade`,`isrefclear`,`isref121`,`ord`,`ismain`,`isstretch`) values ('16','3','isid','id','0','6','0','5','0','0','0','0','0','0','134','0','0')
+
+--------------------------
+insert into sysfield (`id`,`klssystable`,`fieldname`,`name`,`isnotempty`,`klssysfieldtype`,`maxlength`,`len`,`dec`,`klsreftable`,`isrefrestrict`,`isrefcascade`,`isrefclear`,`isref121`,`ord`,`ismain`,`isstretch`) values ('17','3','isref','Ссылка','0','6','0','6','0','0','0','0','0','0','201','0','0')
+
+--------------------------
+insert into sysfield (`id`,`klssystable`,`fieldname`,`name`,`isnotempty`,`klssysfieldtype`,`maxlength`,`len`,`dec`,`klsreftable`,`isrefrestrict`,`isrefcascade`,`isrefclear`,`isref121`,`ord`,`ismain`,`isstretch`) values ('18','3','isdec','Число','0','6','0','5','0','0','0','0','0','0','268','0','0')
+
+--------------------------
+insert into sysfield (`id`,`klssystable`,`fieldname`,`name`,`isnotempty`,`klssysfieldtype`,`maxlength`,`len`,`dec`,`klsreftable`,`isrefrestrict`,`isrefcascade`,`isrefclear`,`isref121`,`ord`,`ismain`,`isstretch`) values ('19','3','isstr','Строка','0','6','0','6','0','0','0','0','0','0','335','0','0')
+
+--------------------------
+insert into sysfield (`id`,`klssystable`,`fieldname`,`name`,`isnotempty`,`klssysfieldtype`,`maxlength`,`len`,`dec`,`klsreftable`,`isrefrestrict`,`isrefcascade`,`isrefclear`,`isref121`,`ord`,`ismain`,`isstretch`) values ('20','3','isdat','Дата','0','6','0','5','0','0','0','0','0','0','402','0','0')
+
+--------------------------
+insert into sysfield (`id`,`klssystable`,`fieldname`,`name`,`isnotempty`,`klssysfieldtype`,`maxlength`,`len`,`dec`,`klsreftable`,`isrefrestrict`,`isrefcascade`,`isrefclear`,`isref121`,`ord`,`ismain`,`isstretch`) values ('21','3','defvalue','Значение по умолчанию','0','1','255','15','0','0','0','0','0','0','469','0','0')
+
+--------------------------
+insert into sysfield (`id`,`klssystable`,`fieldname`,`name`,`isnotempty`,`klssysfieldtype`,`maxlength`,`len`,`dec`,`klsreftable`,`isrefrestrict`,`isrefcascade`,`isrefclear`,`isref121`,`ord`,`ismain`,`isstretch`) values ('22','3','jstype','Тип в JavaScript','0','1','255','15','0','0','0','0','0','0','536','0','0')
+
+--------------------------
+insert into sysfield (`id`,`klssystable`,`fieldname`,`name`,`isnotempty`,`klssysfieldtype`,`maxlength`,`len`,`dec`,`klsreftable`,`isrefrestrict`,`isrefcascade`,`isrefclear`,`isref121`,`ord`,`ismain`,`isstretch`) values ('23','3','g740type','Тип в g740','0','1','255','15','0','0','0','0','0','0','603','1','0')
+
+--------------------------
+insert into sysfield (`id`,`klssystable`,`fieldname`,`name`,`isnotempty`,`klssysfieldtype`,`maxlength`,`len`,`dec`,`klsreftable`,`isrefrestrict`,`isrefcascade`,`isrefclear`,`isref121`,`ord`,`ismain`,`isstretch`) values ('24','3','ord','№пп','0','3','0','5','0','0','0','0','0','0','670','0','0')
+
+--------------------------
+insert into sysfield (`id`,`klssystable`,`fieldname`,`name`,`isnotempty`,`klssysfieldtype`,`maxlength`,`len`,`dec`,`klsreftable`,`isrefrestrict`,`isrefcascade`,`isrefclear`,`isref121`,`ord`,`ismain`,`isstretch`) values ('25','1','id','Id','1','8','0','0','0','0','0','0','0','0','0','0','0')
+
+--------------------------
+insert into sysfield (`id`,`klssystable`,`fieldname`,`name`,`isnotempty`,`klssysfieldtype`,`maxlength`,`len`,`dec`,`klsreftable`,`isrefrestrict`,`isrefcascade`,`isrefclear`,`isref121`,`ord`,`ismain`,`isstretch`) values ('26','1','klssystable','Ссылка на родительскую таблицу','1','7','0','0','0','4','0','1','0','0','67','0','0')
+
+--------------------------
+insert into sysfield (`id`,`klssystable`,`fieldname`,`name`,`isnotempty`,`klssysfieldtype`,`maxlength`,`len`,`dec`,`klsreftable`,`isrefrestrict`,`isrefcascade`,`isrefclear`,`isref121`,`ord`,`ismain`,`isstretch`) values ('27','1','fieldname','Поле','1','1','255','15','0','0','0','0','0','0','201','1','0')
+
+--------------------------
+insert into sysfield (`id`,`klssystable`,`fieldname`,`name`,`isnotempty`,`klssysfieldtype`,`maxlength`,`len`,`dec`,`klsreftable`,`isrefrestrict`,`isrefcascade`,`isrefclear`,`isref121`,`ord`,`ismain`,`isstretch`) values ('28','1','name','Описание поля','0','1','255','25','0','0','0','0','0','0','134','1','1')
+
+--------------------------
+insert into sysfield (`id`,`klssystable`,`fieldname`,`name`,`isnotempty`,`klssysfieldtype`,`maxlength`,`len`,`dec`,`klsreftable`,`isrefrestrict`,`isrefcascade`,`isrefclear`,`isref121`,`ord`,`ismain`,`isstretch`) values ('29','1','isnotempty','Не пусто','0','6','0','5','0','0','0','0','0','0','268','0','0')
+
+--------------------------
+insert into sysfield (`id`,`klssystable`,`fieldname`,`name`,`isnotempty`,`klssysfieldtype`,`maxlength`,`len`,`dec`,`klsreftable`,`isrefrestrict`,`isrefcascade`,`isrefclear`,`isref121`,`ord`,`ismain`,`isstretch`) values ('30','1','ismain','Main','0','6','0','5','0','0','0','0','0','0','335','0','0')
+
+--------------------------
+insert into sysfield (`id`,`klssystable`,`fieldname`,`name`,`isnotempty`,`klssysfieldtype`,`maxlength`,`len`,`dec`,`klsreftable`,`isrefrestrict`,`isrefcascade`,`isrefclear`,`isref121`,`ord`,`ismain`,`isstretch`) values ('31','1','isstretch','Stretch','0','6','0','5','0','0','0','0','0','0','402','0','0')
+
+--------------------------
+insert into sysfield (`id`,`klssystable`,`fieldname`,`name`,`isnotempty`,`klssysfieldtype`,`maxlength`,`len`,`dec`,`klsreftable`,`isrefrestrict`,`isrefcascade`,`isrefclear`,`isref121`,`ord`,`ismain`,`isstretch`) values ('32','1','klssysfieldtype','Ссылка на тип поля','0','7','0','0','0','3','1','0','0','0','469','1','0')
+
+--------------------------
+insert into sysfield (`id`,`klssystable`,`fieldname`,`name`,`isnotempty`,`klssysfieldtype`,`maxlength`,`len`,`dec`,`klsreftable`,`isrefrestrict`,`isrefcascade`,`isrefclear`,`isref121`,`ord`,`ismain`,`isstretch`) values ('33','1','maxlength','Максимальная длина','0','3','0','5','0','0','0','0','0','0','536','0','0')
+
+--------------------------
+insert into sysfield (`id`,`klssystable`,`fieldname`,`name`,`isnotempty`,`klssysfieldtype`,`maxlength`,`len`,`dec`,`klsreftable`,`isrefrestrict`,`isrefcascade`,`isrefclear`,`isref121`,`ord`,`ismain`,`isstretch`) values ('34','1','len','Длина','0','3','0','5','0','0','0','0','0','0','603','0','0')
+
+--------------------------
+insert into sysfield (`id`,`klssystable`,`fieldname`,`name`,`isnotempty`,`klssysfieldtype`,`maxlength`,`len`,`dec`,`klsreftable`,`isrefrestrict`,`isrefcascade`,`isrefclear`,`isref121`,`ord`,`ismain`,`isstretch`) values ('35','1','dec','После запятой','0','3','0','5','0','0','0','0','0','0','670','0','0')
+
+--------------------------
+insert into sysfield (`id`,`klssystable`,`fieldname`,`name`,`isnotempty`,`klssysfieldtype`,`maxlength`,`len`,`dec`,`klsreftable`,`reflink`,`isrefrestrict`,`isrefcascade`,`isrefclear`,`isref121`,`ord`,`ismain`,`isstretch`) values ('36','1','klsreftable','Ссылка на связанную таблицу','0','7','0','0','0','4','reftable','1','0','0','0','737','0','0')
+
+--------------------------
+insert into sysfield (`id`,`klssystable`,`fieldname`,`name`,`isnotempty`,`klssysfieldtype`,`maxlength`,`len`,`dec`,`klsreftable`,`isrefrestrict`,`isrefcascade`,`isrefclear`,`isref121`,`ord`,`ismain`,`isstretch`) values ('37','1','reflink','Имя ссылки','0','1','255','15','0','0','0','0','0','0','804','0','0')
+
+--------------------------
+insert into sysfield (`id`,`klssystable`,`fieldname`,`name`,`isnotempty`,`klssysfieldtype`,`maxlength`,`len`,`dec`,`klsreftable`,`isrefrestrict`,`isrefcascade`,`isrefclear`,`isref121`,`ord`,`ismain`,`isstretch`) values ('38','1','isrefrestrict','Restrict связь','0','6','0','5','0','0','0','0','0','0','871','0','0')
+
+--------------------------
+insert into sysfield (`id`,`klssystable`,`fieldname`,`name`,`isnotempty`,`klssysfieldtype`,`maxlength`,`len`,`dec`,`klsreftable`,`isrefrestrict`,`isrefcascade`,`isrefclear`,`isref121`,`ord`,`ismain`,`isstretch`) values ('39','1','isrefcascade','Cascade связь','0','6','0','5','0','0','0','0','0','0','938','0','0')
+
+--------------------------
+insert into sysfield (`id`,`klssystable`,`fieldname`,`name`,`isnotempty`,`klssysfieldtype`,`maxlength`,`len`,`dec`,`klsreftable`,`isrefrestrict`,`isrefcascade`,`isrefclear`,`isref121`,`ord`,`ismain`,`isstretch`) values ('40','1','isrefclear','Clear связь','0','6','0','5','0','0','0','0','0','0','1005','0','0')
+
+--------------------------
+insert into sysfield (`id`,`klssystable`,`fieldname`,`name`,`isnotempty`,`klssysfieldtype`,`maxlength`,`len`,`dec`,`klsreftable`,`isrefrestrict`,`isrefcascade`,`isrefclear`,`isref121`,`ord`,`ismain`,`isstretch`) values ('41','1','isref121','1 к 1 связь','0','6','0','5','0','0','0','0','0','0','1072','0','0')
+
+--------------------------
+insert into sysfield (`id`,`klssystable`,`fieldname`,`name`,`isnotempty`,`klssysfieldtype`,`maxlength`,`len`,`dec`,`klsreftable`,`isrefrestrict`,`isrefcascade`,`isrefclear`,`isref121`,`ord`,`ismain`,`isstretch`) values ('42','1','ord','№пп','0','3','0','5','0','0','0','0','0','0','1139','0','0')
+
+--------------------------
+insert into sysfield (`id`,`klssystable`,`fieldname`,`name`,`isnotempty`,`klssysfieldtype`,`maxlength`,`len`,`dec`,`klsreftable`,`isrefrestrict`,`isrefcascade`,`isrefclear`,`isref121`,`ord`,`ismain`,`isstretch`) values ('43','2','id','Id','1','8','0','0','0','0','0','0','0','0','0','0','0')
+
+--------------------------
+insert into sysfield (`id`,`klssystable`,`fieldname`,`name`,`isnotempty`,`klssysfieldtype`,`maxlength`,`len`,`dec`,`klsreftable`,`isrefrestrict`,`isrefcascade`,`isrefclear`,`isref121`,`ord`,`ismain`,`isstretch`) values ('44','2','klssysfield','Ссылка на поле','1','7','0','0','0','1','0','1','0','0','67','0','0')
+
+--------------------------
+insert into sysfield (`id`,`klssystable`,`fieldname`,`name`,`isnotempty`,`klssysfieldtype`,`maxlength`,`len`,`dec`,`klsreftable`,`isrefrestrict`,`isrefcascade`,`isrefclear`,`isref121`,`ord`,`ismain`,`isstretch`) values ('45','2','name','Параметр','1','1','255','15','0','0','0','0','0','0','134','0','0')
+
+--------------------------
+insert into sysfield (`id`,`klssystable`,`fieldname`,`name`,`isnotempty`,`klssysfieldtype`,`maxlength`,`len`,`dec`,`klsreftable`,`isrefrestrict`,`isrefcascade`,`isrefclear`,`isref121`,`ord`,`ismain`,`isstretch`) values ('46','2','val','Значение','0','2','0','65','0','0','0','0','0','0','201','0','0')
+
+--------------------------
+insert into sysfield (`id`,`klssystable`,`fieldname`,`name`,`isnotempty`,`klssysfieldtype`,`maxlength`,`len`,`dec`,`klsreftable`,`isrefrestrict`,`isrefcascade`,`isrefclear`,`isref121`,`ord`,`ismain`,`isstretch`) values ('47','6','id','Id','1','8','0','0','0','0','0','0','0','0','0','0','0')
+
+--------------------------
+insert into sysfield (`id`,`klssystable`,`fieldname`,`name`,`isnotempty`,`klssysfieldtype`,`maxlength`,`len`,`dec`,`klsreftable`,`isrefrestrict`,`isrefcascade`,`isrefclear`,`isref121`,`ord`,`ismain`,`isstretch`) values ('48','6','klsparent','Ссылка на родителя','0','7','0','0','0','6','0','1','0','0','67','0','0')
+
+--------------------------
+insert into sysfield (`id`,`klssystable`,`fieldname`,`name`,`isnotempty`,`klssysfieldtype`,`maxlength`,`len`,`dec`,`klsreftable`,`isrefrestrict`,`isrefcascade`,`isrefclear`,`isref121`,`ord`,`ismain`,`isstretch`) values ('49','6','name','Пункт меню','0','1','255','25','0','0','0','0','0','0','134','1','0')
+
+--------------------------
+insert into sysfield (`id`,`klssystable`,`fieldname`,`name`,`isnotempty`,`klssysfieldtype`,`maxlength`,`len`,`dec`,`klsreftable`,`isrefrestrict`,`isrefcascade`,`isrefclear`,`isref121`,`ord`,`ismain`,`isstretch`) values ('50','6','form','Экранная форма','0','1','255','15','0','0','0','0','0','0','201','0','0')
+
+--------------------------
+insert into sysfield (`id`,`klssystable`,`fieldname`,`name`,`isnotempty`,`klssysfieldtype`,`maxlength`,`len`,`dec`,`klsreftable`,`isrefrestrict`,`isrefcascade`,`isrefclear`,`isref121`,`ord`,`ismain`,`isstretch`) values ('51','6','icon','Иконка','0','1','255','10','0','0','0','0','0','0','268','0','0')
+
+--------------------------
+insert into sysfield (`id`,`klssystable`,`fieldname`,`name`,`isnotempty`,`klssysfieldtype`,`maxlength`,`len`,`dec`,`klsreftable`,`isrefrestrict`,`isrefcascade`,`isrefclear`,`isref121`,`ord`,`ismain`,`isstretch`) values ('52','6','params','Параметры вызова','0','2','0','0','0','0','0','0','0','0','335','0','1')
+
+--------------------------
+insert into sysfield (`id`,`klssystable`,`fieldname`,`name`,`isnotempty`,`klssysfieldtype`,`maxlength`,`len`,`dec`,`klsreftable`,`isrefrestrict`,`isrefcascade`,`isrefclear`,`isref121`,`ord`,`ismain`,`isstretch`) values ('53','6','permmode','Права, режим','0','1','255','10','0','0','0','0','0','0','402','0','1')
+
+--------------------------
+insert into sysfield (`id`,`klssystable`,`fieldname`,`name`,`isnotempty`,`klssysfieldtype`,`maxlength`,`len`,`dec`,`klsreftable`,`isrefrestrict`,`isrefcascade`,`isrefclear`,`isref121`,`ord`,`ismain`,`isstretch`) values ('54','6','permoper','Права, операция','0','1','255','10','0','0','0','0','0','0','469','0','1')
+
+--------------------------
+insert into sysfield (`id`,`klssystable`,`fieldname`,`name`,`isnotempty`,`klssysfieldtype`,`maxlength`,`len`,`dec`,`klsreftable`,`isrefrestrict`,`isrefcascade`,`isrefclear`,`isref121`,`ord`,`ismain`,`isstretch`) values ('55','6','ord','№пп','0','3','0','5','0','0','0','0','0','0','536','0','0')
+
+--------------------------
+alter table sysfield enable keys
+
+--------------------------
+unlock tables
+
+--------------------------
+select max(id) as id from sysfield
+
+--------------------------
+ALTER TABLE sysfield AUTO_INCREMENT=55
+
+--------------------------
+check table sysfield
+
+--------------------------
+optimize table sysfield
+
+--------------------------
+lock table sysfieldparams write
+
+--------------------------
+alter table sysfieldparams disable keys
+
+--------------------------
+TRUNCATE TABLE sysfieldparams
+
+--------------------------
+check table sysfieldparams
+
+--------------------------
+optimize table sysfieldparams
+
+--------------------------
+alter table sysfieldparams enable keys
+
+--------------------------
+unlock tables
+
+--------------------------
+select max(id) as id from sysfieldparams
+
+--------------------------
+ALTER TABLE sysfieldparams AUTO_INCREMENT=0
+
+--------------------------
+check table sysfieldparams
+
+--------------------------
+optimize table sysfieldparams
+
+--------------------------
+select
+	systable.*
+from
+	systable
+		left join systablecategory on systablecategory.id=systable.klssystablecategory
+order by systablecategory.ord, systablecategory.id, systable.tablename, systable.id
+
+--------------------------
+select * from systable where tablename='sysfield'
+
+--------------------------
+select 
+	sysfield.*,
+	sysfieldtype.g740type as sysfieldtype_g740type,
+	reftable.tablename as reftable_tablename
+from 
+	sysfield
+		left join sysfieldtype on sysfieldtype.id=sysfield.klssysfieldtype
+		left join systable reftable on reftable.id=sysfield.klsreftable
+where 
+	sysfield.klssystable='1'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='25'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='26'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='27'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='28'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='29'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='30'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='31'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='32'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='33'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='34'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='35'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='36'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='37'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='38'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='39'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='40'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='41'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='42'
+
+--------------------------
+select * from systable where tablename='sysfieldparams'
+
+--------------------------
+select 
+	sysfield.*,
+	sysfieldtype.g740type as sysfieldtype_g740type,
+	reftable.tablename as reftable_tablename
+from 
+	sysfield
+		left join sysfieldtype on sysfieldtype.id=sysfield.klssysfieldtype
+		left join systable reftable on reftable.id=sysfield.klsreftable
+where 
+	sysfield.klssystable='2'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='43'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='44'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='45'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='46'
+
+--------------------------
+select * from systable where tablename='sysfieldtype'
+
+--------------------------
+select 
+	sysfield.*,
+	sysfieldtype.g740type as sysfieldtype_g740type,
+	reftable.tablename as reftable_tablename
+from 
+	sysfield
+		left join sysfieldtype on sysfieldtype.id=sysfield.klssysfieldtype
+		left join systable reftable on reftable.id=sysfield.klsreftable
+where 
+	sysfield.klssystable='3'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='14'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='15'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='16'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='17'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='18'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='19'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='20'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='21'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='22'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='23'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='24'
+
+--------------------------
+select * from systable where tablename='systable'
+
+--------------------------
+select 
+	sysfield.*,
+	sysfieldtype.g740type as sysfieldtype_g740type,
+	reftable.tablename as reftable_tablename
+from 
+	sysfield
+		left join sysfieldtype on sysfieldtype.id=sysfield.klssysfieldtype
+		left join systable reftable on reftable.id=sysfield.klsreftable
+where 
+	sysfield.klssystable='4'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='4'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='5'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='6'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='7'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='8'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='9'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='10'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='11'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='12'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='13'
+
+--------------------------
+select * from systable where tablename='systablecategory'
+
+--------------------------
+select 
+	sysfield.*,
+	sysfieldtype.g740type as sysfieldtype_g740type,
+	reftable.tablename as reftable_tablename
+from 
+	sysfield
+		left join sysfieldtype on sysfieldtype.id=sysfield.klssysfieldtype
+		left join systable reftable on reftable.id=sysfield.klsreftable
+where 
+	sysfield.klssystable='5'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='1'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='2'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='3'
+
+--------------------------
+select * from systable where tablename='sysmenu'
+
+--------------------------
+select 
+	sysfield.*,
+	sysfieldtype.g740type as sysfieldtype_g740type,
+	reftable.tablename as reftable_tablename
+from 
+	sysfield
+		left join sysfieldtype on sysfieldtype.id=sysfield.klssysfieldtype
+		left join systable reftable on reftable.id=sysfield.klsreftable
+where 
+	sysfield.klssystable='6'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='47'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='48'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='49'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='50'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='51'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='52'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='53'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='54'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='55'
+
+--------------------------
+select
+	`systable`.*,
+	`systablecategory`.`name` as `systablecategory_name`
+from
+	`systable`
+		left join `systablecategory` on `systablecategory`.id=`systable`.`klssystablecategory`
+where
+	1=1
+
+and `systable`.`klssystablecategory` in ('2')
+order by systable.klssystablecategory, systable.tablename, systable.id
+
+--------------------------
+select
+	`systable`.*,
+	`systablecategory`.`name` as `systablecategory_name`
+from
+	`systable`
+		left join `systablecategory` on `systablecategory`.id=`systable`.`klssystablecategory`
+where
+	1=1
+
+and `systable`.`klssystablecategory` in ('1')
+order by systable.klssystablecategory, systable.tablename, systable.id
+
+--------------------------
+select
+	`sysmenu`.*,
+	`sysmenu_1`.`name` as `sysmenu_1_name`,
+case when exists(select * from sysmenu child where child.klsparent=sysmenu.id)  then 0 else 1 end as row_empty,
+"menuitem" as row_type,
+sysmenu.icon as row_icon
+
+from
+	`sysmenu`
+		left join `sysmenu` `sysmenu_1` on `sysmenu_1`.id=`sysmenu`.`klsparent`
+order by sysmenu.klsparent, sysmenu.ord, sysmenu.id
+
+--------------------------
+select
+	`sysmenu`.*,
+	`sysmenu_1`.`name` as `sysmenu_1_name`,
+case when exists(select * from sysmenu child where child.klsparent=sysmenu.id)  then 0 else 1 end as row_empty,
+"menuitem" as row_type,
+sysmenu.icon as row_icon
+
+from
+	`sysmenu`
+		left join `sysmenu` `sysmenu_1` on `sysmenu_1`.id=`sysmenu`.`klsparent`
+order by sysmenu.klsparent, sysmenu.ord, sysmenu.id
+
+--------------------------
+select
+	`systablecategory`.*
+from
+	`systablecategory`
+order by systablecategory.ord, systablecategory.id
+
+--------------------------
+select
+	`systable`.*,
+	`systablecategory`.`name` as `systablecategory_name`
+from
+	`systable`
+		left join `systablecategory` on `systablecategory`.id=`systable`.`klssystablecategory`
+where
+	1=1
+
+and `systable`.`klssystablecategory` in ('1')
+order by systable.klssystablecategory, systable.tablename, systable.id
+
+--------------------------
+select * from systablecategory
+
+--------------------------
+check table systablecategory
+
+--------------------------
+optimize table systablecategory
+
+--------------------------
+select * from systable
+
+--------------------------
+check table systable
+
+--------------------------
+optimize table systable
+
+--------------------------
+select * from sysfieldtype
+
+--------------------------
+check table sysfieldtype
+
+--------------------------
+optimize table sysfieldtype
+
+--------------------------
+select * from sysfield
+
+--------------------------
+check table sysfield
+
+--------------------------
+optimize table sysfield
+
+--------------------------
+select * from sysfieldparams
+
+--------------------------
+check table sysfieldparams
+
+--------------------------
+optimize table sysfieldparams
+
+--------------------------
+select
+	systable.*
+from
+	systable
+		left join systablecategory on systablecategory.id=systable.klssystablecategory
+order by systablecategory.ord, systablecategory.id, systable.tablename, systable.id
+
+--------------------------
+select * from systable where tablename='sysfield'
+
+--------------------------
+select 
+	sysfield.*,
+	sysfieldtype.g740type as sysfieldtype_g740type,
+	reftable.tablename as reftable_tablename
+from 
+	sysfield
+		left join sysfieldtype on sysfieldtype.id=sysfield.klssysfieldtype
+		left join systable reftable on reftable.id=sysfield.klsreftable
+where 
+	sysfield.klssystable='1'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='25'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='26'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='27'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='28'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='29'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='30'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='31'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='32'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='33'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='34'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='35'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='36'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='37'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='38'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='39'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='40'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='41'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='42'
+
+--------------------------
+select * from systable where tablename='sysfieldparams'
+
+--------------------------
+select 
+	sysfield.*,
+	sysfieldtype.g740type as sysfieldtype_g740type,
+	reftable.tablename as reftable_tablename
+from 
+	sysfield
+		left join sysfieldtype on sysfieldtype.id=sysfield.klssysfieldtype
+		left join systable reftable on reftable.id=sysfield.klsreftable
+where 
+	sysfield.klssystable='2'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='43'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='44'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='45'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='46'
+
+--------------------------
+select * from systable where tablename='sysfieldtype'
+
+--------------------------
+select 
+	sysfield.*,
+	sysfieldtype.g740type as sysfieldtype_g740type,
+	reftable.tablename as reftable_tablename
+from 
+	sysfield
+		left join sysfieldtype on sysfieldtype.id=sysfield.klssysfieldtype
+		left join systable reftable on reftable.id=sysfield.klsreftable
+where 
+	sysfield.klssystable='3'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='14'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='15'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='16'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='17'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='18'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='19'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='20'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='21'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='22'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='23'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='24'
+
+--------------------------
+select * from systable where tablename='systable'
+
+--------------------------
+select 
+	sysfield.*,
+	sysfieldtype.g740type as sysfieldtype_g740type,
+	reftable.tablename as reftable_tablename
+from 
+	sysfield
+		left join sysfieldtype on sysfieldtype.id=sysfield.klssysfieldtype
+		left join systable reftable on reftable.id=sysfield.klsreftable
+where 
+	sysfield.klssystable='4'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='4'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='5'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='6'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='7'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='8'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='9'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='10'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='11'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='12'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='13'
+
+--------------------------
+select * from systable where tablename='systablecategory'
+
+--------------------------
+select 
+	sysfield.*,
+	sysfieldtype.g740type as sysfieldtype_g740type,
+	reftable.tablename as reftable_tablename
+from 
+	sysfield
+		left join sysfieldtype on sysfieldtype.id=sysfield.klssysfieldtype
+		left join systable reftable on reftable.id=sysfield.klsreftable
+where 
+	sysfield.klssystable='5'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='1'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='2'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='3'
+
+--------------------------
+select * from systable where tablename='sysmenu'
+
+--------------------------
+select 
+	sysfield.*,
+	sysfieldtype.g740type as sysfieldtype_g740type,
+	reftable.tablename as reftable_tablename
+from 
+	sysfield
+		left join sysfieldtype on sysfieldtype.id=sysfield.klssysfieldtype
+		left join systable reftable on reftable.id=sysfield.klsreftable
+where 
+	sysfield.klssystable='6'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='47'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='48'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='49'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='50'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='51'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='52'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='53'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='54'
+
+--------------------------
+select * 
+from 
+	sysfieldparams
+where
+	sysfieldparams.klssysfield='55'
+
+--------------------------

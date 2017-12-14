@@ -14,9 +14,8 @@ sysmenu.icon as row_icon
 SQL;
 }
 // Тут описываются поля источника данных
-public function getFields() {
-	if ($this->fields) return $this->fields;
-	$this->fields=Array();
+protected function initFields() {
+	$result=Array();
 	{	// klsparent - Ссылка на родителя
 		$fld=Array();
 		$fld['name']='klsparent';
@@ -24,7 +23,7 @@ public function getFields() {
 		$fld['caption']='Ссылка на родителя';
 		$fld['reftable']='sysmenu';
 		$fld['refalias']='sysmenu_1';
-		$this->fields[]=$fld;
+		$result[]=$fld;
 	}
 	{	// name - Пункт меню
 		$fld=Array();
@@ -33,7 +32,7 @@ public function getFields() {
 		$fld['caption']='Пункт меню';
 		$fld['maxlength']='255';
 		$fld['len']='25';
-		$this->fields[]=$fld;
+		$result[]=$fld;
 	}
 	{	// form - Экранная форма
 		$fld=Array();
@@ -42,7 +41,7 @@ public function getFields() {
 		$fld['caption']='Экранная форма';
 		$fld['maxlength']='255';
 		$fld['len']='15';
-		$this->fields[]=$fld;
+		$result[]=$fld;
 	}
 	{	// icon - Иконка
 		$fld=Array();
@@ -51,7 +50,7 @@ public function getFields() {
 		$fld['caption']='Иконка';
 		$fld['maxlength']='255';
 		$fld['len']='10';
-		$this->fields[]=$fld;
+		$result[]=$fld;
 	}
 	{	// params - Параметры вызова
 		$fld=Array();
@@ -59,7 +58,7 @@ public function getFields() {
 		$fld['type']='memo';
 		$fld['caption']='Параметры вызова';
 		$fld['stretch']='1';
-		$this->fields[]=$fld;
+		$result[]=$fld;
 	}
 	{	// permmode - Права, режим
 		$fld=Array();
@@ -69,7 +68,7 @@ public function getFields() {
 		$fld['maxlength']='255';
 		$fld['len']='10';
 		$fld['stretch']='1';
-		$this->fields[]=$fld;
+		$result[]=$fld;
 	}
 	{	// permoper - Права, операция
 		$fld=Array();
@@ -79,7 +78,7 @@ public function getFields() {
 		$fld['maxlength']='255';
 		$fld['len']='10';
 		$fld['stretch']='1';
-		$this->fields[]=$fld;
+		$result[]=$fld;
 	}
 	{	// ord - №пп
 		$fld=Array();
@@ -87,7 +86,7 @@ public function getFields() {
 		$fld['type']='num';
 		$fld['caption']='№пп';
 		$fld['len']='5';
-		$this->fields[]=$fld;
+		$result[]=$fld;
 	}
 	{	// sysmenu_1_name - Пункт меню
 		$fld=Array();
@@ -100,21 +99,21 @@ public function getFields() {
 		$fld['len']='25';
 		$fld['refname']='name';
 		$fld['refid']='klsparent';
-		$this->fields[]=$fld;
+		$result[]=$fld;
 	}
-	return $this->fields;
+	return $result;
 }
 // Тут описываются связи с другими источниками данных для реализации ссылочной целостности
-public function getReferences() {
+protected function initReferences() {
 	$result=Array();
-	{	// sysmenu.id --cascade--> sysmenu.klsparent
+	{	//  sysmenu.id -> sysmenu.klsparent
 		$ref=Array();
 		$ref['mode']='cascade';
 		$ref['from.table']='sysmenu';
 		$ref['from.field']='id';
 		$ref['to.table']='sysmenu';
 		$ref['to.field']='klsparent';
-		$result[]=$ref;
+		$result['sysmenu.klsparent']=$ref;
 	}
 	return $result;
 }
@@ -141,26 +140,13 @@ SQL;
 // Этот метод Этот метод возвращает секцию where для запроса select
 public function getSelectWhere($params=Array()) {
 	$result='';
-	if ($params['filter.id']!='') {
-		if ($this->isGUID) {
-			$value=$this->guid2Sql($params['filter.id']);
-		}
-		else {
-			$value=$this->php2Sql($params['filter.id']);
-		}
-		$result.="\n"."and `sysmenu`.id='{$value}'";
+	if (isset($params['filter.id'])) {
+		$value=$this->php2SqlIn($params['filter.id']);
+		if ($value!='') $result.="\n"."and `sysmenu`.id in ({$value})";
 	}
-	if ($params['filter.id.tmptable']!='') {
-		$value=$this->php2Sql($params['filter.id.tmptable']);
-		$result.="\n"."and `sysmenu`.id in (select value from tmptablelist where tmptablelist.list='{$value}')";
-	}
-	if ($params['filter.klsparent']!='') {
-		$value=$this->php2Sql($params['filter.klsparent']);
-		$result.="\n"."and `sysmenu`.`klsparent`='{$value}'";
-	}
-	if ($params['filter.klsparent.tmptable']!='') {
-		$value=$this->php2Sql($params['filter.klsparent.tmptable']);
-		$result.="\n"."and `sysmenu`.`klsparent` in (select value from tmptablelist where tmptablelist.list='{$value}')";
+	if (isset($params['filter.klsparent'])) {
+		$value=$this->php2SqlIn($params['filter.klsparent']);
+		if ($value!='') $result.="\n"."and `sysmenu`.`klsparent` in ({$value})";
 	}
 	return $result;
 }

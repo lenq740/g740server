@@ -8,9 +8,8 @@ function __construct() {
 	$this->isGUID=false;
 }
 // Тут описываются поля источника данных
-public function getFields() {
-	if ($this->fields) return $this->fields;
-	$this->fields=Array();
+protected function initFields() {
+	$result=Array();
 	{	// name - Категория
 		$fld=Array();
 		$fld['name']='name';
@@ -20,7 +19,7 @@ public function getFields() {
 		$fld['len']='12';
 		$fld['notnull']='1';
 		$fld['stretch']='1';
-		$this->fields[]=$fld;
+		$result[]=$fld;
 	}
 	{	// ord - №пп
 		$fld=Array();
@@ -28,21 +27,21 @@ public function getFields() {
 		$fld['type']='num';
 		$fld['caption']='№пп';
 		$fld['len']='5';
-		$this->fields[]=$fld;
+		$result[]=$fld;
 	}
-	return $this->fields;
+	return $result;
 }
 // Тут описываются связи с другими источниками данных для реализации ссылочной целостности
-public function getReferences() {
+protected function initReferences() {
 	$result=Array();
-	{	// systable.klssystablecategory --restrict--> systablecategory.id
+	{	//  systablecategory.id -> systable.klssystablecategory
 		$ref=Array();
 		$ref['mode']='restrict';
-		$ref['from.table']='systable';
-		$ref['from.field']='klssystablecategory';
-		$ref['to.table']='systablecategory';
-		$ref['to.field']='id';
-		$result[]=$ref;
+		$ref['from.table']='systablecategory';
+		$ref['from.field']='id';
+		$ref['to.table']='systable';
+		$ref['to.field']='klssystablecategory';
+		$result['systable.klssystablecategory']=$ref;
 	}
 	return $result;
 }
@@ -63,18 +62,9 @@ SQL;
 // Этот метод Этот метод возвращает секцию where для запроса select
 public function getSelectWhere($params=Array()) {
 	$result='';
-	if ($params['filter.id']!='') {
-		if ($this->isGUID) {
-			$value=$this->guid2Sql($params['filter.id']);
-		}
-		else {
-			$value=$this->php2Sql($params['filter.id']);
-		}
-		$result.="\n"."and `systablecategory`.id='{$value}'";
-	}
-	if ($params['filter.id.tmptable']!='') {
-		$value=$this->php2Sql($params['filter.id.tmptable']);
-		$result.="\n"."and `systablecategory`.id in (select value from tmptablelist where tmptablelist.list='{$value}')";
+	if (isset($params['filter.id'])) {
+		$value=$this->php2SqlIn($params['filter.id']);
+		if ($value!='') $result.="\n"."and `systablecategory`.id in ({$value})";
 	}
 	return $result;
 }

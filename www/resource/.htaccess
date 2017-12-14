@@ -1,0 +1,8 @@
+#Закрываем просмотр оглавления каталога и выполнение CGI скриптов
+Options -Indexes -ExecCGI
+#Открываем файлы на просмотр без авторизации
+order deny,allow
+allow from all
+
+#Отключаем механизм переадресации
+RewriteEngine off

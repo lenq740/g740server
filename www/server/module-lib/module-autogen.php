@@ -1,7 +1,7 @@
 <?php
 /**
 Генератор объектов модели данных по описаниям из базы данных
-@package module
+@package module-lib
 @subpackage module-autogen
 */
 require_once('module-dsconnector.php');
@@ -174,7 +174,7 @@ SQL;
 					$res['to.field']='id';
 					$this->dataStructureRef[]=$res;
 				}
-				if ($dsF['isrefcascade']==1) {
+				else if ($dsF['isrefcascade']==1) {
 					$res=Array();
 					$res['mode']='cascade';
 					$res['from.table']=$dsF['reftable'];
@@ -183,9 +183,18 @@ SQL;
 					$res['to.field']=$dsF['name'];
 					$this->dataStructureRef[]=$res;
 				}
-				if ($dsF['isrefclear']==1) {
+				else if ($dsF['isrefclear']==1) {
 					$res=Array();
 					$res['mode']='clear';
+					$res['from.table']=$dsF['reftable'];
+					$res['from.field']='id';
+					$res['to.table']=$tableName;
+					$res['to.field']=$dsF['name'];
+					$this->dataStructureRef[]=$res;
+				}
+				else {
+					$res=Array();
+					$res['mode']='';
 					$res['from.table']=$dsF['reftable'];
 					$res['from.field']='id';
 					$res['to.table']=$tableName;
@@ -217,7 +226,7 @@ SQL;
 {$this->getDataSource($p)}
 ?>
 PHP;
-			$fileName=$tableName.'.php';
+			$fileName=$tableName.'-autogen.php';
 			$fullName=$params['path'].$fileName;
 			$this->writeFile($fullName, $value);
 			$lstFiles[$fileName]=true;
@@ -282,7 +291,8 @@ PHP;
 		$dataSourceModify=getDataSourceModify($tableName);
 
 		if ($dataSourceModify) $fields=$dataSourceModify->getFields($fields);
-		$resultGetFields=$dataSource->autoGenGetFields($fields, $tableName);
+		$resultGetFields=$this->_getDataSourceFields($fields, $tableName);
+		
 		$resultGetSelectFields=$dataSource->autoGenGetSelectFields($fields, $tableName, $dsTable['selectfields'], $driverName);
 		$resultGetSelectFrom=$dataSource->autoGenGetSelectFrom($fields, $tableName, $driverName);
 		$resultGetSelectWhere=$dataSource->autoGenGetSelectWhere($fields, $tableName, $driverName);
@@ -324,14 +334,14 @@ PHP;
 		$result.="\n".<<<PHP
 }
 // Тут описываются поля источника данных
-public function getFields() {
-	if ({$D}this->fields) return {$D}this->fields;
-	{$D}this->fields=Array();
+protected function initFields() {
+	{$D}result=Array();
 {$resultGetFields}
-	return {$D}this->fields;
+	return {$D}result;
 }
 // Тут описываются связи с другими источниками данных для реализации ссылочной целостности
-public function getReferences() {
+protected function initReferences() {
+	{$D}result=Array();
 {$resultGetRef}
 	return {$D}result;
 }
@@ -379,28 +389,84 @@ PHP;
 		if (!$tableName) throw new Exception($errorMessage.', не задан обязательный параметр tableName');
 		$dsTable=&$this->dataStructure[$tableName];
 		if (!$dsTable) throw new Exception($errorMessage.', недопустимое значение параметра tableName='.$tableName);
-		$result="{$D}result=Array();";
+		$result='';
 		foreach($this->dataStructureRef as $key=>$ref) {
-			if ($ref['from.table']==$tableName || $ref['to.table']==$tableName) {
-				if ($ref['mode']!='restrict' && $ref['mode']!='cascade' && $ref['mode']!='clear') continue;
-				if ($ref['mode']=='restrict' && $ref['to.table']!=$tableName) continue;
-				if (($ref['mode']=='cascade' || $ref['mode']=='clear') && $ref['from.table']!=$tableName) continue;
-				if ($result) $result.="\n";
-				$result.=<<<PHP
-{	// {$ref['from.table']}.{$ref['from.field']} --{$ref['mode']}--> {$ref['to.table']}.{$ref['to.field']}
+			$fromTable='';
+			$fromField='';
+			$toTable='';
+			$toField='';
+			$linkMode='';
+			$linkName='';
+			if ($ref['from.table']==$tableName) {
+				$fromTable=$ref['from.table'];
+				$fromField=$ref['from.field'];
+				$toTable=$ref['to.table'];
+				$toField=$ref['to.field'];
+				$linkMode=$ref['mode'];
+			}
+			else if ($ref['to.table']==$tableName) {
+				$fromTable=$ref['to.table'];
+				$fromField=$ref['to.field'];
+				$toTable=$ref['from.table'];
+				$toField=$ref['from.field'];
+				$linkMode=$ref['mode'];
+			}
+			else {
+				continue;
+			}
+			
+			if ($fromField!='id' && $toField=='id') {
+				$linkName="{$fromTable}.{$fromField}";
+			}
+			else if ($fromField=='id' && $toField!='id') {
+				$linkName="{$toTable}.{$toField}";
+			}
+			else {
+				continue;
+			}
+			
+			if ($result) $result.="\n";
+			$result.=<<<PHP
+{	//  {$fromTable}.{$fromField} -> {$toTable}.{$toField}
 	{$D}ref=Array();
-	{$D}ref['mode']='{$ref['mode']}';
-	{$D}ref['from.table']='{$ref['from.table']}';
-	{$D}ref['from.field']='{$ref['from.field']}';
-	{$D}ref['to.table']='{$ref['to.table']}';
-	{$D}ref['to.field']='{$ref['to.field']}';
-	{$D}result[]={$D}ref;
+	{$D}ref['mode']='{$linkMode}';
+	{$D}ref['from.table']='{$fromTable}';
+	{$D}ref['from.field']='{$fromField}';
+	{$D}ref['to.table']='{$toTable}';
+	{$D}ref['to.field']='{$toField}';
+	{$D}result['{$linkName}']={$D}ref;
 }
 PHP;
-			}
 		}
 		return $this->strTabShift($result,1);
 	}
+	protected function _getDataSourceFields($fields, $tableName) {
+		$errorMessage='Ошибка при обращении к AutoGenerator::_getDataSourceFields';
+		$D='$';
+		$result='';
+		foreach($fields as $key=>$fld) {
+			$items='';
+			foreach($fld as $name=>$value) {
+				if ($items) $items.="\n";
+				if (gettype($value)=='array') {
+					$items.="\t\t"."{$D}fld['{$name}']=".var_export($value, true).";";
+				}
+				else {
+					$items.="\t\t"."{$D}fld['{$name}']='{$value}';";
+				}
+			}
+			if ($result) $result.="\n";
+			$result.=<<<PHP
+	{	// {$fld['name']} - {$fld['caption']}
+		{$D}fld=Array();
+{$items}
+		{$D}result[]={$D}fld;
+	}
+PHP;
+		}
+		return $result;
+	}
+	
 /**
 Построить массив описателей полей для источника данных
 @param	mixed[] params
@@ -600,7 +666,7 @@ $param	mixed[] &$aliases	- формируемый список имен табл
 
 /**
 Класс предок для модификатора класса при автогенерации
-@package module
+@package module-lib
 @subpackage module-datasource
 */
 class DataSourceModify {
@@ -621,7 +687,6 @@ class DataSourceModify {
 		return $requests;
 	}
 }
-
 /**
 Получить объект модификатора класса источника данных по имени
 @param	String	$name источник данных
@@ -641,7 +706,7 @@ function getDataSourceModify($name) {
 	if ($name!=$str) throw new Exception("Недопустимое имя источника данных '{$name}'");
 	if ($registerDataSource[$name]) return $registerDataSource[$name];
 
-	$fileNameAutoGen=getCfg('pathDataSources')."/modify/{$name}.php";
+	$fileNameAutoGen=getCfg('path.datasources')."/modify/{$name}-modify.php";
 	if (file_exists($fileNameAutoGen)) {
 		$obj=include_once($fileNameAutoGen);
 		if ($obj instanceof DataSourceModify) $registerDataSourceModify[$name]=$obj;

@@ -8,9 +8,8 @@ function __construct() {
 	$this->isGUID=false;
 }
 // Тут описываются поля источника данных
-public function getFields() {
-	if ($this->fields) return $this->fields;
-	$this->fields=Array();
+protected function initFields() {
+	$result=Array();
 	{	// klssystable - Ссылка на родительскую таблицу
 		$fld=Array();
 		$fld['name']='klssystable';
@@ -18,7 +17,7 @@ public function getFields() {
 		$fld['caption']='Ссылка на родительскую таблицу';
 		$fld['notnull']='1';
 		$fld['reftable']='systable';
-		$this->fields[]=$fld;
+		$result[]=$fld;
 	}
 	{	// fieldname - Поле
 		$fld=Array();
@@ -28,7 +27,7 @@ public function getFields() {
 		$fld['maxlength']='255';
 		$fld['len']='15';
 		$fld['notnull']='1';
-		$this->fields[]=$fld;
+		$result[]=$fld;
 	}
 	{	// name - Описание поля
 		$fld=Array();
@@ -38,7 +37,7 @@ public function getFields() {
 		$fld['maxlength']='255';
 		$fld['len']='25';
 		$fld['stretch']='1';
-		$this->fields[]=$fld;
+		$result[]=$fld;
 	}
 	{	// isnotempty - Не пусто
 		$fld=Array();
@@ -46,7 +45,7 @@ public function getFields() {
 		$fld['type']='check';
 		$fld['caption']='Не пусто';
 		$fld['len']='5';
-		$this->fields[]=$fld;
+		$result[]=$fld;
 	}
 	{	// ismain - Main
 		$fld=Array();
@@ -54,7 +53,7 @@ public function getFields() {
 		$fld['type']='check';
 		$fld['caption']='Main';
 		$fld['len']='5';
-		$this->fields[]=$fld;
+		$result[]=$fld;
 	}
 	{	// isstretch - Stretch
 		$fld=Array();
@@ -62,7 +61,7 @@ public function getFields() {
 		$fld['type']='check';
 		$fld['caption']='Stretch';
 		$fld['len']='5';
-		$this->fields[]=$fld;
+		$result[]=$fld;
 	}
 	{	// klssysfieldtype - Ссылка на тип поля
 		$fld=Array();
@@ -70,7 +69,7 @@ public function getFields() {
 		$fld['type']='ref';
 		$fld['caption']='Ссылка на тип поля';
 		$fld['reftable']='sysfieldtype';
-		$this->fields[]=$fld;
+		$result[]=$fld;
 	}
 	{	// maxlength - Максимальная длина
 		$fld=Array();
@@ -78,7 +77,7 @@ public function getFields() {
 		$fld['type']='num';
 		$fld['caption']='Максимальная длина';
 		$fld['len']='5';
-		$this->fields[]=$fld;
+		$result[]=$fld;
 	}
 	{	// len - Длина
 		$fld=Array();
@@ -86,7 +85,7 @@ public function getFields() {
 		$fld['type']='num';
 		$fld['caption']='Длина';
 		$fld['len']='5';
-		$this->fields[]=$fld;
+		$result[]=$fld;
 	}
 	{	// dec - После запятой
 		$fld=Array();
@@ -94,7 +93,7 @@ public function getFields() {
 		$fld['type']='num';
 		$fld['caption']='После запятой';
 		$fld['len']='5';
-		$this->fields[]=$fld;
+		$result[]=$fld;
 	}
 	{	// klsreftable - Ссылка на связанную таблицу
 		$fld=Array();
@@ -103,7 +102,7 @@ public function getFields() {
 		$fld['caption']='Ссылка на связанную таблицу';
 		$fld['reftable']='systable';
 		$fld['refalias']='reftable';
-		$this->fields[]=$fld;
+		$result[]=$fld;
 	}
 	{	// reflink - Имя ссылки
 		$fld=Array();
@@ -112,7 +111,7 @@ public function getFields() {
 		$fld['caption']='Имя ссылки';
 		$fld['maxlength']='255';
 		$fld['len']='15';
-		$this->fields[]=$fld;
+		$result[]=$fld;
 	}
 	{	// isrefrestrict - Restrict связь
 		$fld=Array();
@@ -120,7 +119,7 @@ public function getFields() {
 		$fld['type']='check';
 		$fld['caption']='Restrict связь';
 		$fld['len']='5';
-		$this->fields[]=$fld;
+		$result[]=$fld;
 	}
 	{	// isrefcascade - Cascade связь
 		$fld=Array();
@@ -128,7 +127,7 @@ public function getFields() {
 		$fld['type']='check';
 		$fld['caption']='Cascade связь';
 		$fld['len']='5';
-		$this->fields[]=$fld;
+		$result[]=$fld;
 	}
 	{	// isrefclear - Clear связь
 		$fld=Array();
@@ -136,7 +135,7 @@ public function getFields() {
 		$fld['type']='check';
 		$fld['caption']='Clear связь';
 		$fld['len']='5';
-		$this->fields[]=$fld;
+		$result[]=$fld;
 	}
 	{	// isref121 - 1 к 1 связь
 		$fld=Array();
@@ -144,7 +143,7 @@ public function getFields() {
 		$fld['type']='check';
 		$fld['caption']='1 к 1 связь';
 		$fld['len']='5';
-		$this->fields[]=$fld;
+		$result[]=$fld;
 	}
 	{	// ord - №пп
 		$fld=Array();
@@ -152,7 +151,7 @@ public function getFields() {
 		$fld['type']='num';
 		$fld['caption']='№пп';
 		$fld['len']='5';
-		$this->fields[]=$fld;
+		$result[]=$fld;
 	}
 	{	// systable_tablename - Таблица
 		$fld=Array();
@@ -166,7 +165,7 @@ public function getFields() {
 		$fld['notnull']='1';
 		$fld['refname']='tablename';
 		$fld['refid']='klssystable';
-		$this->fields[]=$fld;
+		$result[]=$fld;
 	}
 	{	// systable_name - Описание
 		$fld=Array();
@@ -179,7 +178,7 @@ public function getFields() {
 		$fld['len']='25';
 		$fld['refname']='name';
 		$fld['refid']='klssystable';
-		$this->fields[]=$fld;
+		$result[]=$fld;
 	}
 	{	// sysfieldtype_name - Тип
 		$fld=Array();
@@ -193,7 +192,7 @@ public function getFields() {
 		$fld['notnull']='1';
 		$fld['refname']='name';
 		$fld['refid']='klssysfieldtype';
-		$this->fields[]=$fld;
+		$result[]=$fld;
 	}
 	{	// sysfieldtype_g740type - Тип в g740
 		$fld=Array();
@@ -206,7 +205,7 @@ public function getFields() {
 		$fld['len']='15';
 		$fld['refname']='g740type';
 		$fld['refid']='klssysfieldtype';
-		$this->fields[]=$fld;
+		$result[]=$fld;
 	}
 	{	// reftable_tablename - Таблица
 		$fld=Array();
@@ -221,7 +220,7 @@ public function getFields() {
 		$fld['notnull']='1';
 		$fld['refname']='tablename';
 		$fld['refid']='klsreftable';
-		$this->fields[]=$fld;
+		$result[]=$fld;
 	}
 	{	// reftable_name - Описание
 		$fld=Array();
@@ -235,21 +234,48 @@ public function getFields() {
 		$fld['len']='25';
 		$fld['refname']='name';
 		$fld['refid']='klsreftable';
-		$this->fields[]=$fld;
+		$result[]=$fld;
 	}
-	return $this->fields;
+	return $result;
 }
 // Тут описываются связи с другими источниками данных для реализации ссылочной целостности
-public function getReferences() {
+protected function initReferences() {
 	$result=Array();
-	{	// sysfield.id --cascade--> sysfieldparams.klssysfield
+	{	//  sysfield.klssystable -> systable.id
+		$ref=Array();
+		$ref['mode']='cascade';
+		$ref['from.table']='sysfield';
+		$ref['from.field']='klssystable';
+		$ref['to.table']='systable';
+		$ref['to.field']='id';
+		$result['sysfield.klssystable']=$ref;
+	}
+	{	//  sysfield.klssysfieldtype -> sysfieldtype.id
+		$ref=Array();
+		$ref['mode']='restrict';
+		$ref['from.table']='sysfield';
+		$ref['from.field']='klssysfieldtype';
+		$ref['to.table']='sysfieldtype';
+		$ref['to.field']='id';
+		$result['sysfield.klssysfieldtype']=$ref;
+	}
+	{	//  sysfield.klsreftable -> systable.id
+		$ref=Array();
+		$ref['mode']='restrict';
+		$ref['from.table']='sysfield';
+		$ref['from.field']='klsreftable';
+		$ref['to.table']='systable';
+		$ref['to.field']='id';
+		$result['sysfield.klsreftable']=$ref;
+	}
+	{	//  sysfield.id -> sysfieldparams.klssysfield
 		$ref=Array();
 		$ref['mode']='cascade';
 		$ref['from.table']='sysfield';
 		$ref['from.field']='id';
 		$ref['to.table']='sysfieldparams';
 		$ref['to.field']='klssysfield';
-		$result[]=$ref;
+		$result['sysfieldparams.klssysfield']=$ref;
 	}
 	return $result;
 }
@@ -279,26 +305,13 @@ SQL;
 // Этот метод Этот метод возвращает секцию where для запроса select
 public function getSelectWhere($params=Array()) {
 	$result='';
-	if ($params['filter.id']!='') {
-		if ($this->isGUID) {
-			$value=$this->guid2Sql($params['filter.id']);
-		}
-		else {
-			$value=$this->php2Sql($params['filter.id']);
-		}
-		$result.="\n"."and `sysfield`.id='{$value}'";
+	if (isset($params['filter.id'])) {
+		$value=$this->php2SqlIn($params['filter.id']);
+		if ($value!='') $result.="\n"."and `sysfield`.id in ({$value})";
 	}
-	if ($params['filter.id.tmptable']!='') {
-		$value=$this->php2Sql($params['filter.id.tmptable']);
-		$result.="\n"."and `sysfield`.id in (select value from tmptablelist where tmptablelist.list='{$value}')";
-	}
-	if ($params['filter.klssystable']!='') {
-		$value=$this->php2Sql($params['filter.klssystable']);
-		$result.="\n"."and `sysfield`.`klssystable`='{$value}'";
-	}
-	if ($params['filter.klssystable.tmptable']!='') {
-		$value=$this->php2Sql($params['filter.klssystable.tmptable']);
-		$result.="\n"."and `sysfield`.`klssystable` in (select value from tmptablelist where tmptablelist.list='{$value}')";
+	if (isset($params['filter.klssystable'])) {
+		$value=$this->php2SqlIn($params['filter.klssystable']);
+		if ($value!='') $result.="\n"."and `sysfield`.`klssystable` in ({$value})";
 	}
 	if ($params['filter.isnotempty']!='') {
 		$value=$this->php2Sql($params['filter.isnotempty']);
@@ -312,21 +325,13 @@ public function getSelectWhere($params=Array()) {
 		$value=$this->php2Sql($params['filter.isstretch']);
 		$result.="\n"."and `sysfield`.`isstretch`='{$value}'";
 	}
-	if ($params['filter.klssysfieldtype']!='') {
-		$value=$this->php2Sql($params['filter.klssysfieldtype']);
-		$result.="\n"."and `sysfield`.`klssysfieldtype`='{$value}'";
+	if (isset($params['filter.klssysfieldtype'])) {
+		$value=$this->php2SqlIn($params['filter.klssysfieldtype']);
+		if ($value!='') $result.="\n"."and `sysfield`.`klssysfieldtype` in ({$value})";
 	}
-	if ($params['filter.klssysfieldtype.tmptable']!='') {
-		$value=$this->php2Sql($params['filter.klssysfieldtype.tmptable']);
-		$result.="\n"."and `sysfield`.`klssysfieldtype` in (select value from tmptablelist where tmptablelist.list='{$value}')";
-	}
-	if ($params['filter.klsreftable']!='') {
-		$value=$this->php2Sql($params['filter.klsreftable']);
-		$result.="\n"."and `sysfield`.`klsreftable`='{$value}'";
-	}
-	if ($params['filter.klsreftable.tmptable']!='') {
-		$value=$this->php2Sql($params['filter.klsreftable.tmptable']);
-		$result.="\n"."and `sysfield`.`klsreftable` in (select value from tmptablelist where tmptablelist.list='{$value}')";
+	if (isset($params['filter.klsreftable'])) {
+		$value=$this->php2SqlIn($params['filter.klsreftable']);
+		if ($value!='') $result.="\n"."and `sysfield`.`klsreftable` in ({$value})";
 	}
 	if ($params['filter.isrefrestrict']!='') {
 		$value=$this->php2Sql($params['filter.isrefrestrict']);

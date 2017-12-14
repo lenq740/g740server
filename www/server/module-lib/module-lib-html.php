@@ -1,7 +1,7 @@
 <?php
 /**
 Библиотека функций - расширение базового набора под формирование HTML страниц
-@package module
+@package module-lib
 @subpackage module-lib-g740server
 */
 require_once('module-lib-base.php');

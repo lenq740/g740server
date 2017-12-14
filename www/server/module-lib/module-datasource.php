@@ -1,14 +1,14 @@
 <?php
 /**
 Библиотека источников данных
-@package module
+@package module-lib
 @subpackage module-datasource
 */
 require_once('module-dsconnector.php');
 
 /**
 Класс предок для источника данных
-@package module
+@package module-lib
 @subpackage module-datasource
 */
 class DataSource extends DSConnector{
@@ -248,13 +248,16 @@ XML;
 	}
 
 	
+	// Описание полей источника данных
 	protected $fields=null;
 	public function getFields() {
-		if ($this->fields) return $this->fields;
-		$this->fields=Array();
+		if (!$this->fields) $this->fields=$this->initFields();
 		return $this->fields;
 	}
-	
+	protected function initFields() {
+		$result=Array();
+		return $result;
+	}
 	protected $_fieldsByName=null;
 	public function getField($name) {
 		if (!$this->_fieldsByName) {
@@ -262,6 +265,24 @@ XML;
 			foreach($this->getFields() as $key=>$fld) $this->_fieldsByName[$fld['name']]=$fld;
 		}
 		return $this->_fieldsByName[$name];
+	}
+	
+	// Описание связей с другими источниками данных
+	protected $references=null;
+	public function getReferences() {
+		if (!$this->references) $this->references=$this->initReferences();
+		return $this->references;
+	}
+	protected function initReferences() {
+		$result=Array();
+		return $result;
+	}
+	public function getRef($name) {
+		$result=null;
+		if (!$this->references) $this->getReferences();
+		if (!$this->references) return $result;
+		$result=$this->references[$name];
+		return $result;
 	}
 	
 	protected $_requests=null;
@@ -579,23 +600,18 @@ XML;
 		return $result;
 	}
 	
-	
 	public function execDelete($params=Array()) {
 		$errorMessage='Ошибка при обращении к DataSource::execDelete';
 		if (!$this->getPerm('write','delete',$params)) throw new ExceptionNoReport('У Вас нет прав на удаление строки таблицы '.$this->tableCaption);
 		
 		if ($params['recursLevel']>15) throw new Exception('Удаление невозможно, обнаружилось зацикливание ссылок при анализе ссылочной целостности');
-		$id=$params['id'];
-		$sqlId=($this->isGUID)?$this->guid2Sql($id):$this->str2Sql($id);
-		
-		$idlist=$params['listOfId'];
-		if (!$idlist && $id) $idlist="'{$sqlId}'";
+		if (!isset($params['id'])) return Array();
+		$idlist=$this->php2SqlIn($params['id']);
 		if (!$idlist) return Array();
-		$refs=$this->getReferences();
 		
+		$refs=$this->getReferences();
 		$driverName=$this->getDriverName();
 		$p=$params;
-		$p['listOfId']=$idlist;
 		$p['refs']=$refs;
 		$sqlSelect='';
 		$sqlDelete='';
@@ -634,23 +650,22 @@ SQL;
 	}
 	protected function _execDeleteRestrictMySql($params=Array()) {
 		$errorMessage='Ошибка при обращении к DataSource::_execDeleteRestrictMySql';
-		$idlist=$params['listOfId'];
+		$idlist=$this->php2SqlIn($params['id']);
+		if (!$idlist) return;
 		$refs=$params['refs'];
-		foreach($refs as $key=>$ref) {
+		foreach($refs as &$ref) {
 			if ($ref['mode']!='restrict') continue;
-			$dataSourceRef=getDataSource($ref['from.table']);
-			if (!$dataSourceRef) throw new Exception('Удаление невозможно, обнаружена ссылка на необъявленную таблицу '.$ref['from.table']);
+			if ($ref['from.table']!=$this->tableName) continue;
+			if ($ref['from.field']!='id') continue;
+			
+			$dataSourceRef=getDataSource($ref['to.table']);
+			if (!$dataSourceRef) throw new Exception('Удаление невозможно, обнаружена ссылка на необъявленную таблицу '.$ref['to.table']);
 			
 			$sql=<<<SQL
 select count(*) as n 
-from `{$ref['from.table']}` 
+from `{$ref['to.table']}` 
 where 
-	`{$ref['from.table']}`.`{$ref['from.field']}` in (
-		select `{$ref['to.field']}` 
-		from 
-			`{$ref['to.table']}` 
-		where `{$ref['to.table']}`.id in ({$idlist})
-	)
+	`{$ref['to.table']}`.`{$ref['to.field']}` in ({$idlist})
 SQL;
 			$rec=$this->pdoFetch($sql);
 			if ($rec['n']>0) throw new ExceptionNoReport("Удаление невозможно, значение используется в связанной таблице {$dataSourceRef->tableCaption} ({$dataSourceRef->tableName})");
@@ -658,23 +673,22 @@ SQL;
 	}
 	protected function _execDeleteRestrictSqlSrv($params=Array()) {
 		$errorMessage='Ошибка при обращении к DataSource::_execDeleteRestrictSqlSrv';
-		$idlist=$params['listOfId'];
+		$idlist=$this->php2SqlIn($params['id']);
+		if (!$idlist) return;
 		$refs=$params['refs'];
-		foreach($refs as $key=>$ref) {
+		foreach($refs as &$ref) {
 			if ($ref['mode']!='restrict') continue;
-			$dataSourceRef=getDataSource($ref['from.table']);
-			if (!$dataSourceRef) throw new Exception('Удаление невозможно, обнаружена ссылка на необъявленную таблицу '.$ref['from.table']);
+			if ($ref['from.table']!=$this->tableName) continue;
+			if ($ref['from.field']!='id') continue;
+
+			$dataSourceRef=getDataSource($ref['to.table']);
+			if (!$dataSourceRef) throw new Exception('Удаление невозможно, обнаружена ссылка на необъявленную таблицу '.$ref['to.table']);
 			
 			$sql=<<<SQL
 select count(*) as n 
-from [{$ref['from.table']}]
+from [{$ref['to.table']}]
 where 
-	[{$ref['from.table']}].[{$ref['from.field']}] in (
-		select [{$ref['to.field']}]
-		from 
-			[{$ref['to.table']}]
-		where [{$ref['to.table']}].id in ({$idlist})
-	)
+	[{$ref['to.table']}].[{$ref['to.field']}] in ({$idlist})
 SQL;
 			$rec=$this->pdoFetch($sql);
 			if ($rec['n']>0) throw new ExceptionNoReport("Удаление невозможно, значение используется в связанной таблице {$dataSourceRef->tableCaption} ({$dataSourceRef->tableName})");
@@ -682,13 +696,17 @@ SQL;
 	}
 	protected function _execDeleteCascadeMySql($params=Array()) {
 		$errorMessage='Ошибка при обращении к DataSource::_execDeleteCascadeMySql';
-		$idlist=$params['listOfId'];
+		$idlist=$this->php2SqlIn($params['id']);
+		if (!$idlist) return;
 		$refs=$params['refs'];
-		foreach($refs as $key=>$ref) {
+		foreach($refs as &$ref) {
 			if ($ref['mode']!='cascade') continue;
+			if ($ref['from.table']!=$this->tableName) continue;
+			if ($ref['from.field']!='id') continue;
+
 			$dataSourceRef=getDataSource($ref['to.table']);
 			if (!$dataSourceRef) throw new Exception('Удаление невозможно, обнаружена ссылка на необъявленную таблицу '.$ref['to.table']);
-			$refIdList='';
+			$refIdList=Array();
 			$sql=<<<SQL
 select id
 from
@@ -697,12 +715,10 @@ where
 	`{$ref['to.table']}`.`{$ref['to.field']}` in ({$idlist})
 SQL;
 			$q=$this->pdo($sql, 'Удаление невозможно, ошибка в запросе проверки ссылочной целостности');
-			while($rec=$this->pdoFetch($q)) {
-				if ($refIdList) $refIdList.=", ";
-				$refIdList.="'{$rec['id']}'";
-			}
+			while($rec=$this->pdoFetch($q)) $refIdList[]=$rec['id'];
+			if (count($refIdList)==0) return;
 			$p=Array();
-			$p['listOfId']=$refIdList;
+			$p['id']=$refIdList;
 			$p['recursLevel']=1;
 			if ($params['recursLevel']) $p['recursLevel']=$params['recursLevel']+1;
 			$dataSourceRef->execDelete($p);
@@ -710,13 +726,17 @@ SQL;
 	}
 	protected function _execDeleteCascadeSqlSrv($params=Array()) {
 		$errorMessage='Ошибка при обращении к DataSource::_execDeleteCascadeSqlSrv';
-		$idlist=$params['listOfId'];
+		$idlist=$this->php2SqlIn($params['id']);
+		if (!$idlist) return;
 		$refs=$params['refs'];
-		foreach($refs as $key=>$ref) {
+		foreach($refs as &$ref) {
 			if ($ref['mode']!='cascade') continue;
+			if ($ref['from.table']!=$this->tableName) continue;
+			if ($ref['from.field']!='id') continue;
+
 			$dataSourceRef=getDataSource($ref['to.table']);
 			if (!$dataSourceRef) throw new Exception('Удаление невозможно, обнаружена ссылка на необъявленную таблицу '.$ref['to.table']);
-			$refIdList='';
+			$refIdList=Array();
 			$sql=<<<SQL
 select id
 from
@@ -725,12 +745,10 @@ where
 	[{$ref['to.table']}].[{$ref['to.field']}] in ({$idlist})
 SQL;
 			$q=$this->pdo($sql, 'Удаление невозможно, ошибка в запросе проверки ссылочной целостности');
-			while($rec=$this->pdoFetch($q)) {
-				if ($refIdList) $refIdList.=", ";
-				$refIdList.="'{$rec['id']}'";
-			}
+			while($rec=$this->pdoFetch($q)) $refIdList[]=$rec['id'];
+			if (count($refIdList)==0) return;
 			$p=Array();
-			$p['listOfId']=$refIdList;
+			$p['id']=$refIdList;
 			$p['recursLevel']=1;
 			if ($params['recursLevel']) $p['recursLevel']=$params['recursLevel']+1;
 			$dataSourceRef->execDelete($p);
@@ -738,15 +756,21 @@ SQL;
 	}
 	protected function _execDeleteClearMySql($params=Array()) {
 		$errorMessage='Ошибка при обращении к DataSource::_execDeleteClearMySql';
-		$idlist=$params['listOfId'];
+		$idlist=$this->php2SqlIn($params['id']);
+		if (!$idlist) return;
 		$refs=$params['refs'];
-		foreach($refs as $key=>$ref) {
+		foreach($refs as &$ref) {
 			if ($ref['mode']!='clear') continue;
+			if ($ref['from.table']!=$this->tableName) continue;
+			if ($ref['from.field']!='id') continue;
+
 			$dataSourceRef=getDataSource($ref['to.table']);
 			if (!$dataSourceRef) throw new Exception('Удаление невозможно, обнаружена ссылка на необъявленную таблицу '.$ref['to.table']);
-			$refIdList='';
+			
+			$emptyValue='0';
+			if ($dataSourceRef->isGUID) $emptyValue='00000000-0000-0000-0000-000000000000';
 			$sql=<<<SQL
-update `{$ref['to.table']}` set `{$ref['to.field']}`=0
+update `{$ref['to.table']}` set `{$ref['to.field']}`='{$emptyValue}'
 where
 	`{$ref['to.field']}` in ({$idlist})
 SQL;
@@ -755,15 +779,21 @@ SQL;
 	}
 	protected function _execDeleteClearSqlSrv($params=Array()) {
 		$errorMessage='Ошибка при обращении к DataSource::_execDeleteClearSqlSrv';
-		$idlist=$params['listOfId'];
+		$idlist=$this->php2SqlIn($params['id']);
+		if (!$idlist) return;
 		$refs=$params['refs'];
-		foreach($refs as $key=>$ref) {
+		foreach($refs as &$ref) {
 			if ($ref['mode']!='clear') continue;
+			if ($ref['from.table']!=$this->tableName) continue;
+			if ($ref['from.field']!='id') continue;
+
 			$dataSourceRef=getDataSource($ref['to.table']);
 			if (!$dataSourceRef) throw new Exception('Удаление невозможно, обнаружена ссылка на необъявленную таблицу '.$ref['to.table']);
-			$refIdList='';
+
+			$emptyValue='0';
+			if ($dataSourceRef->isGUID) $emptyValue='00000000-0000-0000-0000-000000000000';
 			$sql=<<<SQL
-update [{$ref['to.table']}] set [{$ref['to.field']}]=0
+update [{$ref['to.table']}] set [{$ref['to.field']}]='{$emptyValue}'
 where
 	[{$ref['to.field']}] in ({$idlist})
 SQL;
@@ -1092,118 +1122,6 @@ SQL;
 		return true;
 	}
 
-	// Работа с временной таблицей ключей
-	public function saveToTmpTable($params=Array()) {
-		$errorMessage='Ошибка при обращении к DataSource::saveToTmpTable';
-		if (!$this->getPerm('read','refresh',$params)) throw new ExceptionNoReport('У Вас нет прав на чтение из таблицы '.$this->tableCaption);
-		$driverName=$this->getDriverName();
-		if ($driverName=='mysql') return $this->_saveToTmpTableMySql($params);
-		if ($driverName=='sqlsrv') return $this->_saveToTmpTableSqlSrv($params);
-		return '';
-	}
-	protected function _saveToTmpTableMySql($params=Array()) {
-		$errorMessage='Ошибка при обращении к DataSource::_saveToTmpTableMySql';
-		$result=getGUID();
-		if ($paginatorFrom || $paginatorCount) {
-			if (!$paginatorFrom) $paginatorFrom=0;
-			if (!$paginatorCount) $paginatorCount=500;
-			$sql=<<<SQL
-insert into tmptablelist (list, value)
-select 
-	'{$result}' as list,
-	`{$this->tableName}`.id
-from
-{$this->getSelectFrom($params)}
-where 1=1
-{$this->getSelectWhere($params)}
-order by
-{$this->getSelectOrderBy($params)}
-limit {$paginatorFrom}, {$paginatorCount}
-SQL;
-		}
-		else {
-			$sql=<<<SQL
-insert into tmptablelist (list, value)
-select 
-	'{$result}' as list,
-	`{$this->tableName}`.id
-from
-{$this->getSelectFrom($params)}
-where 1=1
-{$this->getSelectWhere($params)}
-SQL;
-		}
-		$this->pdo($sql);
-		return $result;
-	}
-	protected function _saveToTmpTableSqlSrv($params=Array()) {
-		$errorMessage='Ошибка при обращении к DataSource::_saveToTmpTableSqlSrv';
-		$result=getGUID();
-		if ($paginatorFrom || $paginatorCount) {
-			if (!$paginatorFrom) $paginatorFrom=0;
-			if (!$paginatorCount) $paginatorCount=500;
-			$sql=<<<SQL
-insert into ##tmptablelist (list, value)
-select top {$paginatorCount} 
-	'{$result}' as list,
-	a.id
-from
-(
-select 
-	[{$this->tableName}].id,
-	,ROW_NUMBER() over (
-	order by
-{$this->getSelectOrderBy($params)}
-	) as [row_number]
-from
-{$this->getSelectFrom($params)}
-where
-	1=1
-{$this->getSelectWhere($params)}
-) a
-where
-  a.[row_number]>{$paginatorFrom}
-order by a.[row_number]
-SQL;
-		}
-		else {
-			$sql=<<<SQL
-insert into ##tmptablelist (list, value)
-select 
-	'{$result}' as list,
-	[{$this->tableName}].id
-from
-{$this->getSelectFrom($params)}
-where 1=1
-{$this->getSelectWhere($params)}
-SQL;
-		}
-		$this->pdo($sql);
-		return $result;
-	}
-	
-	// Добавляет в список результатов результаты из подчиненного источника данных, полезно для подготовки отчетов
-	public function appendChilds(&$list, &$childs, $childName, $childFieldName) {
-		$rows=Array();
-		$n=count($list);
-		for($i=0; $i<$n; $i++) {
-			unset($row);
-			$row=&$list[$i];
-			$id=$row['id'];
-			$rows[$id]=&$row;
-		}
-		$n=count($childs);
-		for($i=0; $i<$n; $i++) {
-			unset($child);
-			unset($row);
-			$child=&$childs[$i];
-			$klsrow=$child[$childFieldName];
-			$row=&$rows[$klsrow];
-			if (!$row) continue;
-			if (!$row["#child.{$childName}"]) $row["#child.{$childName}"]=Array();
-			$row["#child.{$childName}"][]=&$child;
-		}
-	}
 	public function getSelectCount($params=Array()) {
 		$selectFrom=$this->getSelectFrom($params);
 		$selectWhere=$this->getSelectWhere($params);
@@ -1357,34 +1275,6 @@ SQL;
 		return $result;
 	}
 	
-	public function autoGenGetFields($fields=null, $tableName=null) {
-		$errorMessage='Ошибка при обращении к DataSource::autoGenGetFields';
-		if (!$fields) $fields=$this->getFields();
-		if (!$tableName) $tableName=$this->tableName;
-		$D='$';
-		$result='';
-		foreach($fields as $key=>$fld) {
-			$items='';
-			foreach($fld as $name=>$value) {
-				if ($items) $items.="\n";
-				if (gettype($value)=='array') {
-					$items.="\t\t"."{$D}fld['{$name}']=".var_export($value, true).";";
-				}
-				else {
-					$items.="\t\t"."{$D}fld['{$name}']='{$value}';";
-				}
-			}
-			if ($result) $result.="\n";
-			$result.=<<<PHP
-	{	// {$fld['name']} - {$fld['caption']}
-		{$D}fld=Array();
-{$items}
-		{$D}this->fields[]={$D}fld;
-	}
-PHP;
-		}
-		return $result;
-	}
 	public function autoGenGetSelectFields($fields=null, $tableName=null, $selectOtherFields=null, $driverName=null) {
 		$errorMessage='Ошибка при обращении к DataSource::autoGenGetSelectFields';
 		if (!$fields) $fields=$this->getFields();
@@ -1471,38 +1361,22 @@ PHP;
 		$D='$';
 		$B='';
 		$E='';
-		$tmpTable='';
 		if ($driverName=='mysql') {
 			$B='`';
 			$E='`';
-			$tmpTable='tmptablelist';
 		} else if ($driverName=='sqlsrv') {
 			$B='[';
 			$E=']';
-			$tmpTable='##tmptablelist';
 		} else {
 			throw new Exception("Неизвестный драйвер базы данных '{$driverName}'");
 		}
 		$result=<<<PHP
 	{$D}result='';
-	if ({$D}params['filter.id']!='') {
-		if ({$D}this->isGUID) {
-			{$D}value={$D}this->guid2Sql({$D}params['filter.id']);
-		}
-		else {
-			{$D}value={$D}this->php2Sql({$D}params['filter.id']);
-		}
-		{$D}result.="\\n"."and {$B}{$tableName}{$E}.id='{{$D}value}'";
+	if (isset({$D}params['filter.id'])) {
+		{$D}value={$D}this->php2SqlIn({$D}params['filter.id']);
+		if ({$D}value!='') {$D}result.="\\n"."and {$B}{$tableName}{$E}.id in ({{$D}value})";
 	}
 PHP;
-		if ($tmpTable) {
-			$result.="\n".<<<PHP
-	if ({$D}params['filter.id.tmptable']!='') {
-		{$D}value={$D}this->php2Sql({$D}params['filter.id.tmptable']);
-		{$D}result.="\\n"."and {$B}{$tableName}{$E}.id in (select value from {$tmpTable} where {$tmpTable}.list='{{$D}value}')";
-	}
-PHP;
-		}
 		foreach($fields as $key=>$fld) {
 			$table=$tableName;
 			if ($fld['table']) $table=$fld['table'];
@@ -1521,19 +1395,11 @@ PHP;
 			}
 			if ($filterType=='ref') {
 				$result.="\n".<<<PHP
-	if ({$D}params['filter.{$fld['name']}']!='') {
-		{$D}value={$D}this->php2Sql({$D}params['filter.{$fld['name']}']);
-		{$D}result.="\\n"."and {$fullFieldName}='{{$D}value}'";
+	if (isset({$D}params['filter.{$fld['name']}'])) {
+		{$D}value={$D}this->php2SqlIn({$D}params['filter.{$fld['name']}']);
+		if ({$D}value!='') {$D}result.="\\n"."and {$fullFieldName} in ({{$D}value})";
 	}
 PHP;
-				if ($tmpTable) {
-					$result.="\n".<<<PHP
-	if ({$D}params['filter.{$fld['name']}.tmptable']!='') {
-		{$D}value={$D}this->php2Sql({$D}params['filter.{$fld['name']}.tmptable']);
-		{$D}result.="\\n"."and {$fullFieldName} in (select value from {$tmpTable} where {$tmpTable}.list='{{$D}value}')";
-	}
-PHP;
-				}
 			} else if ($filterType=='check') {
 				$result.="\n".<<<PHP
 	if ({$D}params['filter.{$fld['name']}']!='') {
@@ -1697,7 +1563,252 @@ PHP;
 }
 
 /**
-Получить объект источника данных по имени
+Класс кэширующего хранилища данных
+@package module-lib
+@subpackage module-datasource
+*/
+class DataStorage {
+	function __construct($tableName) {
+		$this->dataSource=getDataSource($tableName);
+		$this->tableName=$this->dataSource->tableName;
+		$this->items=Array();
+	}
+	// Получить строку по id, если такой строки нет в базе, то возвращается пустая строка с id=false
+	public function getItem($id) {
+		$result=$this->items[$id];
+		if (!$result) {
+			if ($id!='' && $id!='0' && $id!='00000000-0000-0000-0000-000000000000') {
+				$this->getItems(Array('filter.id'=>$id));
+				$result=$this->items[$id];
+			}
+		}
+		if (!$result) {
+			$this->items[$id]=new DataItem($this->tableName, false);
+			$result=$this->items[$id];
+		}
+		return $result;
+	}
+	// Получить список строк по условию
+	public function getItems($params) {
+		$lst=$this->dataSource->execRefresh($params);
+		$result=Array();
+		foreach($lst as &$row) {
+			$id=$row['id'];
+			if (!$this->items[$id]) $this->items[$id]=new DataItem($this->tableName, $id);
+			$item=$this->items[$id];
+			$item->values=$row;
+			$result[]=$item;
+		}
+		return $result;
+	}
+	// Проверить, есть ли строка с таким id в начитанном кэше
+	public function getIsItem($id) {
+		return $this->items[$id]?true:false;
+	}
+	
+	// Вернуть источник данных DataSource
+	public function getDataSource() {
+		return $this->dataSource;
+	}
+	// Вернуть описание поля по имени поля
+	public function getField($name) {
+		return $this->getDataSource()->getField($name);
+	}
+	// Вернуть описание связи по имени связи (<таблица>.<поле>, где поле не id)
+	public function getRef($name) {
+		return $this->getDataSource()->getRef($name);
+	}
+	// Загрузить недостающие строки связанной таблицы
+	public function _loadRefItems($refName, $fromItem=null) {
+		$ref=$this->getRef($refName);
+		if (!$ref) throw new Exception("Попытка обращения к несуществующей ссылке '{$refName}' в таблице '{$this->tableName}'");
+		if ($ref['from.table']!=$this->tableName) throw new Exception("Попытка обращения к некорректной ссылке '{$refName}' в таблице '{$this->tableName}'");
+		if (!$ref['to.table']) throw new Exception("Попытка обращения к некорректной ссылке '{$refName}' в таблице '{$this->tableName}'");
+		if ($ref['from.field']!='id' && $ref['to.field']!='id') throw new Exception("Попытка обращения к некорректной ссылке '{$refName}' в таблице '{$this->tableName}'");
+		
+		$lstItems=Array();
+		if ($fromItem) {
+			if (!$fromItem->refs[$refName])	$lstItems[]=$fromItem;
+		}
+		else {
+			foreach($this->items as $item) {
+				if (!$item->refs[$refName]) $lstItems[]=$item;
+			}
+		}
+		foreach($lstItems as $item) {
+			if (!$item->refs[$refName]) $item->refs[$refName]=($ref['to.field']=='id')?true:Array();
+		}
+		
+		$refDataStorage=getDataStorage($ref['to.table']);
+		$lstValues=Array();
+		$values=Array();
+		foreach($lstItems as $item) {
+			$value=$item->get($ref['from.field']);
+			if (!$value || $value=='0') continue;
+			if ($value=='00000000-0000-0000-0000-000000000000') continue;
+			if ($values[$value]) continue;
+			if ($ref['to.field']=='id') {
+				if ($refDataStorage->getIsItem($value)) continue;
+			}
+			$values[$value]=true;
+			$lstValues[]=$value;
+		}
+		
+		$refItems=$refDataStorage->getItems(Array("filter.{$ref['to.field']}"=>$lstValues));
+		if ($ref['from.field']=='id') {
+			foreach($refItems as $refItem) {
+				$value=$refItem->get($ref['to.field']);
+				$item=$this->getItem($value);
+				if (!$item->refs[$refName]) $item->refs[$refName]=Array();
+				$item->refs[$refName][]=$refItem->getId();
+			}
+		}
+	}
+	// Преобразует краткое название связи в полное
+	//		допустимое краткое название - имя поля текущей таблицы, по которому связь
+	public function _getRefNameForItem($name) {
+		if ($this->getRef($name)) return $name;
+		if (strpos($name,'.')===false) {
+			$str=$this->tableName.'.'.$name;
+			if ($this->getRef($str)) return $str;
+		}
+		return $name;
+	}
+	// Преобразует краткое название связи в полное
+	//		допустимое краткое название - имя связанной таблицы, если с этой таблицей есть только одна связь
+	public function _getRefNameForItems($name) {
+		global $_refNameForItems;
+		if ($this->getRef($name)) return $name;
+		if ($_refNameForItems[$name]) return $_refNameForItems[$name];
+		if (strpos($name,'.')===false) {
+			$result='';
+			$resCount=0;
+			foreach($this->getDataSource()->getReferences() as $refName=>$ref) {
+				if ($ref['from.table']!=$this->tableName) continue;
+				if ($ref['from.field']!='id') continue;
+				if ($ref['to.table']==$name) {
+					$result=$refName;
+					$resCount++;
+				}
+			}
+			if ($result && $resCount==1) {
+				$_refNameForItems[$name]=$result;
+				return $result;
+			}
+		}
+		return $name;
+	}
+	protected $_refNameForItems=Array();
+	
+	protected $tableName='';
+	protected $dataSource=null;
+	protected $items=null;
+}
+/**
+Класс строки кэширующего хранилища данных
+@package module-lib
+@subpackage module-datasource
+*/
+class DataItem {
+	function __construct($tableName, $id) {
+		$this->tableName=$tableName;
+		$this->getDataStorage();
+		$this->id=$id;
+		$this->values=Array();
+		$this->refs=Array();
+	}
+	// Вернуть id строки
+	public function getId() {
+		return $this->id;
+	}
+	// Вернуть значение поля
+	public function get($fieldName) {
+		if ($fieldName=='id') return $this->getId();
+		if (!$this->getDataStorage()->getField($fieldName)) throw new Exception("Попытка обращения к несуществующему полю '{$this->tableName}.{$fieldName}'");
+		return $this->values[$fieldName];
+	}
+	public function getHtml($fieldName) {
+		return str2Html($this->get($fieldName));
+	}
+	public function getDateHtml($fieldName) {
+		return date2Html($this->get($fieldName));
+	}
+	public function getAttr($fieldName) {
+		return str2Attr($this->get($fieldName));
+	}
+	public function getJavaScript($fieldName) {
+		return str2JavaScript($this->get($fieldName));
+	}
+	
+	// Вернуть связанный item по имени одиночной связи (to.field='id')
+	//		если $isLoadAll=true пытается подгрузить одним запросом все недостающие строки связанной таблицы
+	public function getRefItem($refName, $isLoadAll=false) {
+		$refName=$this->getDataStorage()->_getRefNameForItem($refName);
+		$ref=$this->getDataStorage()->getRef($refName);
+		if (!$ref) throw new Exception("Попытка обращения к несуществующей ссылке '{$refName}' в таблице '{$this->tableName}'");
+		if ($ref['from.table']!=$this->tableName) throw new Exception("Попытка обращения к некорректной ссылке '{$refName}' в таблице '{$this->tableName}'");
+		if (!$ref['to.table']) throw new Exception("Попытка обращения к некорректной ссылке '{$refName}' в таблице '{$this->tableName}'");
+		if ($ref['to.field']!='id') throw new Exception("Попытка обращения к множественной ссылке '{$refName}' как к одиночной в таблице '{$this->tableName}'");
+
+		$refDataStorage=getDataStorage($ref['to.table']);
+		$value=$this->get($ref['from.field']);
+		
+		if (!$this->refs[$refName]) {
+			if ($isLoadAll) {
+				$this->getDataStorage()->_loadRefItems($refName);
+			}
+			if (!$this->refs[$refName]) $this->refs[$refName]=true;
+		}
+		return $refDataStorage->getItem($value);
+	}
+	// Вернуть список связанных item по имени множественной связи (from.field='id')
+	//		если $isLoadAll=true пытается подгрузить одним запросом все недостающие строки связанной таблицы
+	public function getRefItems($refName, $isLoadAll=false) {
+		$refName=$this->getDataStorage()->_getRefNameForItems($refName);
+		$ref=$this->getDataStorage()->getRef($refName);
+		if (!$ref) throw new Exception("Попытка обращения к несуществующей ссылке '{$refName}' в таблице '{$this->tableName}'");
+		if ($ref['from.table']!=$this->tableName) throw new Exception("Попытка обращения к некорректной ссылке '{$refName}' в таблице '{$this->tableName}'");
+		if (!$ref['to.table']) throw new Exception("Попытка обращения к некорректной ссылке '{$refName}' в таблице '{$this->tableName}'");
+		if ($ref['to.field']=='id') throw new Exception("Попытка обращения к одиночной ссылке '{$refName}' как к множественной в таблице '{$this->tableName}'");
+		if ($ref['from.field']!='id') throw new Exception("Попытка обращения к одиночной ссылке '{$refName}' как к множественной в таблице '{$this->tableName}'");
+
+		if (!$this->refs[$refName]) {
+			if ($isLoadAll) {
+				$this->getDataStorage()->_loadRefItems($refName);
+			}
+			else {
+				$this->getDataStorage()->_loadRefItems($refName, $this);
+			}
+		}
+		
+		$refDataStorage=getDataStorage($ref['to.table']);
+		$result=Array();
+		$lst=&$this->refs[$refName];
+		if (is_array($lst)) foreach($lst as $refId) {
+			$result[]=$refDataStorage->getItem($refId);
+		}
+		return $result;
+	}
+	public function clearRefItems($refName='') {
+		if ($refName) {
+			unset($this->refs[$refName]);
+		}
+		else {
+			$this->refs=Array();
+		}
+	}
+
+	public function getDataStorage() {
+		return getDataStorage($this->tableName);
+	}
+	protected $tableName='';
+	protected $id=null;
+	public $values=null;
+	public $refs=null;
+}
+
+/**
+Получить объект источника данных DataSource по имени
 @param	String	$name источник данных
 @return	DataSource объект источника данных
 */
@@ -1715,13 +1826,13 @@ function getDataSource($name) {
 	if ($name!=$str) throw new Exception("Недопустимое имя источника данных '{$name}'");
 	if ($registerDataSource[$name]) return $registerDataSource[$name];
 
-	$fileNameAutoGen=getCfg('pathDataSources')."/autogen/{$name}.php";
+	$fileNameAutoGen=getCfg('path.datasources')."/autogen/{$name}-autogen.php";
 	if (file_exists($fileNameAutoGen)) {
 		$obj=include_once($fileNameAutoGen);
 		if ($obj instanceof DataSource) $registerDataSource[$name]=$obj;
 	}
 	
-	$fileNameUserDef=getCfg('pathDataSources')."/{$name}.php";
+	$fileNameUserDef=getCfg('path.datasources')."/{$name}.php";
 	if (file_exists($fileNameUserDef)) {
 		$obj=include_once($fileNameUserDef);
 		if ($obj instanceof DataSource) $registerDataSource[$name]=$obj;
@@ -1731,4 +1842,15 @@ function getDataSource($name) {
 	return $registerDataSource[$name];
 }
 $registerDataSource=Array();
+/**
+Получить объект кэширующего хранилища данных DataStorage по имени
+@param	String	$name источник данных
+@return	DataSource объект источника данных
+*/
+function getDataStorage($tableName) {
+	global $registerDataStorage;
+	if (!$registerDataStorage[$tableName]) $registerDataStorage[$tableName]=new DataStorage($tableName);
+	return $registerDataStorage[$tableName];
+}
+$registerDataStorage=Array();
 ?>
