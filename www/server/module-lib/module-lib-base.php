@@ -974,4 +974,3 @@ function errorLog($e) {
 	if (fwrite($handle, $result) === FALSE) throw new Exception("Не удалось произвести запись файл log/logerr.txt");
 	fclose($handle);
 }
-?>

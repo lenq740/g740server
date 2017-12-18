@@ -4,7 +4,6 @@
 @package module-lib
 @subpackage module-perm
 */
-
 class PermControllerPrj extends PermController {
 	public function getPerm($mode, $operation) {
 		$result=parent::getPerm($mode, $operation);
@@ -19,5 +18,4 @@ class PermControllerPrj extends PermController {
 		return $result;
 	}
 }
-$objPermController=new PermControllerPrj();
-?>
+return new PermControllerPrj();

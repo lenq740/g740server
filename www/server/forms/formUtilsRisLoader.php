@@ -16,4 +16,3 @@ XML;
 	}
 }
 return new FormUtilsRisLoader();
-?>

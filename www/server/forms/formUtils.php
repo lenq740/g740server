@@ -28,4 +28,3 @@ XML;
 	}
 }
 return new FormUtils();
-?>

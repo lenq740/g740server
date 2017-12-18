@@ -7,4 +7,3 @@ class FormDisconnect extends FormController {
 	}
 }
 return new FormDisconnect();
-?>

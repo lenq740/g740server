@@ -72,4 +72,3 @@ function regPDO($pdoDB, $name='default') {
 	$_registerPDO[$name]=$pdoDB;
 }
 $_registerPDO=Array();
-?>

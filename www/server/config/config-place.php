@@ -13,4 +13,3 @@ $config['sqlLogin']='root';
 $config['sqlPassword']='918918';
 $config['sqlDbName']='g740starter';
 $config['sqlCharSet']='utf8';
-?>

@@ -1848,9 +1848,8 @@ $registerDataSource=Array();
 @return	DataSource объект источника данных
 */
 function getDataStorage($tableName) {
-	global $registerDataStorage;
-	if (!$registerDataStorage[$tableName]) $registerDataStorage[$tableName]=new DataStorage($tableName);
-	return $registerDataStorage[$tableName];
+	global $_registerDataStorage;
+	if (!$_registerDataStorage[$tableName]) $_registerDataStorage[$tableName]=new DataStorage($tableName);
+	return $_registerDataStorage[$tableName];
 }
-$registerDataStorage=Array();
-?>
+$_registerDataStorage=Array();

@@ -230,4 +230,3 @@ function opimizeTable($tableName) {
 	$sql='optimize table '.$tableName;
 	$q=$pdoDB->pdo($sql);
 }
-?>

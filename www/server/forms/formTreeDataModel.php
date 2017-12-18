@@ -8,4 +8,3 @@ class FormTreeDataModel extends FormController {
 	}
 }
 return new FormTreeDataModel();
-?>

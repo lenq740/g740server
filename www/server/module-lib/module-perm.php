@@ -12,10 +12,10 @@
 @return	Boolean доступность требуемой функциональности
 */
 function getPerm($mode, $operation) {
-	global $objPermController;
-	if (!$objPermController) return false;
-	if (!($objPermController instanceof PermController)) return false;
-	return $objPermController->getPerm($mode, $operation);
+	global $_objPermController;
+	if (!$_objPermController) return false;
+	if (!($_objPermController instanceof PermController)) return false;
+	return $_objPermController->getPerm($mode, $operation);
 }
 /**
 Выполнить аутентификацию пользователя
@@ -24,20 +24,20 @@ function getPerm($mode, $operation) {
 @return	Boolean	успешность аутентификации
 */
 function execConnect($login, $password) {
-	global $objPermController;
-	if (!$objPermController) return false;
-	if (!($objPermController instanceof PermController)) return false;
-	return $objPermController->execConnect($login, $password);
+	global $_objPermController;
+	if (!$_objPermController) return false;
+	if (!($_objPermController instanceof PermController)) return false;
+	return $_objPermController->execConnect($login, $password);
 }
 /**
 Сбросить аутентифицированного пользователя
 @return	Boolean	успешность
 */
 function execDisconnect() {
-	global $objPermController;
-	if (!$objPermController) return false;
-	if (!($objPermController instanceof PermController)) return false;
-	return $objPermController->execDisconnect();
+	global $_objPermController;
+	if (!$_objPermController) return false;
+	if (!($_objPermController instanceof PermController)) return false;
+	return $_objPermController->execDisconnect();
 }
 /**
 Получить параметр, сохраненный для аутентифицированного пользователя
@@ -56,6 +56,10 @@ function getPP($name, $default='') {
 @subpackage module-perm
 */
 class PermController {
+	function __construct() {
+		global $_objPermController;
+		$_objPermController=$this;
+	}
 	public function getPerm($mode, $operation) {
 		if (!$_SESSION['connect_ok']) return false;
 		if ($_SESSION['connect_sys']) return true;
@@ -103,5 +107,5 @@ class PermController {
 		return true;
 	}
 }
-$objPermController=new PermController();
-?>
+$_objPermController=null;
+return new PermController();

@@ -24,7 +24,7 @@ class UtilController {
 @return	UtilController объект утилиты
 */
 function getUtilController($name) {
-	global $registerUtilController;
+	global $_registerUtilController;
 	
 	$str=$name;
 	$str=str_replace('"','',$str);
@@ -36,21 +36,20 @@ function getUtilController($name) {
 	$str=str_replace('?','',$str);
 	$str=strtolower($str);
 	if ($name!=$str) throw new Exception("Недопустимое имя утилиты '{$name}'");
-	if ($registerUtilController[$name]) return $registerUtilController[$name];
+	if ($_registerUtilController[$name]) return $_registerUtilController[$name];
 
 	$fileNameUtil=getCfg('path.utils')."/{$name}.php";
 	if (file_exists($fileNameUtil)) {
 		$obj=include_once($fileNameUtil);
-		if ($obj instanceof UtilController) $registerUtilController[$name]=$obj;
+		if ($obj instanceof UtilController) $_registerUtilController[$name]=$obj;
 	}
 	
-	if (!$registerUtilController[$name]) throw new Exception("Недопустимое имя утилиты '{$name}'");
-	return $registerUtilController[$name];
+	if (!$_registerUtilController[$name]) throw new Exception("Недопустимое имя утилиты '{$name}'");
+	return $_registerUtilController[$name];
 }
 function execUtilController($name) {
 	$obj=getUtilController($name);
 	$params=$obj->getParams();
 	return $obj->go($params);
 }
-$registerUtilController=Array();
-?>
+$_registerUtilController=Array();

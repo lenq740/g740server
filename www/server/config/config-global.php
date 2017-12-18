@@ -28,5 +28,4 @@ $config['trace.error.sql']=false;	// логировать все ошибки SQ
 $config['crypt.md5.key']='1234567890';
 
 // Зашифрованный пароль пользователя root
-$config['root.password']='d0d2bfdca84f95981893d0ab69a03969';
-?>
+//$config['root.password']='d0d2bfdca84f95981893d0ab69a03969';

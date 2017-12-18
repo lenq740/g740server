@@ -339,5 +339,3 @@ function strTabShift($str, $tabShift) {
 	}
 	return $str;
 }
-
-?>

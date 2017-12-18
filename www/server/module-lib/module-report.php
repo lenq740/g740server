@@ -1,12 +1,12 @@
 <?php
 /**
-Утилиты для пересчета вычисляемых полей, и перегенерации файлов
+Заготовка для контроллера отчетов
 @package module-lib
 @subpackage module-report
 */
 
 /**
-Класс предок для утилит
+Заготовка для контроллера отчетов
 @package module-lib
 @subpackage module-report
 */
@@ -93,4 +93,3 @@ HTML;
 	}
 }
 $objReport=new ReportController();
-?>

@@ -153,7 +153,7 @@ XML;
 }
 
 function getFormController($name) {
-	global $registerFormController;
+	global $_registerFormController;
 	$pathForm=getCfg('path.forms');
 	
 	$str=$name;
@@ -165,16 +165,15 @@ function getFormController($name) {
 	$str=str_replace('*','',$str);
 	$str=str_replace('?','',$str);
 	if ($name!=$str) throw new Exception("Недопустимое имя экранной формы '{$name}'");
-	if ($registerFormController[$name]) return $registerFormController[$name];
+	if ($_registerFormController[$name]) return $_registerFormController[$name];
 
 	$fileName="{$pathForm}/{$name}.php";
 	if (file_exists($fileName)) {
 		$obj=include_once($fileName);
-		if ($obj instanceof FormController) $registerFormController[$name]=$obj;
+		if ($obj instanceof FormController) $_registerFormController[$name]=$obj;
 	}
 	
-	if (!$registerFormController[$name]) $registerFormController[$name]=new FormController();
-	return $registerFormController[$name];
+	if (!$_registerFormController[$name]) $_registerFormController[$name]=new FormController();
+	return $_registerFormController[$name];
 }
-$registerFormController=Array();
-?>
+$_registerFormController=Array();

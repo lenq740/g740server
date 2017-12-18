@@ -24,4 +24,3 @@ class UtilityAutogenDataSources extends UtilController {
 	}
 }
 return new UtilityAutogenDataSources();
-?>

@@ -8,4 +8,3 @@ class FormMain extends FormController {
 	}
 }
 return new FormMain();
-?>

@@ -622,5 +622,3 @@ HTML;
 		return $result;
 	}
 }
-
-?>
