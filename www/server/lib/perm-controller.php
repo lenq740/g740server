@@ -1,8 +1,8 @@
 <?php
 /**
 Система проверки прав
-@package module-lib
-@subpackage module-perm
+@package lib
+@subpackage perm
 */
 
 /**
@@ -12,10 +12,9 @@
 @return	Boolean доступность требуемой функциональности
 */
 function getPerm($mode, $operation) {
-	global $_objPermController;
-	if (!$_objPermController) return false;
-	if (!($_objPermController instanceof PermController)) return false;
-	return $_objPermController->getPerm($mode, $operation);
+	$obj=getPermController();
+	if (!$obj) return false;
+	return $obj->getPerm($mode, $operation);
 }
 /**
 Выполнить аутентификацию пользователя
@@ -24,20 +23,18 @@ function getPerm($mode, $operation) {
 @return	Boolean	успешность аутентификации
 */
 function execConnect($login, $password) {
-	global $_objPermController;
-	if (!$_objPermController) return false;
-	if (!($_objPermController instanceof PermController)) return false;
-	return $_objPermController->execConnect($login, $password);
+	$obj=getPermController();
+	if (!$obj) return false;
+	return $obj->execConnect($login, $password);
 }
 /**
 Сбросить аутентифицированного пользователя
 @return	Boolean	успешность
 */
 function execDisconnect() {
-	global $_objPermController;
-	if (!$_objPermController) return false;
-	if (!($_objPermController instanceof PermController)) return false;
-	return $_objPermController->execDisconnect();
+	$obj=getPermController();
+	if (!$obj) return false;
+	return $obj->execDisconnect();
 }
 /**
 Получить параметр, сохраненный для аутентифицированного пользователя
@@ -52,8 +49,8 @@ function getPP($name, $default='') {
 
 /**
 Класс контроллер прав
-@package module-lib
-@subpackage module-perm
+@package lib
+@subpackage perm
 */
 class PermController {
 	function __construct() {
@@ -107,5 +104,21 @@ class PermController {
 		return true;
 	}
 }
+
+/**
+Получить актуальный контроллер прав
+@return	PermController объект контроллера прав
+*/
+function getPermController() {
+	global $_objPermController;
+	if ($_objPermController instanceof PermController) return $_objPermController;
+	
+	$fileNamePermController=pathConcat(getCfg('path.root'), getCfg('path.root.module'), 'perm.php');
+	if (file_exists($fileNamePermController)) {
+		$_objPermController=include_once($fileNamePermController);
+		if ($_objPermController instanceof PermController) return $_objPermController;
+	}
+	$_objPermController=new PermController();
+	return $_objPermController;
+}
 $_objPermController=null;
-return new PermController();

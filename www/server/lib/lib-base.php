@@ -1,8 +1,8 @@
 <?php
 /**
 Библиотека функций - базовый набор
-@package module-lib
-@subpackage module-lib-base
+@package lib
+@subpackage lib-base
 */
 
 //------------------------------------------------------------------------------
@@ -487,7 +487,7 @@ function getCfg($name, $default='') {
 //------------------------------------------------------------------------------
 /**
 Объеденить несколько элементов относительного пути
-@return	String зашифрованный пароль
+@return	String путь
 */
 function pathConcat(
 	$item01='',$item02='',$item03='',$item04='',$item05='',
@@ -694,8 +694,8 @@ function xmlCreateCDATASection($xmlOwner, $text) {
 //------------------------------------------------------------------------------
 /**
 Класс расширения функционала PDO
-@package module-lib
-@subpackage module-lib
+@package lib
+@subpackage lib-base
 */
 class PDODataConnectorAbstract extends PDO {
 	public function getDriverName() {
@@ -747,8 +747,8 @@ class PDODataConnectorAbstract extends PDO {
 }
 /**
 Класс расширения функционала PDO для MySql
-@package module-lib
-@subpackage module-lib
+@package lib
+@subpackage lib-base
 */
 class PDODataConnectorMySql extends PDODataConnectorAbstract {
 	function __construct($dbName, $login, $password, $charset='utf8', $host='localhost') {
@@ -792,8 +792,8 @@ class PDODataConnectorMySql extends PDODataConnectorAbstract {
 }
 /**
 Класс расширения функционала PDO для PostgreSQL
-@package module-lib
-@subpackage module-lib
+@package lib
+@subpackage lib-base
 */
 class PDODataConnectorPgSql extends PDODataConnectorAbstract {
 	function __construct($dbName, $login, $password, $charset='utf8', $host='localhost') {
@@ -836,8 +836,8 @@ class PDODataConnectorPgSql extends PDODataConnectorAbstract {
 }
 /**
 Класс расширения функционала PDO для MSSQL
-@package module-lib
-@subpackage module-lib
+@package lib
+@subpackage lib-base
 */
 class PDODataConnectorMSSql extends PDODataConnectorAbstract {
 	function __construct($dbName, $login, $password, $charset='utf8', $host='localhost') {
@@ -944,8 +944,10 @@ function doRisResize($sourceFileName, $resultFileName, $resWidth, $resHeight, $i
 //------------------------------------------------------------------------------
 // Трасировка
 function trace($value) {
-	if (!is_dir('log')) mkdir('log');
-	if (!$handle = fopen('log/trace.txt', 'a')) throw new Exception("Не удалось открыть файл 'log/trace.txt'");
+	$path=pathConcat(getCfg('path.root'), getCfg('path.root.log','log'));
+	if (!is_dir($path)) mkdir($path);
+	$fileName=str_replace("\\","/",realpath($path)).'/trace.txt';
+	if (!$handle = fopen($fileName, 'a')) throw new Exception("Не удалось открыть файл '{$fileName}'");
 	if (gettype($value)=='string') {
 		$str=$value;
 	} else {
@@ -953,14 +955,16 @@ function trace($value) {
 	}
 	$str.="\n";
 	$str.="--------------------------\n";
-	if (fwrite($handle, $str) === FALSE) throw new Exception("Не удалось произвести запись файл log/trace.txt");
+	if (fwrite($handle, $str) === FALSE) throw new Exception("Не удалось произвести запись файл '{$fileName}'");
 	fclose($handle);
 }
 
 // Логирование ошибок
 function errorLog($e) {
-	if (!is_dir('log')) mkdir('log');
-	if (!$handle = fopen('log/logerr.txt', 'a')) throw new Exception("Не удалось открыть файл 'log/logerr.txt'");
+	$path=pathConcat(getCfg('path.root'), getCfg('path.root.log','log'));
+	if (!is_dir($path)) mkdir($path);
+	$fileName=str_replace("\\","/",realpath($path)).'/logerr.txt';
+	if (!$handle = fopen($fileName, 'a')) throw new Exception("Не удалось открыть файл '{$fileName}'");
 	if (is_string($e)) {
 		$result=date("[d-M-Y H:i:s e]").' Error'."\n".$e."\n".'------------'."\n";
 	}
@@ -971,6 +975,6 @@ function errorLog($e) {
 			$result.="\t{$item['file']}\t{$item['function']}\t{$item['line']}\n";
 		}
 	}
-	if (fwrite($handle, $result) === FALSE) throw new Exception("Не удалось произвести запись файл log/logerr.txt");
+	if (fwrite($handle, $result) === FALSE) throw new Exception("Не удалось произвести запись файл '{$fileName}'");
 	fclose($handle);
 }

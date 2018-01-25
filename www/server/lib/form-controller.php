@@ -1,14 +1,14 @@
 <?php
 /**
 Библиотека источников данных
-@package module-lib
-@subpackage module-form
+@package lib
+@subpackage form
 */
 
 /**
 Класс предок для экранной формы
-@package module-lib
-@subpackage module-form
+@package lib
+@subpackage form
 */
 class FormController {
 	public function getStrXmlDefinition($params=Array()) {
@@ -43,8 +43,7 @@ class FormController {
 		$form=$params['#request.form'];
 		$fileName=$macro['%TemplateFileName%'];
 		if (!$fileName) {
-			$pathForm=getCfg('path.forms');
-			$fileName="{$pathForm}/xml/{$form}.xml";
+			$fileName=pathConcat(getCfg('path.root'), getCfg('path.root.forms'),'xml',"{$form}.xml");
 		}
 		if (!file_exists($fileName)) throw new Exception('Не найден файл с XML описанием экранной формы '.$fileName);
 		$result=file_get_contents($fileName);
@@ -154,8 +153,6 @@ XML;
 
 function getFormController($name) {
 	global $_registerFormController;
-	$pathForm=getCfg('path.forms');
-	
 	$str=$name;
 	$str=str_replace('"','',$str);
 	$str=str_replace("'",'',$str);
@@ -167,7 +164,7 @@ function getFormController($name) {
 	if ($name!=$str) throw new Exception("Недопустимое имя экранной формы '{$name}'");
 	if ($_registerFormController[$name]) return $_registerFormController[$name];
 
-	$fileName="{$pathForm}/{$name}.php";
+	$fileName=pathConcat(getCfg('path.root'), getCfg('path.root.forms'), "{$name}.php");
 	if (file_exists($fileName)) {
 		$obj=include_once($fileName);
 		if ($obj instanceof FormController) $_registerFormController[$name]=$obj;

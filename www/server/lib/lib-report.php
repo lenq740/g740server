@@ -1,8 +1,8 @@
 <?php
 /**
 Генератор отчетов в виде таблиц с подитогами
-@package Lib
-@subpackage module-report
+@package lib
+@subpackage lib-report
 */
 
 /**
@@ -28,8 +28,8 @@
 	$objReport->Get();				- Отчет
 	
 </pre>
-@package Lib
-@subpackage module-report
+@package lib
+@subpackage lib-report
 */
 class ReportBuilder {
 /**

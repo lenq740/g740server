@@ -23,15 +23,13 @@ class UtilityRestore extends UtilController {
 		if (!getPerm('sys','write')) throw new Exception('У Вас нет прав на выполнение системных утилит, увы и ах...');
 		$pdoDB=getPDO();
 
-		$path=getCfg('path.import','import').'/'.getCfg('path.import.backup','backup').'/backup.xml';
-		$fileName=str_replace("\\","/",realpath($path));
+		$fileName=pathConcat(getCfg('path.root'), getCfg('path.root.backup'),'backup.xml');
 		if (!is_file($fileName)) throw new Exception("Файл '{$fileName}' не найден");
+		$fileName=str_replace("\\","/",realpath($fileName));
 
 		if ($isEcho) {
 			echo '<h2>Выполнение восстановления из резервной копии</h2>'; flush();
 		}
-		if (!getPerm('sys','write')) throw new Exception('У Вас нет прав на выполнение этой операции...');
-		if (!file_exists($fileName)) throw new Exception('Отсутствует файл '.$fileName);
 		$pdoDB->commit();
 
 		if ($params['isdatastru']) {

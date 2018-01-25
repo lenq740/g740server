@@ -1,10 +1,10 @@
 <?php
 /**
 Библиотека функций - расширение базового набора под формирование HTML страниц
-@package module-lib
-@subpackage module-lib-g740server
+@package lib
+@subpackage lib-g740server
 */
-require_once('module-lib-base.php');
+require_once('lib-base.php');
 
 /**
 Преобразование текстового абзаца в HTML со сложными заменами

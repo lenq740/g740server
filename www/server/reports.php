@@ -6,16 +6,12 @@ header("Content-type: text/html; charset=utf-8");
 header("Cache-Control: no-store, no-cache, must-revalidate");
 header("Cache-Control: post-check=0, pre-check=0", false);
 require_once('config/.config.php');
-require_once('module-lib/module-lib-base.php');
-require_once('module-lib/module-lib-g740server.php');
-require_once('module-lib/module-datasource.php');
-require_once('module-lib/module-perm.php');
-require_once('module-lib/module-report.php');
+require_once('lib/datasource-controller.php');
+require_once('lib/report-controller.php');
 
-require_once('module-prj/prj-perm.php');
+$config['path.root']=pathConcat('..',getCfg('path.root'));
+$hrefRoot=getCfg('href.root');
 
-
-$pathRoot=getCfg('path.root');
 echo <<<HTML
 <!DOCTYPE html>
 <html lang="ru-ru">
@@ -26,7 +22,7 @@ echo <<<HTML
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<!-- Bootstrap -->
-	<link href="{$pathRoot}/resource/bootstrap-3.3.6/css/bootstrap.min.css" rel="stylesheet">
+	<link href="{$hrefRoot}/resource/bootstrap-3.3.6/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
 <div class="wrap">
@@ -67,8 +63,8 @@ HTML;
 echo "\n".<<<HTML
 	</div>
 </div>
-<script src="{$pathRoot}/resource/jquery-1.12.4.min.js"></script>
-<script src="{$pathRoot}/resource/bootstrap-3.3.6/js/bootstrap.min.js"></script>
+<script src="{$hrefRoot}/resource/jquery-1.12.4.min.js"></script>
+<script src="{$hrefRoot}/resource/bootstrap-3.3.6/js/bootstrap.min.js"></script>
 </body>
 </html>
 HTML;

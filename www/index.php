@@ -58,7 +58,6 @@ header("Cache-Control: post-check=0, pre-check=0", false);
 				{
 					var conf=g740.config;
 					conf['urlServer']='server/';					// Точка входа для управляющих серверных скриптов
-					//conf['mainFormName']='formMain';				// Имя главной формы приложения
 					conf['mainFormName']='formMainWithMenuBar';		// Вариант главной экранной формы приложения с верхним меню вместо древовидного
 					conf['mainFormDomNode']='FormPanelMain';		// Узел DOM, в ктором размещается главная форма приложения
 					

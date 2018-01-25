@@ -13,8 +13,7 @@ class UtilityAutogenDataSources extends UtilController {
 			echo '<div class="section">'; flush();
 		}
 		$params['isEcho']=$isEcho;
-		$objAutoGenerator=new AutoGenerator($params);
-		$params['path']=getCfg('path.datasources').'/autogen/';
+		$objAutoGenerator=new DSAutoGenerator($params);
 		$objAutoGenerator->goDataSources($params);
 		unset($objAutoGenerator);
 		if ($isEcho) {

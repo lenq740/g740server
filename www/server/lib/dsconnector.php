@@ -1,9 +1,12 @@
 <?php
 /**
 Класс, содержащий интерфейс доступа к базе данных для DataSource
-@package module-lib
-@subpackage module-datasource
+@package lib
+@subpackage dsconnector
 */
+require_once('lib-base.php');
+require_once('perm-controller.php');
+
 class DSConnector {
 	public $pdoName='default';
 	// Доступ к базе данных

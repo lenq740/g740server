@@ -6,16 +6,28 @@
 */
 $config=Array();
 
-// Пути
+//--------------------------------------------------------------------
+// Пути - все пути без завершающего слеша!!!
+//--------------------------------------------------------------------
+// Ссылка на корень проекта
+$config['href.root']='';
+
+// Относительный путь от точки входа до корня проекта !!! надо переопределять в точке входа !!!
 $config['path.root']='';
-$config['path.server']='server';
-$config['path.datasources']='datasources';
-$config['path.forms']='forms';
-$config['path.utils']='utils';
-
-$config['path.import']='import';
-$config['path.import.backup']='backup';
-
+// Путь от корня проекта до точки входа сервера G740
+$config['path.root.server']='server';
+// Путь от корня проекта до контроллеров источников данных
+$config['path.root.datasources']='server/datasources';
+// Путь от корня проекта до контроллеров форм
+$config['path.root.forms']='server/forms';
+// Путь от корня проекта до контроллеров утилит
+$config['path.root.utils']='server/utils';
+// Путь от корня проекта до модулей проекта
+$config['path.root.module']='server/module';
+// Путь от корня проекта до контроллеров утилит
+$config['path.root.backup']='server/export-import/backup';
+// Путь от корня проекта до логов
+$config['path.root.log']='server/log';
 
 // Служебные настройки админки
 $config['datasourceIsGUID']=false;	// не использовать GUID в качестве ID

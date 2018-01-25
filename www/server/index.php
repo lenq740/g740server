@@ -6,12 +6,11 @@ header("Content-type: text/xml; charset=utf-8");
 header("Cache-Control: no-store, no-cache, must-revalidate");
 header("Cache-Control: post-check=0, pre-check=0", false);
 require_once('config/.config.php');
-require_once('module-lib/module-lib-base.php');
-require_once('module-lib/module-lib-g740server.php');
-require_once('module-lib/module-datasource.php');
-require_once('module-lib/module-form.php');
-require_once('module-lib/module-perm.php');
-require_once('module-prj/prj-perm.php');
+require_once('lib/datasource-controller.php');
+require_once('lib/form-controller.php');
+
+$config['path.root']=pathConcat('..',getCfg('path.root'));
+
 $objResponseWriter=initObjResponseWriter();
 try {
 	initDocRequest();				// Считываем запрос

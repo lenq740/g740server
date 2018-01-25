@@ -1,14 +1,14 @@
 <?php
 /**
 Заготовка для контроллера отчетов
-@package module-lib
-@subpackage module-report
+@package lib
+@subpackage report
 */
 
 /**
 Заготовка для контроллера отчетов
-@package module-lib
-@subpackage module-report
+@package lib
+@subpackage report
 */
 class ReportController {
 	// разбор параметров

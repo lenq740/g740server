@@ -27,10 +27,9 @@ class UtilityBackup extends UtilController {
 		}
 		if (!getPerm('sys','write')) throw new Exception('У Вас нет прав на выполнение этой операции...');
 		
-		$path=getCfg('path.import','import').'/'.getCfg('path.import.backup','backup');
-		$path=str_replace("\\","/",realpath($path));
+		$path=pathConcat(getCfg('path.root'), getCfg('path.root.backup'));
 		if (!is_dir($path)) mkdir($path);
-		$fileName=$path.'/backup.xml';
+		$fileName=str_replace("\\","/",realpath($path)).'/backup.xml';
 		
 		$xmlWriter = new XMLWriter();
 		$xmlWriter->openURI($fileName);

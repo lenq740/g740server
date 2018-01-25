@@ -6,24 +6,21 @@ header("Content-type: text/html; charset=utf-8");
 header("Cache-Control: no-store, no-cache, must-revalidate");
 header("Cache-Control: post-check=0, pre-check=0", false);
 require_once('config/.config.php');
-require_once('module-lib/module-lib-base.php');
-require_once('module-lib/module-lib-g740server.php');
-require_once('module-lib/module-backup.php');
-require_once('module-lib/module-autogen.php');
-require_once('module-lib/module-perm.php');
-require_once('module-lib/module-utility.php');
+require_once('lib/datasource-controller.php');
+require_once('lib/dsautogenerator.php');
+require_once('lib/utility-controller.php');
 
-require_once('module-prj/prj-perm.php');
+$config['path.root']=pathConcat('..',getCfg('path.root'));
+$hrefRoot=getCfg('href.root');
 
-$pathRoot=getCfg('path.root');
 echo <<<HTML
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
 <html>
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 	<title>Утилиты</title>
-	<link rel="stylesheet" type="text/css" href="{$pathRoot}/resource/utils/reset.css">
-	<link rel="stylesheet" type="text/css" href="{$pathRoot}/resource/utils/utils.css">
+	<link rel="stylesheet" type="text/css" href="{$hrefRoot}/resource/utils/reset.css">
+	<link rel="stylesheet" type="text/css" href="{$hrefRoot}/resource/utils/utils.css">
 </head>
 <body>
 <h1>Утилиты</h1>
@@ -51,7 +48,7 @@ try {
 		
 		$mode=$_REQUEST['mode'];
 		if (!$mode) throw new Exception('Не задан обязательный параметр mode');
-		execUtilController($mode);
+		execUtilController($mode, true);
 
 		echo '<br><br><div class="message">Подтверждаем транзакцию ... '; flush();
 		if ($pdoDB->inTransaction()) $pdoDB->commit();

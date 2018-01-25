@@ -1,13 +1,18 @@
 <?php
 /**
 Генератор объектов модели данных по описаниям из базы данных
-@package module-lib
-@subpackage module-autogen
+@package lib
+@subpackage dsautogenerator
 */
-require_once('module-dsconnector.php');
-require_once('module-datasource.php');
+require_once('dsconnector.php');
+require_once('datasource-controller.php');
 
-class AutoGenerator extends DSConnector {
+/**
+Класс автогенератор источников данных
+@package lib
+@subpackage dsautogenerator
+*/
+class DSAutoGenerator extends DSConnector {
 	protected $dataStructure=Array();			// Тут ввиде вложенных массивов описание структуры базы данных, взятое из systable и sysfield
 	protected $dataStructureRef=Array();		// Тут ссылочная целостность
 	protected $isEcho=true;
@@ -19,7 +24,7 @@ class AutoGenerator extends DSConnector {
 Инициализировать описание структуры данных
 */
 	protected function initDataStructure() {
-		$errorMessage='Ошибка при обращении к AutoGenerator::initDataStructure';
+		$errorMessage='Ошибка при обращении к DSAutoGenerator::initDataStructure';
 		if ($this->isEcho) {
 			echo '<div class="message">Инициализация описания структуры данных '; flush();
 		}
@@ -50,7 +55,7 @@ SQL;
 @param	String $tableName
 */
 	protected function _initDataStructureTable($tableName) {
-		$errorMessage='Ошибка при обращении к AutoGenerator::_initDataStructureTable';
+		$errorMessage='Ошибка при обращении к DSAutoGenerator::_initDataStructureTable';
 		if ($tableName!=$this->str2Sql($tableName)) throw new Exception($errorMessage.', недопустимое имя таблицы '.$tableName);
 		$sql="select * from systable where tablename='{$tableName}'";
 		$rec=$this->pdoFetch($sql);
@@ -206,12 +211,11 @@ SQL;
 		return true;
 	}
 /**
-Сгенерить файл описания структуры данных
+Сгенерить источники данных
 @param	mixed[] params
-<li>	params['fileName']
 */
 	public function goDataSources($params=Array()) {
-		$errorMessage='Ошибка при обращении к AutoGenerator::goDataSources';
+		$errorMessage='Ошибка при обращении к DSAutoGenerator::goDataSources';
 		if ($this->isEcho) {
 			echo '<div class="message">Генерация классов DataSource '; flush();
 		}
@@ -227,7 +231,7 @@ SQL;
 ?>
 PHP;
 			$fileName=$tableName.'-autogen.php';
-			$fullName=$params['path'].$fileName;
+			$fullName=pathConcat(getCfg('path.root'), getCfg('path.root.datasources'), 'autogen', $fileName);
 			$this->writeFile($fullName, $value);
 			$lstFiles[$fileName]=true;
 			if ($this->isEcho) {
@@ -242,7 +246,7 @@ PHP;
 		if ($this->isEcho) {
 			echo '<div class="message">Очистка лишних файлов в папке DataSource '; flush();
 		}
-		foreach(glob($params['path'].'*.php') as $key=>$fullName) {
+		foreach(glob(pathConcat(getCfg('path.root'), getCfg('path.root.datasources'), 'autogen', '*.php')) as $key=>$fullName) {
 			$fileName=basename($fullName);
 			if ($lstFiles[$fileName]) continue;
 			unlink($fullName);
@@ -262,7 +266,7 @@ PHP;
 @return	String описание автосгенеренных источников данных
 */
 	public function getDataSource($params=Array()) {
-		$errorMessage='Ошибка при обращении к AutoGenerator::getDataSource';
+		$errorMessage='Ошибка при обращении к DSAutoGenerator::getDataSource';
 		$D='$';
 		$tableName=$params['tableName'];
 		if (!$tableName) throw new Exception($errorMessage.', не задан обязательный параметр tableName');
@@ -383,7 +387,7 @@ PHP;
 		return $result;
 	}
 	protected function _getDataSourceTableRef($params=Array()) {
-		$errorMessage='Ошибка при обращении к AutoGenerator::_getDataSourceTableRef';
+		$errorMessage='Ошибка при обращении к DSAutoGenerator::_getDataSourceTableRef';
 		$D='$';
 		$tableName=$params['tableName'];
 		if (!$tableName) throw new Exception($errorMessage.', не задан обязательный параметр tableName');
@@ -441,7 +445,7 @@ PHP;
 		return $this->strTabShift($result,1);
 	}
 	protected function _getDataSourceFields($fields, $tableName) {
-		$errorMessage='Ошибка при обращении к AutoGenerator::_getDataSourceFields';
+		$errorMessage='Ошибка при обращении к DSAutoGenerator::_getDataSourceFields';
 		$D='$';
 		$result='';
 		foreach($fields as $key=>$fld) {
@@ -476,7 +480,7 @@ PHP;
 @return	String описание автосгенеренных источников данных
 */
 	protected function _convertFieldsToDataSourceFields($params=Array()) {
-		$errorMessage='Ошибка при обращении к AutoGenerator::_convertFieldsToDataSourceFields';
+		$errorMessage='Ошибка при обращении к DSAutoGenerator::_convertFieldsToDataSourceFields';
 		$result=Array();
 		$tableName=$params['tableName'];
 		if (!$tableName) throw new Exception($errorMessage.', не задан обязательный параметр tableName');
@@ -560,7 +564,7 @@ $param	mixed[] &$aliases	- формируемый список имен табл
 <li>	$als['parent.refid']
 */
 	protected function _buildDataSourceInfo($params, &$fields, &$aliases) {
-		$errorMessage='Ошибка при обращении к AutoGenerator::_buildDataSourceInfo';
+		$errorMessage='Ошибка при обращении к DSAutoGenerator::_buildDataSourceInfo';
 
 		$tableName=$params['tableName'];
 		$isMain=$params['isMain'];
@@ -626,7 +630,7 @@ $param	mixed[] &$aliases	- формируемый список имен табл
 @param	String $value содержимое
 */
 	protected function writeFile($fileName, $value)	{
-		$errorMessage='Ошибка при обращении к AutoGenerator::writeFile';
+		$errorMessage='Ошибка при обращении к DSAutoGenerator::writeFile';
 		if (!$handle = fopen($fileName, 'w')) throw new Exception($errorMessage.", не удалось создать файл {$fileName}");
 		if (fwrite($handle, $value) === FALSE) throw new Exception($errorMessage.", не удалось произвести запись файл {$fileName}");
 		fclose($handle);
@@ -666,8 +670,8 @@ $param	mixed[] &$aliases	- формируемый список имен табл
 
 /**
 Класс предок для модификатора класса при автогенерации
-@package module-lib
-@subpackage module-datasource
+@package lib
+@subpackage dsautogenerator
 */
 class DataSourceModify {
 	public function getFields($fields) {
@@ -682,7 +686,6 @@ class DataSourceModify {
 	public function getSelectOrderBy($selectOrderBy) {
 		return $selectOrderBy;
 	}
-
 	public function getRequests($requests) {
 		return $requests;
 	}
@@ -706,9 +709,9 @@ function getDataSourceModify($name) {
 	if ($name!=$str) throw new Exception("Недопустимое имя источника данных '{$name}'");
 	if ($registerDataSource[$name]) return $registerDataSource[$name];
 
-	$fileNameAutoGen=getCfg('path.datasources')."/modify/{$name}-modify.php";
-	if (file_exists($fileNameAutoGen)) {
-		$obj=include_once($fileNameAutoGen);
+	$fileNameModify=pathConcat(getCfg('path.root'), getCfg('path.root.datasources'), 'modify', "{$name}-modify.php");
+	if (file_exists($fileNameModify)) {
+		$obj=include_once($fileNameModify);
 		if ($obj instanceof DataSourceModify) $registerDataSourceModify[$name]=$obj;
 	}
 	
@@ -717,4 +720,3 @@ function getDataSourceModify($name) {
 	return $result;
 }
 $registerDataSourceModify=Array();
-?>

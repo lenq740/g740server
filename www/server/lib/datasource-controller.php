@@ -1,15 +1,16 @@
 <?php
 /**
 Библиотека источников данных
-@package module-lib
-@subpackage module-datasource
+@package lib
+@subpackage datasource
 */
-require_once('module-dsconnector.php');
+require_once('dsconnector.php');
+require_once('lib-g740server.php');
 
 /**
 Класс предок для источника данных
-@package module-lib
-@subpackage module-datasource
+@package lib
+@subpackage datasource
 */
 class DataSource extends DSConnector{
 	public $tableName='';			// таблица, обязательно должно быть задано в потомке, автоматически заполняется автогенератором классов
@@ -1564,8 +1565,8 @@ PHP;
 
 /**
 Класс кэширующего хранилища данных
-@package module-lib
-@subpackage module-datasource
+@package lib
+@subpackage datasource
 */
 class DataStorage {
 	function __construct($tableName) {
@@ -1605,7 +1606,6 @@ class DataStorage {
 	public function getIsItem($id) {
 		return $this->items[$id]?true:false;
 	}
-	
 	// Вернуть источник данных DataSource
 	public function getDataSource() {
 		return $this->dataSource;
@@ -1706,8 +1706,8 @@ class DataStorage {
 }
 /**
 Класс строки кэширующего хранилища данных
-@package module-lib
-@subpackage module-datasource
+@package lib
+@subpackage datasource
 */
 class DataItem {
 	function __construct($tableName, $id) {
@@ -1826,13 +1826,13 @@ function getDataSource($name) {
 	if ($name!=$str) throw new Exception("Недопустимое имя источника данных '{$name}'");
 	if ($registerDataSource[$name]) return $registerDataSource[$name];
 
-	$fileNameAutoGen=getCfg('path.datasources')."/autogen/{$name}-autogen.php";
+	$fileNameAutoGen=pathConcat(getCfg('path.root'), getCfg('path.root.datasources'), 'autogen', "{$name}-autogen.php");
 	if (file_exists($fileNameAutoGen)) {
 		$obj=include_once($fileNameAutoGen);
 		if ($obj instanceof DataSource) $registerDataSource[$name]=$obj;
 	}
 	
-	$fileNameUserDef=getCfg('path.datasources')."/{$name}.php";
+	$fileNameUserDef=pathConcat(getCfg('path.root'), getCfg('path.root.datasources'), "{$name}.php");
 	if (file_exists($fileNameUserDef)) {
 		$obj=include_once($fileNameUserDef);
 		if ($obj instanceof DataSource) $registerDataSource[$name]=$obj;
