@@ -46,18 +46,7 @@ class DataSource extends DSConnector{
 		if ($paginatorFrom || $paginatorCount) {
 			if ($requestName=='refresh') {
 				if (!$paginatorFrom) $paginatorFrom=0;
-				$sql=$this->getSelectCount($params);
-				
-				$errorMessage='Ошибка выполнения SQL запроса при подсчете кол-ва строк в таблице '.$this->tableCaption;
-				try {
-					$rec=$this->pdoFetch($sql, $errorMessage);
-				}
-				catch (Exception $e) {
-					$this->getSelect($params);
-					throw new Exception($errorMessage);
-				}
-				
-				$paginatorAll=$rec['n'];
+				$paginatorAll=$this->getRowCount($params);
 				$objResponseWriter->writeAttribute('paginator.from', $paginatorFrom);
 				$objResponseWriter->writeAttribute('paginator.all', $paginatorAll);
 			}
@@ -1123,11 +1112,26 @@ SQL;
 		return true;
 	}
 
-	public function getSelectCount($params=Array()) {
+	// Вычисление количества строк в результате запроса
+	public function getRowCount($params=Array()) {
+		$select=$this->getSelectRowCount($params);
+		$errorMessage='Ошибка выполнения SQL запроса при подсчете кол-ва строк в таблице '.$this->tableCaption;
+		try {
+			$rec=$this->pdoFetch($select, $errorMessage);
+		}
+		catch (Exception $e) {
+			$this->getSelect($params);
+			throw new Exception($errorMessage);
+		}
+		$result=$rec['rowcount'];
+		if (!$result) $result=0;
+		return $result;
+	}
+	protected function getSelectRowCount($params=Array()) {
 		$selectFrom=$this->getSelectFrom($params);
 		$selectWhere=$this->getSelectWhere($params);
 		$result=<<<SQL
-select count(*) as n
+select count(*) as rowcount
 from
 {$selectFrom}
 SQL;
@@ -1140,6 +1144,96 @@ SQL;
 		}
 		return $result;
 	}
+
+	// Вычисление порядкового номера (0 - не найдено) строки с заданным id в результате запроса
+	public function getRowNumber($params=Array(), $id) {
+		$select=$this->getSelectRowNumber($params, $id);
+		$errorMessage='Ошибка выполнения SQL запроса при вычислении порядкового номера строки в таблице '.$this->tableCaption;
+		try {
+			$rec=$this->pdoFetch($select, $errorMessage);
+		}
+		catch (Exception $e) {
+			$this->getSelect($params);
+			throw new Exception($errorMessage);
+		}
+		$result=$rec['rownumber'];
+		if (!$result) $result=0;
+		return $result;
+	}
+	protected function getSelectRowNumber($params=Array(), $id) {
+		$driverName=$this->getDriverName();
+		$result='';
+		if ($driverName=='mysql') {
+			$result=$this->_getSelectRowNumberMySql($params, $id);
+		} 
+		else if ($driverName=='sqlsrv') {
+			$result=$this->_getSelectRowNumberSqlSrv($params, $id);
+		} 
+		else {
+			throw new Exception("Неизвестный драйвер базы данных '{$driverName}'");
+		}
+		return $result;
+	}
+	protected function _getSelectRowNumberMySql($params=Array(), $id) {
+		$selectFrom=$this->getSelectFrom($params);
+		$selectWhere=$this->getSelectWhere($params);
+		$selectOrderBy=$this->getSelectOrderBy($params);
+		$sqlId=($this->isGUID)?$this->guid2Sql($id):$this->str2Sql($id);
+		$result=<<<SQL
+select
+  @n:=@n+1 as n,
+  case when `{$this->tableName}`.id='{$sqlId}' then @n else 0 end as rownumber
+from
+{$selectFrom}
+SQL;
+		if ($selectWhere) {
+			$result.="\n".<<<SQL
+where
+	1=1
+{$selectWhere}
+SQL;
+		}
+		if ($selectOrderBy) {
+			$result.="\n".<<<SQL
+order by {$selectOrderBy}
+SQL;
+		}
+		$result=<<<SQL
+set @n:=0;
+select max(rownumber) as rownumber
+from
+(
+{$result}
+) a;
+SQL;
+		return $result;
+	}
+	protected function _getSelectRowNumberSqlSrv($params=Array(), $id) {
+		$selectFrom=$this->getSelectFrom($params);
+		$selectWhere=$this->getSelectWhere($params);
+		$selectOrderBy=$this->getSelectOrderBy($params);
+		$sqlId=($this->isGUID)?$this->guid2Sql($id):$this->str2Sql($id);
+		$result=<<<SQL
+select
+	max(rownumber) as rownumber
+from
+(
+select
+	[{$this->tableName}].id,
+	ROW_NUMBER() over (order by {$selectOrderBy}) as rownumber
+from
+{$selectFrom}
+where
+	1=1
+{$selectWhere}
+) a
+where
+	id='{$sqlId}'
+SQL;
+		return $result;
+	}
+	
+	// Формирование запроса select
 	public function getSelect($params=Array()) {
 		$driverName=$this->getDriverName();
 		$result='';
@@ -1250,7 +1344,6 @@ SQL;
 		}
 		return $result;
 	}
-	
 	public function getSelectFields($params=Array()) {
 		return $this->autoGenGetSelectFields();
 	}
@@ -1276,6 +1369,7 @@ SQL;
 		return $result;
 	}
 	
+	// автогенерация
 	public function autoGenGetSelectFields($fields=null, $tableName=null, $selectOtherFields=null, $driverName=null) {
 		$errorMessage='Ошибка при обращении к DataSource::autoGenGetSelectFields';
 		if (!$fields) $fields=$this->getFields();
@@ -1590,7 +1684,7 @@ class DataStorage {
 		return $result;
 	}
 	// Получить список строк по условию
-	public function getItems($params) {
+	public function getItems($params=Array()) {
 		$lst=$this->dataSource->execRefresh($params);
 		$result=Array();
 		foreach($lst as &$row) {
@@ -1601,6 +1695,14 @@ class DataStorage {
 			$result[]=$item;
 		}
 		return $result;
+	}
+	// Вычислить количество строк в результате запроса
+	public function getRowCount($params=Array()) {
+		return $this->dataSource->getRowCount($params);
+	}
+	// Вычислить порядковый номер (0 - не найдено) строки в результате запроса
+	public function getRowNumber($params=Array(), $id) {
+		return $this->dataSource->getRowNumber($params, $id);
 	}
 	// Проверить, есть ли строка с таким id в начитанном кэше
 	public function getIsItem($id) {
