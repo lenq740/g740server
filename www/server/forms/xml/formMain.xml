@@ -15,7 +15,7 @@
 				collapse="1"
 				border="1"
 			/>
-			<panel type="form" form="formLogoScreen" tab="1"/>
+			<panel type="form" tab="1" background="$background$"/>
 		</panel>
 	</panels>
 </form>

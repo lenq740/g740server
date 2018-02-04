@@ -2,7 +2,7 @@
 	<panels>
 		<panel>
 $sysmenubar$
-			<panel type="form" tab="1" background="resource/logoscreen/background.jpg"/>
+			<panel type="form" tab="1" background="$background$"/>
 		</panel>
 	</panels>
 </form>

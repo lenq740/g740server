@@ -12,6 +12,7 @@ require_once('lib/utility-controller.php');
 
 $config['path.root']=pathConcat('..',getCfg('path.root'));
 $hrefRoot=getCfg('href.root');
+$pathG740Client=pathConcat(getCfg('path.root'),getCfg('path.root.g740client'));
 
 echo <<<HTML
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
@@ -19,8 +20,8 @@ echo <<<HTML
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 	<title>Утилиты</title>
-	<link rel="stylesheet" type="text/css" href="{$hrefRoot}/resource/utils/reset.css">
-	<link rel="stylesheet" type="text/css" href="{$hrefRoot}/resource/utils/utils.css">
+	<link rel="stylesheet" type="text/css" href="{$pathG740Client}/utils/reset.css">
+	<link rel="stylesheet" type="text/css" href="{$pathG740Client}/utils/utils.css">
 </head>
 <body>
 <h1>Утилиты</h1>

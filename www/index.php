@@ -3,6 +3,11 @@ session_start();
 header("Content-type: text/html; charset=utf-8");
 header("Cache-Control: no-store, no-cache, must-revalidate");
 header("Cache-Control: post-check=0, pre-check=0", false);
+require_once('server/config/.config.php');
+require_once('server/lib/lib-base.php');
+$config['path.root']=pathConcat('',getCfg('path.root'));
+$pathG740Client=pathConcat(getCfg('path.root'),getCfg('path.root.g740client'));
+$pathG740Server=pathConcat(getCfg('path.root'),getCfg('path.root.server'),'index.php');
 ?>
 <!DOCTYPE HTML>
 <html>
@@ -13,9 +18,9 @@ header("Cache-Control: post-check=0, pre-check=0", false);
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 	<title>Заготовка проекта</title>
 
-	<link rel="stylesheet" type="text/css" href="js/g740/cssdojo/main.css"/>
-	<link rel="stylesheet" type="text/css" href="js/g740/main.css"/>
-	<link rel="stylesheet" type="text/css" href="resource/icons/icons.css"/>
+	<link rel="stylesheet" type="text/css" href="<?php echo $pathG740Client; ?>/js/g740/cssdojo/main.css"/>
+	<link rel="stylesheet" type="text/css" href="<?php echo $pathG740Client; ?>/js/g740/main.css"/>
+	<link rel="stylesheet" type="text/css" href="<?php echo $pathG740Client; ?>/icons/icons.css"/>
 
 <!-- подключаем сжатую версию Dojo -->
 	<script type="text/javascript">
@@ -27,7 +32,7 @@ header("Cache-Control: post-check=0, pre-check=0", false);
 			cacheBust: true,
 			parseOnLoad: false,
 			async: true,
-			baseUrl: "js/dojocompressed",
+			baseUrl: "<?php echo $pathG740Client; ?>/js/dojocompressed",
 			packages: [
 				{
 					name: 'g740',
@@ -36,8 +41,8 @@ header("Cache-Control: post-check=0, pre-check=0", false);
 			]
 		};
 	</script>
-	<script type="text/javascript" src="js/dojocompressed/dojo.js.uncompressed.js"></script>
-	<script type="text/javascript" src="js/dojocompressed/g740-dojo.js"></script>
+	<script type="text/javascript" src="<?php echo $pathG740Client; ?>/js/dojocompressed/dojo.js.uncompressed.js"></script>
+	<script type="text/javascript" src="<?php echo $pathG740Client; ?>/js/dojocompressed/g740-dojo.js"></script>
 </head>
 <body class="g740 app-color-red">
 <!-- Выделяем место под размещение главной формы приложения -->
@@ -57,13 +62,13 @@ header("Cache-Control: post-check=0, pre-check=0", false);
 // Тут подстраиваем клиентскую оболочку под конкретные особенности проекта
 				{
 					var conf=g740.config;
-					conf['urlServer']='server/';					// Точка входа для управляющих серверных скриптов
-					conf['mainFormName']='formMainWithMenuBar';		// Вариант главной экранной формы приложения с верхним меню вместо древовидного
-					conf['mainFormDomNode']='FormPanelMain';		// Узел DOM, в ктором размещается главная форма приложения
+					conf['urlServer']='<?php echo $pathG740Server; ?>';	// Точка входа для управляющих серверных скриптов
+					conf['mainFormName']='formMainWithMenuBar';			// Вариант главной экранной формы приложения с верхним меню вместо древовидного
+					conf['mainFormDomNode']='FormPanelMain';			// Узел DOM, в ктором размещается главная форма приложения
 					
 					// Настройка диалога авторизации
 					var confDialogLogin=conf['dialogLogin'];
-					confDialogLogin.loginUrl='resource/logoscreen/';	// Путь до HTML страницы, на фоне которой должен работать диалог аунтетификации
+					confDialogLogin.loginUrl='<?php echo $pathG740Client; ?>/logoscreen/';	// Путь до HTML страницы, на фоне которой должен работать диалог аунтетификации
 					confDialogLogin.isReloadBeforeLogin=true;			// Перед аунтетификацией не надо выполнять полную перечитку
 				}
 
