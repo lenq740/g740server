@@ -24,8 +24,6 @@ class DataSource extends DSConnector{
 	public function getPerm($permOper='read', $requestName='', $params=Array()) {
 		$permMode=$this->permMode;
 		if (!$permMode) $permMode=$this->tableName;
-		$p=$params;
-		$p['#request.name']=$requestName;
 		return getPerm($permMode, $permOper);
 	}
 	
@@ -1613,9 +1611,13 @@ PHP;
 			$xmlRequest=$doc->createElement('request');
 			xmlSetAttr($xmlRequest,'name',$request['name']);
 			if ($request['mode']) xmlSetAttr($xmlRequest,'mode',$request['mode']);
+
+			$permMode=$this->permMode;
+			if (!$permMode) $permMode=$tableName;
 			$permOper='read';
 			if ($request['permoper']) $permOper=$request['permoper'];
-			if (!$this->getPerm($permOper, $requestName)) xmlSetAttr($xmlRequest,'enabled','0');
+			if (!getPerm($permMode, $permOper)) xmlSetAttr($xmlRequest,'enabled','0');
+
 			$xmlRequests->appendChild($xmlRequest);
 		}
 		$doc->appendChild($xmlRequests);
