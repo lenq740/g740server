@@ -29,8 +29,8 @@ $config['path.root.forms']='server/forms';
 $config['path.root.utils']='server/utils';
 // Путь от корня проекта до модулей проекта
 $config['path.root.module']='server/module';
-// Путь от корня проекта до контроллеров утилит
-$config['path.root.backup']='server/export-import/backup';
+// Путь от корня проекта до папки экспорта и импорта
+$config['path.root.export-import']='server/export-import';
 // Путь от корня проекта до логов
 $config['path.root.log']='server/log';
 
@@ -38,7 +38,7 @@ $config['path.root.log']='server/log';
 $config['datasourceIsGUID']=false;	// не использовать GUID в качестве ID
 
 // Отладка
-$config['trace.sql']=true;			// трассировать все SQL запросы
+$config['trace.sql']=false;			// трассировать все SQL запросы
 $config['trace.error.sql']=false;	// логировать все ошибки SQL запросов
 
 // Ключ шифрования md5

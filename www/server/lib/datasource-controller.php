@@ -590,9 +590,11 @@ XML;
 	
 	public function execDelete($params=Array()) {
 		$errorMessage='Ошибка при обращении к DataSource::execDelete';
-		if (!$this->getPerm('write','delete',$params)) throw new ExceptionNoReport('У Вас нет прав на удаление строки таблицы '.$this->tableCaption);
+		if (!$params['#recursLevel']) {
+			if (!$this->getPerm('write','delete',$params)) throw new ExceptionNoReport('У Вас нет прав на удаление строки таблицы '.$this->tableCaption);
+		}
 		
-		if ($params['recursLevel']>15) throw new Exception('Удаление невозможно, обнаружилось зацикливание ссылок при анализе ссылочной целостности');
+		if ($params['#recursLevel']>15) throw new Exception('Удаление невозможно, обнаружилось зацикливание ссылок при анализе ссылочной целостности');
 		if (!isset($params['id'])) return Array();
 		$idlist=$this->php2SqlIn($params['id']);
 		if (!$idlist) return Array();
@@ -707,8 +709,8 @@ SQL;
 			if (count($refIdList)==0) return;
 			$p=Array();
 			$p['id']=$refIdList;
-			$p['recursLevel']=1;
-			if ($params['recursLevel']) $p['recursLevel']=$params['recursLevel']+1;
+			$p['#recursLevel']=1;
+			if ($params['#recursLevel']) $p['#recursLevel']=$params['#recursLevel']+1;
 			$dataSourceRef->execDelete($p);
 		}
 	}
@@ -737,8 +739,8 @@ SQL;
 			if (count($refIdList)==0) return;
 			$p=Array();
 			$p['id']=$refIdList;
-			$p['recursLevel']=1;
-			if ($params['recursLevel']) $p['recursLevel']=$params['recursLevel']+1;
+			$p['#recursLevel']=1;
+			if ($params['#recursLevel']) $p['#recursLevel']=$params['#recursLevel']+1;
 			$dataSourceRef->execDelete($p);
 		}
 	}
