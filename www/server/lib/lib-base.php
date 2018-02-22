@@ -14,7 +14,10 @@
 @return	String преобразованная строка
 */
 function str2MySql($str) {
-	return mysql_escape_string($str);
+	$from=Array('\\',"'",'\n','\r','\t','\0');
+	$to=Array('\\\\',"''",'\\n','\\r','\\t','\\0');
+	return str_replace($from, $to, $str);
+	//return mysql_escape_string($str);
 }
 /**
 Преобразовать строку для Xml
@@ -777,7 +780,7 @@ class PDODataConnectorMySql extends PDODataConnectorAbstract {
 		return 'mysql';
 	}
 	public function str2Sql($str) {
-		return mysql_escape_string($str);
+		return str2MySql($str);
 	}
 	public function php2Sql($value) {
 		$result='';
@@ -821,7 +824,7 @@ class PDODataConnectorPgSql extends PDODataConnectorAbstract {
 		return 'pgsql';
 	}
 	public function str2Sql($str) {
-		return mysql_escape_string($str);
+		return str2MySql($str);
 	}
 	public function php2Sql($value) {
 		$result='';
