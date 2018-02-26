@@ -17,7 +17,7 @@ $config['path.root']='';
 
 // Путь от корня проекта до доступных ресурсов
 $config['path.root.resource']='resource';
-$config['path.root.g740client']='resource/g740client';
+$config['g740client']='g740client';
 
 // Путь от корня проекта до точки входа сервера G740
 $config['path.root.server']='server';
@@ -25,10 +25,12 @@ $config['path.root.server']='server';
 $config['path.root.datasources']='server/datasources';
 // Путь от корня проекта до контроллеров форм
 $config['path.root.forms']='server/forms';
-// Путь от корня проекта до контроллеров утилит
-$config['path.root.utils']='server/utils';
 // Путь от корня проекта до модулей проекта
 $config['path.root.module']='server/module';
+// Путь от корня проекта до контроллеров утилит
+$config['path.root.utils']='server/module/utils';
+// Путь от корня проекта до контроллеров отчетов
+$config['path.root.reports']='server/module/reports';
 // Путь от корня проекта до папки экспорта и импорта
 $config['path.root.export-import']='server/export-import';
 // Путь от корня проекта до логов

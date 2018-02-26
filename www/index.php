@@ -6,7 +6,8 @@ header("Cache-Control: post-check=0, pre-check=0", false);
 require_once('server/config/.config.php');
 require_once('server/lib/lib-base.php');
 $config['path.root']=pathConcat('',getCfg('path.root'));
-$pathG740Client=pathConcat(getCfg('path.root'),getCfg('path.root.g740client'));
+$pathResource=pathConcat(getCfg('path.root'),getCfg('path.root.resource'));
+$pathG740Client=pathConcat($pathResource,getCfg('g740client'));
 $pathG740Server=pathConcat(getCfg('path.root'),getCfg('path.root.server'),'index.php');
 ?>
 <!DOCTYPE HTML>
@@ -68,7 +69,7 @@ $pathG740Server=pathConcat(getCfg('path.root'),getCfg('path.root.server'),'index
 					
 					// Настройка диалога авторизации
 					var confDialogLogin=conf['dialogLogin'];
-					confDialogLogin.loginUrl='<?php echo $pathG740Client; ?>/logoscreen/';	// Путь до HTML страницы, на фоне которой должен работать диалог аунтетификации
+					confDialogLogin.loginUrl='<?php echo $pathResource; ?>/logoscreen/';	// Путь до HTML страницы, на фоне которой должен работать диалог аунтетификации
 					confDialogLogin.isReloadBeforeLogin=true;			// Перед аунтетификацией не надо выполнять полную перечитку
 				}
 

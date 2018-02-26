@@ -25,7 +25,9 @@ class UtilityBackup extends UtilController {
 		if ($isEcho) {
 			echo '<h2>Выполнение резервного копирования</h2>'; flush();
 		}
-		$path=pathConcat(getCfg('path.root'), getCfg('path.root.export-import'),'backup');
+		if (!getPerm('sys','write')) throw new Exception('У Вас нет прав на выполнение этой операции...');
+		
+		$path=pathConcat(getCfg('path.root'),getCfg('path.root.export-import'),'backup');
 		if (!is_dir($path)) mkdir($path);
 		$fileName=str_replace("\\","/",realpath($path)).'/backup.xml';
 		

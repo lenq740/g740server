@@ -94,17 +94,11 @@ $rootRequest=null;		// Корневой узел запроса
 function initDocRequest() {
 	global $docRequest;
 	global $rootRequest;
-	global $HTTP_RAW_POST_DATA;
 	$docRequest = new DOMDocument("1.0", "utf-8");
-	if (isset($HTTP_RAW_POST_DATA)) {
-		try {
-			$docRequest->loadXML($HTTP_RAW_POST_DATA);
-		}
-		catch (Exception $e) {
-		}
+	try {
+		$docRequest->load('php://input');
 	}
-	else {
-		 throw new Exception('HTTP_RAW_POST_DATA не задано');
+	catch (Exception $e) {
 	}
 	if (!is_object($docRequest)) throw new Exception('Системная ошибка! Не передан запрос!');
 	$rootRequest=$docRequest->documentElement;
