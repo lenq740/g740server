@@ -1,16 +1,15 @@
 <?php
 /**
-Библиотека функций - расширение базового набора под формирование HTML страниц
-@package lib
-@subpackage lib-g740server
-*/
+ * @file
+ * Библиотека функций - расширение базового набора под формирование HTML страниц
+ */
 require_once('lib-base.php');
 
-/**
-Преобразование текстового абзаца в HTML со сложными заменами
-@param	String	$str исходная строка
-@return	String преобращованная строка
-*/
+/** Преобразование текстового абзаца в HTML со сложными заменами
+ *
+ * @param	string	$str исходная строка
+ * @return	string преобращованная строка
+ */
 function str2ExtHtml($str) {
 	$str=_str2HtmlSimpleReplace($str);		// Выполняем простые замены
 	$str=_str2HtmlRTrim($str);				// Удаляем пробелы в конце строки
@@ -24,7 +23,11 @@ function str2ExtHtml($str) {
 	$str=_str2HtmlDoubleBrace($str);		// Обрабатываем макроподстановку в двойных фигурных скобках
 	return $str;
 }
-// Преобразование текстового абзаца в HTML, простые замены
+/** Преобразование текстового абзаца в HTML, простые замены
+ *
+ * @param	string	$str исходная строка
+ * @return	string преобращованная строка
+ */
 function _str2HtmlSimpleReplace($str) {
 	$str=str_replace('<b>','{{b}}',$str);
 	$str=str_replace('</b>','{{/b}}',$str);
@@ -38,13 +41,21 @@ function _str2HtmlSimpleReplace($str) {
 	$str=str_replace('{{/b}}','</b>',$str);
 	return $str;
 }
-// Преобразование текстового абзаца в HTML, удаление пробелов в конце строки
+/** Преобразование текстового абзаца в HTML, удаление пробелов в конце строки
+ *
+ * @param	string	$str исходная строка
+ * @return	string преобращованная строка
+ */
 function _str2HtmlRTrim($str) {
 	$regExpr='{'.'[\040]+$'.'}m';
 	$str=preg_replace_callback($regExpr, '_str2HtmlCallback', $str);
 	return $str;
 }
-// Преобразование текстового абзаца в HTML, обработка <b> и **
+/** Преобразование текстового абзаца в HTML, обработка bold и **
+ *
+ * @param	string	$str исходная строка
+ * @return	string преобращованная строка
+ */
 function _str2HtmlBold($str) {
 	$regExpr=
 	'{'.
@@ -55,28 +66,44 @@ function _str2HtmlBold($str) {
 	$str=preg_replace_callback($regExpr, '_str2HtmlCallback', $str);
 	return $str;
 }
-// Преобразование текстового абзаца в HTML, обработка <noindex>
+/** Преобразование текстового абзаца в HTML, обработка noindex
+ *
+ * @param	string	$str исходная строка
+ * @return	string преобращованная строка
+ */
 function _str2HtmlNoindex($str) {
 	$from=Array('{{noindex}}','{{/noindex}}');
 	$to=Array('<!--noindex-->','<!--/noindex-->');
 	$result=str_replace($from, $to, $str);
 	return $result;
 }
-// Преобразование текстового абзаца в HTML, обработка h2
+/** Преобразование текстового абзаца в HTML, обработка h2
+ *
+ * @param	string	$str исходная строка
+ * @return	string преобращованная строка
+ */
 function _str2HtmlH2($str) {
 	$regExpr=
 	'{'.'^[\040]*===.*?===$'.'}m';
 	$str=preg_replace_callback($regExpr, '_str2HtmlCallback', $str);
 	return $str;
 }
-// Преобразование текстового абзаца в HTML, обработка $$cfg$$
+/** Преобразование текстового абзаца в HTML, обработка $$cfg$$
+ *
+ * @param	string	$str исходная строка
+ * @return	string преобращованная строка
+ */
 function _str2HtmlCfg($str) {
 	$regExpr=
 	'{'.'\$\$.*?\$\$'.'}';
 	$str=preg_replace_callback($regExpr, '_str2HtmlCallback', $str);
 	return $str;
 }
-// Преобразование текстового абзаца в HTML, обработка списков
+/** Преобразование текстового абзаца в HTML, обработка списков
+ *
+ * @param	string	$str исходная строка
+ * @return	string преобращованная строка
+ */
 function _str2HtmlUl($str) {
 	$regExpr=
 	'{'.'^-[\040].*$'.'}m';
@@ -84,7 +111,11 @@ function _str2HtmlUl($str) {
 	$str=str_replace('</ul>'."\n".'<ul>','',$str);
 	return $str;
 }
-// Преобразование текстового абзаца в HTML, обработка двойного CR как смена абзаца
+/** Преобразование текстового абзаца в HTML, обработка двойного CR как смена абзаца
+ *
+ * @param	string	$str исходная строка
+ * @return	string преобращованная строка
+ */
 function _str2HtmlDoubleCR($str) {
 	if (strpos($str,"\n\n")===false) return $str;
 	$str='<p>'.str_replace("\n\n",'</p><p>',$str).'</p>';
@@ -99,7 +130,11 @@ function _str2HtmlDoubleCR($str) {
 	$str=str_replace('<p>'."\n".'</p>','',$str);
 	return $str;
 }
-// Преобразование текстового абзаца в HTML, обработка одинарного CR
+/** Преобразование текстового абзаца в HTML, обработка одинарного CR
+ *
+ * @param	string	$str исходная строка
+ * @return	string преобращованная строка
+ */
 function _str2HtmlCR($str) {
 	$str=str_replace("\n".'<h2>','<h2>',$str);
 	$str=str_replace('</h2>'."\n",'</h2>',$str);
@@ -110,13 +145,21 @@ function _str2HtmlCR($str) {
 	$str=str_replace("\n",'<br>',$str);
 	return $str;
 }
-// Преобразование текстового абзаца в HTML, обработка макроподстановки {{}}
+/** Преобразование текстового абзаца в HTML, обработка макроподстановки {{}}
+ *
+ * @param	string	$str исходная строка
+ * @return	string преобращованная строка
+ */
 function _str2HtmlDoubleBrace($str) {
 	$regExpr='{'.'\{\{.*?\}\}'.'}';
 	$str=preg_replace_callback($regExpr, '_str2HtmlCallbackDoubleBrace', $str);
 	return $str;
 }
-// Преобразование текстового абзаца в HTML, универсальная функция обратного вызова
+/** Преобразование текстового абзаца в HTML, универсальная функция обратного вызова
+ *
+ * @param	Array	$matches
+ * @return	string преобращованная строка
+ */
 function _str2HtmlCallback($matches) {
 	$expr=$matches[0];
 	if (trim($expr,' ')=='') return '';
@@ -135,7 +178,11 @@ function _str2HtmlCallback($matches) {
 	}
 	return $expr;
 }
-// Преобразование текстового абзаца в HTML, функция обратного вызова макроса {{}}
+/** Преобразование текстового абзаца в HTML, функция обратного вызова макроса {{}}
+ *
+ * @param	Array	$matches
+ * @return	string преобращованная строка
+ */
 function  _str2HtmlCallbackDoubleBrace($matches) {
 	$expr=$matches[0];
 	if (substr($expr,0,2)=='{{') {
@@ -211,11 +258,11 @@ HTML;
 	return $expr;
 }
 
-/**
-Выкидывание из текстового абзаца специфики HTML
-@param	String	$str исходная строка
-@return	String преобращованная строка
-*/
+/** Выкидывание из текстового абзаца специфики HTML
+ *
+ * @param	string	$str исходная строка
+ * @return	string преобращованная строка
+ */
 function str2ExtText($str) {
 	$str=_str2ExtTextSimpleReplace($str);	// Выполняем простые замены
 	$str=_str2TextCfg($str);				// Обрабатываем $$cfg$$
@@ -224,7 +271,11 @@ function str2ExtText($str) {
 	$str=trim($str);
 	return $str;
 }
-// Преобразование текстового абзаца
+/** Преобразование текстового абзаца
+ *
+ * @param	string	$str исходная строка
+ * @return	string преобращованная строка
+ */
 function _str2ExtTextSimpleReplace($str) {
 	$from=['<b>','</b>','**',"\r","\n","\t",'{{noindex}}','{{/noindex}}'];
 	$to=['','','','',' ',' ','',''];
@@ -232,27 +283,43 @@ function _str2ExtTextSimpleReplace($str) {
 	$str=str_replace('  ',' ',$str);
 	return $str;
 }
-// Преобразование текстового абзаца, обработка $$cfg$$
+/** Преобразование текстового абзаца, обработка $$cfg$$
+ *
+ * @param	string	$str исходная строка
+ * @return	string преобращованная строка
+ */
 function _str2TextCfg($str) {
 	$regExpr=
 	'{'.'\$\$.*?\$\$'.'}';
 	$str=preg_replace_callback($regExpr, '_str2TextCallback', $str);
 	return $str;
 }
-// Преобразование текстового абзаца, обработка h2
+/** Преобразование текстового абзаца, обработка h2
+ *
+ * @param	string	$str исходная строка
+ * @return	string преобращованная строка
+ */
 function _str2TextH2($str) {
 	$regExpr=
 	'{'.'^[\040]*===.*?===$'.'}m';
 	$str=preg_replace_callback($regExpr, '_str2TextCallback', $str);
 	return $str;
 }
-// Преобразование текстового абзаца, обработка макроподстановки {{}}
+/** Преобразование текстового абзаца, обработка макроподстановки {{}}
+ *
+ * @param	string	$str исходная строка
+ * @return	string преобращованная строка
+ */
 function _str2TextDoubleBrace($str) {
 	$regExpr='{'.'\{\{.*?\}\}'.'}';
 	$str=preg_replace_callback($regExpr, '_str2TextCallbackDoubleBrace', $str);
 	return $str;
 }
-// Преобразование текстового абзаца в HTML, универсальная функция обратного вызова
+/** Преобразование текстового абзаца в HTML, универсальная функция обратного вызова
+ *
+ * @param	Array	$matches
+ * @return	string преобращованная строка
+ */
 function _str2TextCallback($matches) {
 	$expr=$matches[0];
 	if (trim($expr,' ')=='') return '';
@@ -268,7 +335,11 @@ function _str2TextCallback($matches) {
 	if (substr($expr,0,2)=="- ") return substr($expr,2,strlen($expr)-2);
 	return $expr;
 }
-// Преобразование текстового абзаца в HTML, функция обратного вызова макроса {{}}
+/** Преобразование текстового абзаца в HTML, функция обратного вызова макроса {{}}
+ *
+ * @param	Array	$matches
+ * @return	string преобращованная строка
+ */
 function  _str2TextCallbackDoubleBrace($matches) {
 	$expr=$matches[0];
 	if (substr($expr,0,2)=='{{') {
@@ -313,7 +384,12 @@ function  _str2TextCallbackDoubleBrace($matches) {
 	return '';
 }
 
-// Сдвиг текстового блока вправо на заданное кол-во знаков табуляции
+/** Сдвиг текстового блока вправо на заданное кол-во знаков табуляции
+ *
+ * @param	string	$str исходная строка
+ * @param	num		$tabShift сдвиг вправо
+ * @return	string преобразованная строка
+ */
 function strTabShift($str, $tabShift) {
 	$strTab='';
 	for($i=0; $i<$tabShift; $i++) $strTab.="\t";

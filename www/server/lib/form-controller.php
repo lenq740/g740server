@@ -1,14 +1,10 @@
 <?php
 /**
 Библиотека источников данных
-@package lib
-@subpackage form
 */
 
 /**
 Класс предок для экранной формы
-@package lib
-@subpackage form
 */
 class FormController {
 	public function getStrXmlDefinition($params=Array()) {

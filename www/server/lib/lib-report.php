@@ -1,9 +1,7 @@
 <?php
 /**
-Генератор отчетов в виде таблиц с подитогами
-@package lib
-@subpackage lib-report
-*/
+ * Генератор отчетов в виде таблиц с подитогами
+ */
 
 /**
 Класс, генератор отчетов в виде таблиц с подитогами
@@ -28,8 +26,6 @@
 	$objReport->Get();				- Отчет
 	
 </pre>
-@package lib
-@subpackage lib-report
 */
 class ReportBuilder {
 /**

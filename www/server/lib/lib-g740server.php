@@ -1,20 +1,19 @@
 <?php
 /**
-Библиотека функций - расширение базового набора под server G740
-@package lib
-@subpackage lib-g740server
-*/
+ * @file
+ * Библиотека функций - расширение базового набора под server G740
+ */
 require_once('lib-base.php');
 
 //------------------------------------------------------------------------------
 // Преобразования для подстановок
 //------------------------------------------------------------------------------
-/**
-Преобразовать данные из G740 в PHP
-@param	String	$value данные в формате G740
-@param	String	$type тип данных в формате G740
-@return	AnyType преобразованные данные
-*/
+/** Преобразовать данные из G740 в PHP
+ *
+ * @param	string	$value данные в формате G740
+ * @param	string	$type тип данных в формате G740
+ * @return	anytype преобразованные данные
+ */
 function g2php($value, $type) {
 	$result=$value;
 	if ($type=='date') {
@@ -39,12 +38,12 @@ function g2php($value, $type) {
 	}
 	return $result;
 }
-/**
-Преобразовать данные из PHP в G740
-@param	AnyType	$value данные
-@param	AnyType	$type тип данных
-@return	String данные преобразованные в формат G740
-*/
+/** Преобразовать данные из PHP в G740
+ *
+ * @param	anytype	$value данные
+ * @param	anytype	$type тип данных
+ * @return	string данные преобразованные в формат G740
+ */
 function php2g($value, $type='') {
 	$result=$value;
 	if ($value===null) $result='';
@@ -85,12 +84,15 @@ function php2g($value, $type='') {
 //------------------------------------------------------------------------------
 // Работа с запросами
 //------------------------------------------------------------------------------
-$docRequest=null;		// Документ - запрос, который надо обработать
-$rootRequest=null;		// Корневой узел запроса
+/// XML документ - поступивший HTTP запрос
+$docRequest=null;
+/// корневой XML узел запроса
+$rootRequest=null;
 
-/**
-Прочитать запрос в $docRequest
-*/
+/** Прочитать запрос из php://input в $docRequest
+ *
+ * @return	Xml docRequest
+ */
 function initDocRequest() {
 	global $docRequest;
 	global $rootRequest;
@@ -107,11 +109,11 @@ function initDocRequest() {
 	if (xmlGetAttr($rootRequest,'type','')!='g740') throw new Exception('Системная ошибка! У xml документа запроса атрибут type не g740!');
 	return $docRequest;
 }
-/**
-Построить ассоциативный массив из параметров запроса
-@param	Xml		$xmlRequest XML узел запроса
-@return	mixed[] начитанные параметры запроса
-*/
+/** Построить ассоциативный массив из параметров запроса
+ *
+ * @param	Xml		$xmlRequest XML узел запроса
+ * @return	Array начитанные параметры запроса
+ */
 function getParams($xmlRequest) {
 	$result=Array();
 	$result['id']=xmlGetAttr($xmlRequest,'id','');
@@ -135,10 +137,17 @@ function getParams($xmlRequest) {
 //------------------------------------------------------------------------------
 // Работа с ответами
 //------------------------------------------------------------------------------
+/// вспомогательный XML документ - используется для формирования ответа
 $docTemp=new DOMDocument("1.0", "utf-8");
 $docTemp->loadXml('<temp></temp>');
 
+/// XMLWriter для формирования ответа
 $objResponseWriter=null;
+
+/** Записать в $objResponseWriter начало ответа
+ *
+ * @return	XMLWriter $objResponseWriter
+ */
 function initObjResponseWriter() {
 	global $objResponseWriter;
 	$objResponseWriter=new XMLWriter();
@@ -148,10 +157,21 @@ function initObjResponseWriter() {
 	$objResponseWriter->writeAttribute('type','g740');
 	return $objResponseWriter;
 }
+/** Записать в $objResponseWriter очередной кусок ответа
+ *
+ * @param	string	$str
+ * @return	XMLWriter objResponseWriter
+ */
 function writeXml($str) {
 	global $objResponseWriter;
 	$objResponseWriter->writeRaw($str);
 }
+/** Записать в $objResponseWriter описание экранной формы
+ *
+ * @param	string	$fileName
+ * @param	Array	$params ассоциативный массив для подстановок в описании формы
+ * @return	XMLWriter objResponseWriter
+ */
 function writeXmlForm($fileName, $params=null) {
 	global $pathXmlForm;
 	$fileNameFull=$pathXmlForm.'/'.$fileName;
@@ -171,13 +191,13 @@ function writeXmlForm($fileName, $params=null) {
 		}
 		$strForm=str_replace($from, $to, $strForm);
 	}
-	writeXml($strForm);
+	return writeXml($strForm);
 }
-/**
-Парсер строки в XML элемент документа $docTemp
-@param	String	$strXml текст XML
-@return	Xml узел $docTemp
-*/
+/** Парсер строки в XML элемент документа $docTemp
+ *
+ * @param	string	$strXml текст XML
+ * @return	Xml узел $docTemp
+ */
 function strXml2DomXml($strXml) {
 	global $docTemp;
 	$dd=new DOMDocument("1.0", "utf-8");
@@ -192,6 +212,11 @@ function strXml2DomXml($strXml) {
 	unset($dd);
 	return $result;
 }
+/** Преобразование XML узла в строковое представление
+ *
+ * @param	Xml	$domXml узел $docTemp
+ * @return	strXml строковое представление
+ */
 function domXml2StrXml($domXml) {
 	global $docTemp;
 	return $docTemp->saveXML($domXml);
@@ -200,14 +225,15 @@ function domXml2StrXml($domXml) {
 //------------------------------------------------------------------------------
 // Backup, Restore
 //------------------------------------------------------------------------------
-/**
-Сохранение таблицы в XML
-@param	mixed[] para
-<li>	para['xmlWriter']
-<li>	para['tableName']
-<li>	para['isEcho']
-<li>	para['isOptimize']
-*/
+/** Сохранение таблицы в XML
+ *
+ * @param	Array	$para параметры
+ *
+ * - $para['xmlWriter']
+ * - $para['tableName']
+ * - $para['isEcho']
+ * - $para['isOptimize']
+ */
 function saveTableToXmlWriter($para) {
 	if (!$para) throw new Exception('Не задан para');
 	$pdoDB=getPDO();
@@ -249,15 +275,16 @@ function saveTableToXmlWriter($para) {
 		}
 	}
 }
-/**
-Загрузка списка таблиц из XML
-@param	mixed[] para
-<li>	para['fileName']
-<li>	para['tables']
-<li>	para['isEcho']
-<li>	para['isOptimize']
-<li>	para['isDisableKeys']
-*/
+/** Загрузка списка таблиц из XML
+ *
+ * @param	Array $para параметры
+ *
+ * - $para['fileName']
+ * - $para['tables']
+ * - $para['isEcho']
+ * - $para['isOptimize']
+ * - $para['isDisableKeys']
+ */
 function loadTablesFromXmlReader($para) {
 	if (!$para) throw new Exception('Не задан para');
 	$fileName=$para['fileName'];
@@ -299,16 +326,17 @@ function loadTablesFromXmlReader($para) {
 	$xmlReader->close();
 	unset($xmlReader);
 }
-/**
-Загрузка таблицы из XML
-@param	mixed[] para
-<li>	para['xmlReader']
-<li>	para['tableName']
-<li>	para['fields']
-<li>	para['isEcho']
-<li>	para['isOptimize']
-<li>	para['isDisableKeys']
-*/
+/** Загрузка таблицы из XML
+ *
+ * @param	Array $para параметры
+ *
+ * - $para['xmlReader']
+ * - $para['tableName']
+ * - $para['fields']
+ * - $para['isEcho']
+ * - $para['isOptimize']
+ * - $para['isDisableKeys']
+ */
 function _loadTableFromXmlReader($para) {
 	if (!$para) throw new Exception('Не задан para');
 	$pdoDB=getPDO();
@@ -414,30 +442,14 @@ function _loadTableFromXmlReader($para) {
 		}
 	}
 }
-/**
-Оптимизация таблицы в базе
-@param	String	$tableName
-*/
+/** Оптимизация таблицы в базе
+ *
+ * @param	String	$tableName
+ */
 function opimizeTable($tableName) {
 	$pdoDB=getPDO();
 	$sql='check table '.$tableName;
 	$q=$pdoDB->pdo($sql);
 	$sql='optimize table '.$tableName;
 	$q=$pdoDB->pdo($sql);
-}
-
-//------------------------------------------------------------------------------
-// Прочее
-//------------------------------------------------------------------------------
-/**
-Класс ошибки, не требующей логирования
-*/
-class ExceptionNoReport extends Exception {
-	protected $responseExec=Array();
-	public function addResponseExec($exec) {
-		$this->responseExec[]=$exec;
-	}
-	public function getResponseExec() {
-		return $this->responseExec;
-	}
 }

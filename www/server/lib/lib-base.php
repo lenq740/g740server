@@ -1,61 +1,59 @@
 <?php
 /**
-Библиотека функций - базовый набор
-@package lib
-@subpackage lib-base
-*/
+ * @file
+ * Библиотека функций - базовый набор
+ */
 
 //------------------------------------------------------------------------------
-// Преобразования для подстановок
+// Функции преобразования для подстановок в HTML, XML, PHP, XLS и т.д.
 //------------------------------------------------------------------------------
-/**
-Преобразовать строку для подстановки в MySql
-@param	String	$str исходная строка
-@return	String преобразованная строка
+/** Преобразовать строку для подстановки в MySql
+ * 
+ * @param	string	$str исходная строка
+ * @return	string преобразованная строка
 */
 function str2MySql($str) {
 	$from=Array('\\',"'",'\n','\r','\t','\0');
 	$to=Array('\\\\',"''",'\\n','\\r','\\t','\\0');
 	return str_replace($from, $to, $str);
-	//return mysql_escape_string($str);
 }
-/**
-Преобразовать строку для Xml
-@param	String	$str исходная строка
-@return	String преобразованная строка
-*/
+/** Преобразовать строку для подстановки в XML
+ *
+ * @param	string	$str исходная строка
+ * @return	string преобразованная строка
+ */
 function str2Xml($str) {
 	$from=Array('&','"',"'", '<','>');
 	$to=Array('&amp;','&quot;','&apos;','&lt;','&gt;');
 	return str_replace($from, $to, $str);
 }
-/**
-Преобразовать строку для атрибута Xml
-@param	String	$str исходная строка
-@return	String преобразованная строка
-*/
+/** Преобразовать строку для подстановки в атрибут Xml
+ *
+ * @param	string	$str исходная строка
+ * @return	string преобразованная строка
+ */
 function str2XmlAttr($str) {
 	$result=str2Xml($str);
 	$from=Array("\n","\r","\t");
 	$to=Array('&#xA;','&#xD;','&#x9;');
 	return str_replace($from, $to, $result);
 }
-/**
-Преобразовать строку для аттрибутов в кавычках
-@param	String	$str исходная строка
-@return	String преобразованная строка
-*/
+/** Преобразовать строку для подстановки в атрибут в двойных кавычках
+ *
+ * @param	string	$str исходная строка
+ * @return	string преобразованная строка
+ */
 function str2Attr($str) {
 	$from=Array('&','"',"'",'<','>',"\n","\r","\t");
 	$to=Array('&amp;','&quot;','&apos;','&lt;','&gt;',' ','',' ');
 	return str_replace($from, $to, $str);
 	//return htmlspecialchars($str,ENT_QUOTES);
 }
-/**
-Преобразование строки к написанию для HTML
-@param	String	$str исходная строка
-@return	String преобразованная строка
-*/
+/** Преобразование строки для подстановки в HTML
+ *
+ * @param	string	$str исходная строка
+ * @return	string преобразованная строка
+ */
 function str2Html($str) {
 	$str=trim($str);
 	$str=str_replace('<','&#060;',$str);
@@ -63,11 +61,11 @@ function str2Html($str) {
 	$str=str_replace("\n",'<br>',$str);
 	return $str;
 }
-/**
-Преобразование строки к написанию для XLS
-@param	String	$str исходная строка
-@return	String преобразованная строка
-*/
+/** Преобразование строки для подстановки в XLS
+ *
+ * @param	string	$str исходная строка
+ * @return	string преобразованная строка
+ */
 function str2Xls($str) {
 	$str=str_replace('"','&#34;',$str);
 	$str=str_replace('<','&#060;',$str);
@@ -76,34 +74,33 @@ function str2Xls($str) {
 	$str=str_replace("\r",' ',$str);
 	return $str;
 }
-/**
-Преобразование строки для строки JavaScript
-@param	String	$str исходная строка
-@return	String преобразованная строка
-*/
+/** Преобразование строки для строки JavaScript
+ * @param	string	$str исходная строка
+ * @return	string преобразованная строка
+ */
 function str2JavaScript($str) {
 	$from=Array("\\",'"',"'","\n");
 	$to=Array("\\\\",'\"',"\'",'');
 	return str_replace($from, $to, $str);
 }
-/**
-Преобразование строки для строки вставки в PHP в одинарные кавычки
-@param	String	$str исходная строка
-@return	String преобразованная строка
-*/
+/** Преобразование строки для строки вставки в PHP в одинарные кавычки
+ *
+ * @param	string	$str исходная строка
+ * @return	string преобразованная строка
+ */
 function str2Php($str) {
 	$from=Array("\\","'","\n");
 	$to=Array("\\\\","\'",'');
 	return str_replace($from, $to, $str);
 }
-/**
-Проговаривалка для чисел и их единиц измерения
-@param	Num		$value	число
-@param	String	$d1		единица измерения для 1 (например: рубль)
-@param	String	$d2		единица измерения для 2 (например: рубля)
-@param	String	$d5		единица измерения для 5 (например: рублей)
-@return	String текстовое представления числа с единицами измерения
-*/
+/** Проговаривалка для чисел и их единиц измерения
+ *
+ * @param	num		$value	число
+ * @param	string	$d1		единица измерения для 1 (например: рубль)
+ * @param	string	$d2		единица измерения для 2 (например: рубля)
+ * @param	string	$d5		единица измерения для 5 (например: рублей)
+ * @return	string текстовое представления числа с единицами измерения
+ */
 function num2TxtEdIzm($value, $d1, $d2, $d5) {
 	$result=$d5;
 	$value=abs($value);
@@ -115,15 +112,15 @@ function num2TxtEdIzm($value, $d1, $d2, $d5) {
 	}
 	return $result;
 }
-/**
-Вспомогательная функция от проговаривалки чисел, текстовое представления тройки чисел
-@param	Num		$a		сотни
-@param	Num		$b		десятки
-@param	Num		$c		еденицы
-@param	Num		$d		1 единицы, 2 тысячи, 3 миллионы, 4 миллиарды 
-@param	Boolean	$isMan	мужской род
-@return	String текстовое представления тройки чисел
-*/
+/** Вспомогательная функция от проговаривалки чисел, текстовое представления тройки чисел
+ *
+ * @param	num		$a		сотни
+ * @param	num		$b		десятки
+ * @param	num		$c		еденицы
+ * @param	num		$d		1 единицы, 2 тысячи, 3 миллионы, 4 миллиарды 
+ * @param	boolean	$isMan	мужской род
+ * @return	string текстовое представления тройки чисел
+ */
 function num2TxtGo($a,$b,$c,$d,$isMan) {
 	$result='';
     if ($a==9) $result='девятьсот ';
@@ -204,12 +201,12 @@ function num2TxtGo($a,$b,$c,$d,$isMan) {
     }
 	return $result;
 }
-/**
-Проговаривалка для чисел без единиц измерения
-@param	Num		$value	число
-@param	Boolean	$isMan	мужской род
-@return	String текстовое представления числа без единиц измерения
-*/
+/** Проговаривалка для чисел без единиц измерения
+ *
+ * @param	num		$value	число
+ * @param	boolean	$isMan	мужской род
+ * @return	string текстовое представления числа без единиц измерения
+ */
 function num2Txt($value, $isMan) {
 	$result='';
 	$d=4;
@@ -227,11 +224,11 @@ function num2Txt($value, $isMan) {
 	if ($value<0) $result='минус '.$result;
 	return $result;
 }
-/**
-Проговаривалка для денег
-@param	Num		$value	число
-@return	String текстовое представления денег 
-*/
+/** Проговаривалка для денег
+ *
+ * @param	num		$value	число
+ * @return	string текстовое представления денег 
+ */
 function money2Txt($value) {
 	$r=floor(abs($value));
 	$c=floor(abs($value*100)) % 100;
@@ -239,11 +236,11 @@ function money2Txt($value) {
 	$result=num2Txt($r, true).num2TxtEdIzm($r, 'рубль', 'рубля', 'рублей').' '.num2Txt($c, false).num2TxtEdIzm($c, 'копейка', 'копейки', 'копеек');
 	return $result;
 }
-/**
-Проговаривалка для месяца
-@param	Num		$value	месяц 1 - 12
-@return	String текстовое представление месяца
-*/
+/** Проговаривалка для месяца
+ *
+ * @param	num		$value	месяц 1 - 12
+ * @return	string текстовое представление месяца
+ */
 function month2Txt($value) {
 	$result='';
 	if ($value==1) $result='января';
@@ -260,22 +257,56 @@ function month2Txt($value) {
 	if ($value==12) $result='декабря';
 	return $result;
 }
-
-/**
-Преобразование даты формата YYYY-MM-DD к виду DD.MM.YYYY, подходит для вставки в HTML
-@param	String	$str исходная строка
-@return	String преобразованная строка
-*/
+/** Преобразование даты формата YYYY-MM-DD к виду DD.MM.YYYY, подходит для вставки в HTML
+ *
+ * @param	string	$str исходная строка
+ * @return	string преобразованная строка
+ */
 function date2Html($str) {
 	if (!$str) return '';
 	$result=substr($str,8,2).'.'.substr($str,5,2).'.'.substr($str,0,4);
 	return str2Html($result);
 }
-/**
-Привести в порядок строковое представление времени, к виду hh:mm
-@param	String	$str исходная строка
-@return	String преобразованная строка
-*/
+/** Преобразование строки к ESCAPE, utf-8
+ *
+ * @param	string	$str исходная строка
+ * @return	string преобразованная строка
+ */
+function escape($str) {
+    $escape_chars = "%u0410 %u0430 %u0411 %u0431 %u0412 %u0432 %u0413 %u0433 %u0490 %u0491 %u0414 %u0434 %u0415 %u0435 %u0401 %u0451 %u0404 %u0454 %u0416 %u0436 %u0417 %u0437 %u0418 %u0438 %u0406 %u0456 %u0419 %u0439 %u041A %u043A %u041B %u043B %u041C %u043C %u041D %u043D %u041E %u043E %u041F %u043F %u0420 %u0440 %u0421 %u0441 %u0422 %u0442 %u0423 %u0443 %u0424 %u0444 %u0425 %u0445 %u0426 %u0446 %u0427 %u0447 %u0428 %u0448 %u0429 %u0449 %u042A %u044A %u042B %u044B %u042C %u044C %u042D %u044D %u042E %u044E %u042F %u044F";
+    $russian_chars = "А а Б б В в Г г Ґ ґ Д д Е е Ё ё Є є Ж ж З з И и І і Й й К к Л л М м Н н О о П п Р р С с Т т У у Ф ф Х х Ц ц Ч ч Ш ш Щ щ Ъ ъ Ы ы Ь ь Э э Ю ю Я я";
+    $e = explode(" ",$escape_chars);
+    $r = explode(" ",$russian_chars);
+    $rus_array = str_split($str);
+    $new_word = str_replace($r,$e,$rus_array);
+    $new_word = str_replace(" ","%20",$new_word);
+    $new_word = implode("",$new_word);
+    return ($new_word);
+}
+/** Обратное преобразование ESCAPE
+ *
+ * @param	string	$str исходная строка
+ * @return	string преобразованная строка
+ */
+function unescape($str){
+    $escape_chars = "0410 0430 0411 0431 0412 0432 0413 0433 0490 0491 0414 0434 0415 0435 0401 0451 0404 0454 0416 0436 0417 0437 0418 0438 0406 0456 0419 0439 041A 043A 041B 043B 041C 043C 041D 043D 041E 043E 041F 043F 0420 0440 0421 0441 0422 0442 0423 0443 0424 0444 0425 0445 0426 0446 0427 0447 0428 0448 0429 0449 042A 044A 042B 044B 042C 044C 042D 044D 042E 044E 042F 044F";
+    $russian_chars = "А а Б б В в Г г Ґ ґ Д д Е е Ё ё Є є Ж ж З з И и І і Й й К к Л л М м Н н О о П п Р р С с Т т У у Ф ф Х х Ц ц Ч ч Ш ш Щ щ Ъ ъ Ы ы Ь ь Э э Ю ю Я я";
+    $e = explode(" ",$escape_chars);
+    $r = explode(" ",$russian_chars);
+    $rus_array = explode("%u",$str);
+    $new_word = str_replace($e,$r,$rus_array);
+    $new_word = str_replace("%20"," ",$new_word);
+    return (implode("",$new_word));
+}
+
+//------------------------------------------------------------------------------
+// Функции работы со строками
+//------------------------------------------------------------------------------
+/** Преобразование строкового представление времени к виду hh:mm
+ *
+ * @param	string	$str исходная строка
+ * @return	string преобразованная строка
+ */
 function normTime($str) {
 	$result='';
 	for($i=0; $i<mb_strlen($str); $i++) {
@@ -297,11 +328,11 @@ function normTime($str) {
 	$result=$h.':'.$m;
 	return $result;
 }
-/**
-Приведение телефонного номера России к стандартному виду 8(903)550-25-12
-@param	String	$str исходная строка
-@return	String преобразованная строка
-*/
+/** Приведение телефонного номера России к стандартному виду 8(495)123-45-67
+ *
+ * @param	string	$str исходная строка
+ * @return	string преобразованная строка
+ */
 function getTelNorm($str) {
 	$n=mb_strlen($str,'utf-8');
 	$result='';
@@ -317,20 +348,20 @@ function getTelNorm($str) {
 	if (mb_substr($result,0,1,'utf-8')!='8') return '';
 	return mb_substr($result,0,1,'utf-8').'('.mb_substr($result,1,3,'utf-8').')'.mb_substr($result,4,3,'utf-8').'-'.mb_substr($result,7,2,'utf-8').'-'.mb_substr($result,9,2,'utf-8');
 }
-/**
-Приведение e-mail к стандартному виду
-@param	String	$str исходная строка
-@return	String преобразованная строка
-*/
+/** Приведение e-mail к стандартному виду
+ *
+ * @param	string	$str исходная строка
+ * @return	string преобразованная строка
+ */
 function getEMailNorm($str) {
 	return trim(mb_strtolower($str,'utf-8'));
 }
-/**
-Вытаскиваем подстроку по словам, не длинее заданного значения, с ... на конце если не уместилось
-@param	String	$str исходная строка
-@param	Integer	$maxLength максимальная длина
-@return	String преобразованная строка
-*/
+/** Вытаскиваем подстроку по словам, не длинее заданного значения, с ... на конце если не уместилось
+ *
+ * @param	string	$str исходная строка
+ * @param	num		$maxLength максимальная длина
+ * @return	string преобразованная строка
+ */
 function substrByWord($str, $maxLength) {
 	$str=str_replace("\n",' ',$str);
 	$str=str_replace("\r",' ',$str);
@@ -372,81 +403,45 @@ function substrByWord($str, $maxLength) {
 	}
 	return $result;
 }
-
-/**
-Преобразование строки к ESCAPE, utf-8
-@param	String	$str исходная строка
-@return	String преобразованная строка
-*/
-function escape($str) {
-    $escape_chars = "%u0410 %u0430 %u0411 %u0431 %u0412 %u0432 %u0413 %u0433 %u0490 %u0491 %u0414 %u0434 %u0415 %u0435 %u0401 %u0451 %u0404 %u0454 %u0416 %u0436 %u0417 %u0437 %u0418 %u0438 %u0406 %u0456 %u0419 %u0439 %u041A %u043A %u041B %u043B %u041C %u043C %u041D %u043D %u041E %u043E %u041F %u043F %u0420 %u0440 %u0421 %u0441 %u0422 %u0442 %u0423 %u0443 %u0424 %u0444 %u0425 %u0445 %u0426 %u0446 %u0427 %u0447 %u0428 %u0448 %u0429 %u0449 %u042A %u044A %u042B %u044B %u042C %u044C %u042D %u044D %u042E %u044E %u042F %u044F";
-    $russian_chars = "А а Б б В в Г г Ґ ґ Д д Е е Ё ё Є є Ж ж З з И и І і Й й К к Л л М м Н н О о П п Р р С с Т т У у Ф ф Х х Ц ц Ч ч Ш ш Щ щ Ъ ъ Ы ы Ь ь Э э Ю ю Я я";
-    $e = explode(" ",$escape_chars);
-    $r = explode(" ",$russian_chars);
-    $rus_array = str_split($str);
-    $new_word = str_replace($r,$e,$rus_array);
-    $new_word = str_replace(" ","%20",$new_word);
-    $new_word = implode("",$new_word);
-    return ($new_word);
-}
-/**
-Обратное преобразование ESCAPE
-@param	String	$str исходная строка
-@return	String преобразованная строка
-*/
-function unescape($str){
-    $escape_chars = "0410 0430 0411 0431 0412 0432 0413 0433 0490 0491 0414 0434 0415 0435 0401 0451 0404 0454 0416 0436 0417 0437 0418 0438 0406 0456 0419 0439 041A 043A 041B 043B 041C 043C 041D 043D 041E 043E 041F 043F 0420 0440 0421 0441 0422 0442 0423 0443 0424 0444 0425 0445 0426 0446 0427 0447 0428 0448 0429 0449 042A 044A 042B 044B 042C 044C 042D 044D 042E 044E 042F 044F";
-    $russian_chars = "А а Б б В в Г г Ґ ґ Д д Е е Ё ё Є є Ж ж З з И и І і Й й К к Л л М м Н н О о П п Р р С с Т т У у Ф ф Х х Ц ц Ч ч Ш ш Щ щ Ъ ъ Ы ы Ь ь Э э Ю ю Я я";
-    $e = explode(" ",$escape_chars);
-    $r = explode(" ",$russian_chars);
-    $rus_array = explode("%u",$str);
-    $new_word = str_replace($e,$r,$rus_array);
-    $new_word = str_replace("%20"," ",$new_word);
-    return (implode("",$new_word));
-}
-
-//------------------------------------------------------------------------------
-// Работа со строками
-//------------------------------------------------------------------------------
-/**
-Проверка на корректность простого элемента, образующего URL:
-	используется для проверки, при задании пользователем url адреса сущности
-	допустимы маленькие латинские буквы, цифры, тире и подчеркивание
-	знаки '/','#','?','&' недопустимы, так как это разделители между элементами
-@param	String	$str исходная строка
-@return	Boolean признак корректности
-*/
+/** Проверка на корректность простого элемента, образующего URL:
+ *
+ * используется для проверки, при задании пользователем url адреса сущности
+ * допустимы маленькие латинские буквы, цифры, тире и подчеркивание
+ * знаки '/','#','?','&' недопустимы, так как это разделители между элементами
+ * @param	string	$str исходная строка
+ * @return	boolean признак корректности
+ */
 function testSimpleUrlItem($str) {
 	return preg_match("/^[a-z0-9\-_]+$/",$str);
 }
-/**
-Проверить, начинается ли $str с $s
-@param	String	$str исходная строка
-@param	String	$s подстрока
-@return	Boolean результат проверки
-*/
+/** Проверить, начинается ли $str с $s
+ *
+ * @param	string	$str исходная строка
+ * @param	string	$s подстрока
+ * @return	boolean результат проверки
+ */
 function isStrStarting($str, $s) {
 	$strLen=mb_strlen($str,'utf-8');
 	$sLen=mb_strlen($s,'utf-8');
 	if ($strLen<sLen) return false;
 	return mb_substr($str, 0, $sLen,'utf-8')==$s;
 }
-/**
-Проверить, заканчивается ли $str на $s
-@param	String	$str исходная строка
-@param	String	$s подстрока
-@return	Boolean результат проверки
-*/
+/** Проверить, заканчивается ли $str на $strSubstr
+ *
+ * @param	string	$str исходная строка
+ * @param	string	$strSubstr подстрока
+ * @return	boolean результат проверки
+ */
 function isStrEnding($str, $strSubstr) {
 	$strLen=mb_strlen($str,'utf-8');
 	$sLen=mb_strlen($s,'utf-8');
 	if ($strLen<sLen) return false;
 	return mb_substr($str, $strLen-$sLen, $sLen,'utf-8')==$s;
 }
-/**
-Сгенерить GUID
-@return	String GUID
-*/
+/** Сгенерить GUID
+ *
+ * @return	string GUID
+ */
 function getGUID(){
     if (function_exists('com_create_guid')) {
         return com_create_guid();
@@ -463,10 +458,11 @@ function getGUID(){
         return $uuid;
     }
 }
-/**
-Шифруем пароль
-@return	String зашифрованный пароль
-*/
+/** Шифруем пароль
+ *
+ * @param	string	$password пароль
+ * @return	string зашифрованный пароль
+ */
 function cryptPassword($password) {
 	return md5($password . getCfg('crypt.md5.key'));
 }
@@ -474,29 +470,43 @@ function cryptPassword($password) {
 //------------------------------------------------------------------------------
 // Конфигурационные настройки
 //------------------------------------------------------------------------------
-/**
-Вернуть значение настроечной константы
-@param	String	$name имя настройки
-@param	String	$default значение по умолчанию
-@return	String значение настроечной константы
-*/
+/** Вернуть значение настроечной константы
+ *
+ * @param	string	$name имя настройки
+ * @param	string	$default значение по умолчанию
+ * @return	string значение настроечной константы
+ */
 function getCfg($name, $default='') {
 	global $config;
 	if (isset($config[$name])) return $config[$name];
 	return $default;
 }
+
 //------------------------------------------------------------------------------
 // Пути
 //------------------------------------------------------------------------------
-/**
-Объеденить несколько элементов относительного пути
-@return	String путь
+/** Объеденить несколько элементов относительного пути
+ *
+ * @param	string	$item01 параметр  1
+ * @param	string	$item02 параметр  2
+ * @param	string	$item03 параметр  3
+ * @param	string	$item04 параметр  4
+ * @param	string	$item05 параметр  5
+ * @param	string	$item06 параметр  6
+ * @param	string	$item07 параметр  7
+ * @param	string	$item08 параметр  8
+ * @param	string	$item09 параметр  9
+ * @param	string	$item10 параметр 10
+ * @param	string	$item11 параметр 11
+ * @param	string	$item12 параметр 12
+ * @param	string	$item13 параметр 13
+ * @param	string	$item14 параметр 14
+ * @param	string	$item15 параметр 15
+ * @return	String путь
 */
-function pathConcat(
-	$item01='',$item02='',$item03='',$item04='',$item05='',
-	$item06='',$item07='',$item08='',$item09='',$item10='',
-	$item11='',$item12='',$item13='',$item14='',$item15=''
-	) {
+function pathConcat($item01='',$item02='',$item03='',$item04='',
+	$item05='',$item06='',$item07='',$item08='',$item09='',
+	$item10='',$item11='',$item12='',$item13='',$item14='',$item15='') {
 	$lst=Array();
 	if ($item01) $lst[]=$item01;
 	if ($item02) $lst[]=$item02;
@@ -529,47 +539,47 @@ function pathConcat(
 //------------------------------------------------------------------------------
 // Работа с XML
 //------------------------------------------------------------------------------
-/**
-Вернуть значение атрибута узла
-@param	Xml		$xml узел
-@param	String	$attributeName имя атрибута
-@param	String	$defValue значение по умолчанию
-@return	String значение атрибута
-*/
+/** Вернуть значение атрибута XML узла
+ *
+ * @param	xml		$xml узел
+ * @param	string	$attributeName имя атрибута
+ * @param	string	$defValue значение по умолчанию
+ * @return	string значение атрибута
+ */
 function xmlGetAttr($xml, $attributeName, $defValue) {
 	if (!is_object($xml)) return $defValue;
 	return xmlNodeValue($xml->getAttributeNode($attributeName), $defValue);
 }
-/**
-Проверить наличие аттрибута у узла
-@param	Xml		$xml узел
-@param	String	$attributeName имя атрибута
-@return	Boolean наличие атрибута
-*/
+/** Проверить наличие аттрибута у XML узла
+ *
+ * @param	xml		$xml узел
+ * @param	string	$attributeName имя атрибута
+ * @return	boolean наличие атрибута
+ */
 function xmlIsAttr($xml, $attributeName) {
 	if (!is_object($xml)) return false;
 	if (!is_object($xml->getAttributeNode($attributeName))) return false;
 	return true;
 }
-/**
-Задать значение атрибута
-@param	Xml		$xml узел
-@param	String	$attributeName имя атрибута
-@param	String	$attributeValue значение атрибута
-@return	Boolean успешность выполнения операции
-*/
+/** Задать значение атрибута XML узла
+ *
+ * @param	xml		$xml узел
+ * @param	string	$attributeName имя атрибута
+ * @param	string	$attributeValue значение атрибута
+ * @return	boolean успешность выполнения операции
+ */
 function xmlSetAttr($xml, $attributeName, $attributeValue) {
 	if (!is_object($xml)) return false;
 	if (!mb_check_encoding($attributeValue,'UTF-8')) return false;
 	$xml->setAttribute($attributeName, $attributeValue);
 	return true;
 }
-/**
-Вернуть текстовое значение узла
-@param	Xml		$xml узел
-@param	String	$defValue текстовое значение по умолчанию
-@return	String текстовое значение
-*/
+/** Вернуть значение XML узла
+ *
+ * @param	xml		$xml узел
+ * @param	string	$defValue значение по умолчанию
+ * @return	string значение узла
+ */
 function xmlNodeValue($xml, $defValue) {
 	$result=null;
 	if (!is_object($xml)) return $defValue;
@@ -584,6 +594,11 @@ function xmlNodeValue($xml, $defValue) {
 	if ($result===null) return $defValue;
 	return $result;
 }
+/** Вернуть текстовое значение XML узла
+ *
+ * @param	xml		$xml узел
+ * @return	string текстовое значение
+ */
 function xmlGetText($xml) {
 	$result='';
 	if (!is_object($xml)) return $result;
@@ -592,12 +607,12 @@ function xmlGetText($xml) {
 	}
 	return $result;
 }
-/**
-Вернуть первый дочерний узел по $tagName
-@param	Xml		$xml узел
-@param	String	$tagName имя узла
-@return	Xml первый подходящий дочерний узел
-*/
+/** Вернуть первый дочерний XML узел по $tagName
+ *
+ * @param	xml		$xml узел
+ * @param	string	$tagName имя узла
+ * @return	xml первый подходящий дочерний узел
+ */
 function xmlGetChild($xml, $tagName) {
 	if (!is_object($xml)) return null;
 	for ($xmlItem=$xml->firstChild; $xmlItem!=null; $xmlItem=$xmlItem->nextSibling) {
@@ -605,14 +620,14 @@ function xmlGetChild($xml, $tagName) {
 	}
 	return null;
 }
-/**
-Вернуть первый дочерний узел по $tagName и значению атрибута
-@param	Xml		$xml узел
-@param	String	$tagName имя узла
-@param	String	$atrName имя атрибута
-@param	String	$atrValue значение атрибута
-@return	Xml первый подходящий дочерний узел
-*/
+/** Вернуть первый дочерний узел по $tagName и значению атрибута
+ *
+ * @param	xml		$xml узел
+ * @param	string	$tagName имя узла
+ * @param	string	$atrName имя атрибута
+ * @param	string	$atrValue значение атрибута
+ * @return	xml первый подходящий дочерний узел
+ */
 function xmlGetChildByAttr($xml, $tagName, $atrName, $atrValue) {
 	if (!is_object($xml)) return null;
 	for ($xmlItem=$xml->firstChild; $xmlItem!=null; $xmlItem=$xmlItem->nextSibling) {
@@ -622,20 +637,20 @@ function xmlGetChildByAttr($xml, $tagName, $atrName, $atrValue) {
 	}
 	return null;
 }
-/**
-Создать XML документ
-@return	Xml документ XML
-*/
+/** Создать XML документ
+ *
+ * @return	xml документ XML
+ */
 function xmlCreateDoc() {
 	return new DOMDocument("1.0","utf-8");
 }
-/**
-Создать и вставить узел
-@param	Xml		$xmlOwner узел
-@param	String	$tagName имя создаваемого узла
-@param	Xml		$xmlBefore узел, перед которым вставить новый
-@return	Xml созданный Xml узел
-*/
+/** Создать и вставить XML узел
+ *
+ * @param	xml		$xmlOwner узел
+ * @param	string	$tagName имя создаваемого узла
+ * @param	xml		$xmlBefore узел, перед которым вставить новый
+ * @return	xml созданный Xml узел
+ */
 function xmlCreateNode($xmlOwner, $tagName, $xmlBefore=null) {
 	if (!is_object($xmlOwner)) return null;
 	$xmlDoc=$xmlOwner->ownerDocument;
@@ -649,12 +664,12 @@ function xmlCreateNode($xmlOwner, $tagName, $xmlBefore=null) {
 	}
 	return $elem;
 }
-/**
-Создать и вставить текст
-@param	Xml		$xmlOwner узел
-@param	String	$text текст
-@return	Xml созданный Xml текстовый узел
-*/
+/** Создать и вставить текст
+ *
+ * @param	xml		$xmlOwner узел
+ * @param	string	$text текст
+ * @return	xml созданный Xml текстовый узел
+ */
 function xmlCreateText($xmlOwner, $text) {
 	if (!is_object($xmlOwner)) return null;
 	$xmlDoc=$xmlOwner->ownerDocument;
@@ -663,12 +678,12 @@ function xmlCreateText($xmlOwner, $text) {
 	$xmlOwner->appendChild($elem);
 	return $elem;
 }
-/**
-Создать и вставить комментарий
-@param	Xml		$xmlOwner узел
-@param	String	$comment комментарий
-@return	Xml созданный Xml комментарий
-*/
+/** Создать и вставить комментарий
+ *
+ * @param	xml		$xmlOwner узел
+ * @param	string	$comment комментарий
+ * @return	xml созданный Xml комментарий
+ */
 function xmlCreateComment($xmlOwner, $comment) {
 	if (!is_object($xmlOwner)) return null;
 	$xmlDoc=$xmlOwner->ownerDocument;
@@ -677,12 +692,12 @@ function xmlCreateComment($xmlOwner, $comment) {
 	$xmlOwner->appendChild($elem);
 	return $elem;
 }
-/**
-Создать и вставить CDATASection
-@param	Xml		$xmlOwner узел
-@param	String	$text CDATASection
-@return	Xml созданный Xml CDATASection
-*/
+/** Создать и вставить CDATASection
+ *
+ * @param	xml		$xmlOwner узел
+ * @param	string	$text CDATASection
+ * @return	xml созданный Xml CDATASection
+ */
 function xmlCreateCDATASection($xmlOwner, $text) {
 	if (!is_object($xmlOwner)) return null;
 	$xmlDoc=$xmlOwner->ownerDocument;
@@ -695,23 +710,45 @@ function xmlCreateCDATASection($xmlOwner, $text) {
 //------------------------------------------------------------------------------
 // Работа с базой данных через PDO
 //------------------------------------------------------------------------------
-/**
-Класс расширения функционала PDO
-@package lib
-@subpackage lib-base
-*/
-class PDODataConnectorAbstract extends PDO {
+/** Класс расширения функционала PDO 
+ *
+ * удобен для выполнения запросов и получения результатов в виде ассоциативного массива
+ */
+class PDODataConnector extends PDO {
+/** Получить имя драйвера SQL сервера
+ *
+ * в настоящее время доступны варианты mysql, pgsql, sqlsrv
+ * @return	string имя драйвера SQL сервера
+ */
 	public function getDriverName() {
-		throw new Exception('Обращение к абстрактной функции PDODataConnectorAbstract::getDriverName');
+		throw new Exception('Обращение к абстрактной функции PDODataConnector::getDriverName');
 	}
+/** Подготовить строку для корректной вставки в SQL запрос
+ *
+ * @param	string	$str строка
+ * @return	string строка подготовленная для корректной вставки в SQL запрос
+ */
 	public function str2Sql($str) {
-		throw new Exception('Обращение к абстрактной функции PDODataConnectorAbstract::str2Sql');
+		throw new Exception('Обращение к абстрактной функции PDODataConnector::str2Sql');
 	}
+/** Подготовить выражение PHP для корректной вставки в SQL запрос
+ *
+ * @param	anytype	$value выражение
+ * @return	string строка подготовленная для корректной вставки в SQL запрос
+ */
 	public function php2Sql($value) {
-		throw new Exception('Обращение к абстрактной функции PDODataConnectorAbstract::php2Sql');
+		throw new Exception('Обращение к абстрактной функции PDODataConnector::php2Sql');
 	}
 
+	/// последний выполненный SQL запрос
 	protected $_lastQuery=null;
+/** Выполнить SQL запрос
+ *
+ * @param	string	$sql			SQL запрос
+ * @param	string	$errorMessage	Текст сообщения об ошибке
+ * @param	Array	$params			Параметры для подстановки в SQL запрос
+ * @return	PDOStatement результат выполнения SQL запроса
+ */
 	public function pdo($sql, $errorMessage='', $params=Array()) {
 		if (getCfg('trace.sql')) trace($sql."\n");
 		
@@ -731,6 +768,13 @@ class PDODataConnectorAbstract extends PDO {
 		$this->_lastQuery=$result;
 		return $result;
 	}
+/** Вернуть ассоциативный массив строки результата выполнения запроса в виде 'имя поля' => 'значение поля'
+ *
+ * @param	anytype	$sql			строка SQL запроса или PDOStatement результата
+ * @param	string	$errorMessage	Текст сообщения об ошибке
+ * @param	Array	$params			Параметры для подстановки в SQL запрос
+ * @return	Array ассоциативный массив результата выполнения SQL запроса
+ */
 	public function pdoFetch($sql, $errorMessage='', $params=Array()) {
 		$q=null;
 		$t=gettype($sql);
@@ -742,18 +786,28 @@ class PDODataConnectorAbstract extends PDO {
 		}
 		return $q->fetch(PDO::FETCH_ASSOC);
 	}
+/** Вернуть кол-во строк в результате последнего запроса
+ *
+ * @return	num кол-во строк запроса
+ */
 	public function rowCount() {
 		$result=0;
 		if ($this->_lastQuery) $result=$this->_lastQuery->rowCount();
 		return $result;
 	}
 }
-/**
-Класс расширения функционала PDO для MySql
-@package lib
-@subpackage lib-base
-*/
-class PDODataConnectorMySql extends PDODataConnectorAbstract {
+/** Класс расширения функционала PDO для MySql
+ */
+class PDODataConnectorMySql extends PDODataConnector {
+/** Конструктор - устанавливает соединение с базой данных
+ *
+ * @param	string	$dbName имя базы
+ * @param	string	$login логин
+ * @param	string	$password пароль
+ * @param	string	$charset кодировка (utf8)
+ * @param	string	$host хост (localhost)
+ * @return	PDODataConnectorMySql соединение с базой данных
+ */
 	function __construct($dbName, $login, $password, $charset='utf8', $host='localhost') {
 		try {
 			$str="{$this->getDriverName()}:dbname={$dbName};host={$host}";
@@ -776,12 +830,26 @@ class PDODataConnectorMySql extends PDODataConnectorAbstract {
 			throw new Exception("Не удалось установить соединение с базой данных. {$msg}");
 		}
 	}
+/** Получить имя драйвера SQL сервера
+ *
+ * @return	string имя драйвера SQL сервера - mysql
+ */
 	public function getDriverName() {
 		return 'mysql';
 	}
+/** Подготовить строку для корректной вставки в SQL запрос
+ *
+ * @param	string	$str строка
+ * @return	string строка подготовленная для корректной вставки в SQL запрос
+ */
 	public function str2Sql($str) {
 		return str2MySql($str);
 	}
+/** Подготовить выражение PHP для корректной вставки в SQL запрос
+ *
+ * @param	anytype	$value выражение
+ * @return	string строка подготовленная для корректной вставки в SQL запрос
+ */
 	public function php2Sql($value) {
 		$result='';
 		if (is_object($value) && (get_class($value)=='DateTime')) {
@@ -793,12 +861,18 @@ class PDODataConnectorMySql extends PDODataConnectorAbstract {
 		return $result;
 	}
 }
-/**
-Класс расширения функционала PDO для PostgreSQL
-@package lib
-@subpackage lib-base
-*/
-class PDODataConnectorPgSql extends PDODataConnectorAbstract {
+/** Класс расширения функционала PDO для PostgreSQL
+ */
+class PDODataConnectorPgSql extends PDODataConnector {
+/** Конструктор - устанавливает соединение с базой данных
+ *
+ * @param	string	$dbName имя базы
+ * @param	string	$login логин
+ * @param	string	$password пароль
+ * @param	string	$charset кодировка (utf8)
+ * @param	string	$host хост (localhost)
+ * @return	PDODataConnectorMySql соединение с базой данных
+ */
 	function __construct($dbName, $login, $password, $charset='utf8', $host='localhost') {
 		$str="{$this->getDriverName()}:dbname={$dbName};host={$host}";
 		try {
@@ -820,12 +894,26 @@ class PDODataConnectorPgSql extends PDODataConnectorAbstract {
 			throw new Exception("Не удалось установить соединение с базой данных. {$msg}");
 		}
 	}
+/** Получить имя драйвера SQL сервера
+ *
+ * @return	string имя драйвера SQL сервера - pgsql
+ */
 	public function getDriverName() {
 		return 'pgsql';
 	}
+/** Подготовить строку для корректной вставки в SQL запрос
+ *
+ * @param	string	$str строка
+ * @return	string строка подготовленная для корректной вставки в SQL запрос
+ */
 	public function str2Sql($str) {
 		return str2MySql($str);
 	}
+/** Подготовить выражение PHP для корректной вставки в SQL запрос
+ *
+ * @param	anytype	$value выражение
+ * @return	string строка подготовленная для корректной вставки в SQL запрос
+ */
 	public function php2Sql($value) {
 		$result='';
 		if (is_object($value) && (get_class($value)=='DateTime')) {
@@ -837,12 +925,18 @@ class PDODataConnectorPgSql extends PDODataConnectorAbstract {
 		return $result;
 	}
 }
-/**
-Класс расширения функционала PDO для MSSQL
-@package lib
-@subpackage lib-base
-*/
-class PDODataConnectorMSSql extends PDODataConnectorAbstract {
+/** Класс расширения функционала PDO для MSSQL
+ */
+class PDODataConnectorMSSql extends PDODataConnector {
+/** Конструктор - устанавливает соединение с базой данных
+ *
+ * @param	string	$dbName имя базы
+ * @param	string	$login логин
+ * @param	string	$password пароль
+ * @param	string	$charset кодировка (utf8)
+ * @param	string	$host хост (localhost)
+ * @return	PDODataConnectorMySql соединение с базой данных
+ */
 	function __construct($dbName, $login, $password, $charset='utf8', $host='localhost') {
 		$str="{$this->getDriverName()}:App=TestPdo;ConnectionPooling=1;Server={$host};Database={$dbName}";
 		try {
@@ -857,12 +951,26 @@ class PDODataConnectorMSSql extends PDODataConnectorAbstract {
 			throw new Exception("Не удалось установить соединение с базой данных. {$msg}");
 		}
 	}
+/** Получить имя драйвера SQL сервера
+ *
+ * @return	string имя драйвера SQL сервера - sqlsrv
+ */
 	public function getDriverName() {
 		return 'sqlsrv';
 	}
+/** Подготовить строку для корректной вставки в SQL запрос
+ *
+ * @param	string	$str строка
+ * @return	string строка подготовленная для корректной вставки в SQL запрос
+ */
 	public function str2Sql($str) {
 		return str_replace("'", '"', $str);
 	}
+/** Подготовить выражение PHP для корректной вставки в SQL запрос
+ *
+ * @param	anytype	$value выражение
+ * @return	string строка подготовленная для корректной вставки в SQL запрос
+ */
 	public function php2Sql($value) {
 		$result='';
 		if (is_object($value) && (get_class($value)=='DateTime')) {
@@ -878,11 +986,25 @@ class PDODataConnectorMSSql extends PDODataConnectorAbstract {
 //------------------------------------------------------------------------------
 // Работа с иллюстрациями
 //------------------------------------------------------------------------------
+/** Преобразовать id иллюстрации к месту размещения файла в файловой системе
+ *
+ * @param	num		$klsris id иллюстрации
+ * @return	string место размещения файла в файловой системе
+ */
 function getRisFileNameFromId($klsris) {
 	$name=str_pad(ltrim($klsris),2,'0',STR_PAD_LEFT);
 	$dir=str_pad(substr($name,0,strlen($name)-2),3,'0',STR_PAD_LEFT);
 	return $dir.'/'.ltrim($klsris);
 }
+/** Изменить размер рисунка
+ *
+ * @param	string	$sourceFileName имя исходного файла
+ * @param	string	$resultFileName имя измененного файла
+ * @param	string	$resWidth ширина измененного файла
+ * @param	string	$resHeight высота измененного файла
+ * @param	boolean	$isCover способ вписать в размер - cover или contain
+ * @return	boolean успешность выполнения операции
+ */
 function doRisResize($sourceFileName, $resultFileName, $resWidth, $resHeight, $isCover) {
 	$imgQuality=85;
 	$result=true;
@@ -945,7 +1067,10 @@ function doRisResize($sourceFileName, $resultFileName, $resWidth, $resHeight, $i
 //------------------------------------------------------------------------------
 // Трассировка
 //------------------------------------------------------------------------------
-// Трасировка
+/** Трассировка
+ *
+ * @param	anytype	$value выражение которое надо поместить в log файл
+ */
 function trace($value) {
 	$path=pathConcat(getCfg('path.root'), getCfg('path.root.log','log'));
 	if (!is_dir($path)) mkdir($path);
@@ -961,8 +1086,10 @@ function trace($value) {
 	if (fwrite($handle, $str) === FALSE) throw new Exception("Не удалось произвести запись файл '{$fileName}'");
 	fclose($handle);
 }
-
-// Логирование ошибок
+/** Логирование ошибок
+ *
+ * @param	Exception	$e ошибка
+ */
 function errorLog($e) {
 	$path=pathConcat(getCfg('path.root'), getCfg('path.root.log','log'));
 	if (!is_dir($path)) mkdir($path);

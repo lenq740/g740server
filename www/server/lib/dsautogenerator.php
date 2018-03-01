@@ -1,16 +1,12 @@
 <?php
 /**
 Генератор объектов модели данных по описаниям из базы данных
-@package lib
-@subpackage dsautogenerator
 */
 require_once('dsconnector.php');
 require_once('datasource-controller.php');
 
 /**
 Класс автогенератор источников данных
-@package lib
-@subpackage dsautogenerator
 */
 class DSAutoGenerator extends DSConnector {
 	protected $dataStructure=Array();			// Тут ввиде вложенных массивов описание структуры базы данных, взятое из systable и sysfield
@@ -670,8 +666,6 @@ $param	mixed[] &$aliases	- формируемый список имен табл
 
 /**
 Класс предок для модификатора класса при автогенерации
-@package lib
-@subpackage dsautogenerator
 */
 class DataSourceModify {
 	public function getFields($fields) {

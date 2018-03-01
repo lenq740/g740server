@@ -1,32 +1,46 @@
 <?php
 /**
-Библиотека источников данных
-@package lib
-@subpackage datasource
-*/
+ * @file
+ * Библиотека - модель данных
+ */
 require_once('dsconnector.php');
 require_once('lib-g740server.php');
 
-/**
-Класс предок для источника данных
-@package lib
-@subpackage datasource
-*/
+/** Класс предок для источника данных DataSource
+ */
 class DataSource extends DSConnector{
-	public $tableName='';			// таблица, обязательно должно быть задано в потомке, автоматически заполняется автогенератором классов
-	public $tableCaption='';		// Название таблицы, обязательно должно быть задано в потомке, автоматически заполняется автогенератором классов
-	public $permMode='';			// Режим прав, если не задан, то tableName
-	public $selectOtherFields='';	// Добавляется к списку полей в select, может быть переопределено в потомке
-	public $isGUID=false;			// В качестве id используется GUID
-	public $isSaveOnAppend=false;	// Сохранять в базе при добавлении
-	public $selectLimit=0;			// Ограничение на максимальное кол-во возвращаемых строк
+/// таблица, обязательно должно быть задано в потомке, автоматически заполняется автогенератором классов
+	public $tableName='';
+/// название таблицы, обязательно должно быть задано в потомке, автоматически заполняется автогенератором классов
+	public $tableCaption='';
+/// Режим прав, если не задан, то tableName
+	public $permMode='';
+/// Добавляется к списку полей в select, может быть переопределено в потомке
+	public $selectOtherFields='';
+/// В качестве id используется GUID
+	public $isGUID=false;
+/// Сохранять в базе при добавлении
+	public $isSaveOnAppend=false;
+/// Ограничение на максимальное кол-во возвращаемых строк
+	public $selectLimit=0;
 
+/** Проверка доступности выполнения операции по правам в контексте вызова
+ *
+ * @param	string	$permOper опрерация (read, write)
+ * @param	string	$requestName запрос
+ * @param	Array	$params контекст выполнения запроса
+ * @return	boolean доступность выполнения операции
+ */
 	public function getPerm($permOper='read', $requestName='', $params=Array()) {
 		$permMode=$this->permMode;
 		if (!$permMode) $permMode=$this->tableName;
 		return getPerm($permMode, $permOper);
 	}
 	
+/** Выполнить запрос, записать ответ в виде XML согласно протоколу G740
+ *
+ * @param	Array	$params контекст выполнения запроса
+ */
 	public function writeXmlExec($params=Array()) {
 		//$startTime=microtime(true);
 		global $objResponseWriter;
@@ -61,6 +75,10 @@ class DataSource extends DSConnector{
 		$objResponseWriter->endElement();
 		return true;
 	}
+/** Записать результаты выполнения запроса, полученные в виде массива, в ответ XML согласно протоколу G740
+ *
+ * @param	Array	$lst результат выпонения запроса
+ */
 	protected function writeXmlRows($lst) {
 		global $objResponseWriter;
 		
@@ -122,6 +140,11 @@ class DataSource extends DSConnector{
 		}
 		return true;
 	}
+/** Вернуть описание источника данных согласно протоколу G740
+ *
+ * @param	Array	$params контекст выполнения запроса
+ * @return	strXml описание источника данных согласно протоколу G740
+ */
 	public function getStrXmlDefinition($params=Array()) {
 		$datasource=$this->tableName;
 		if ($params['#request.datasource']) $datasource=$params['#request.datasource'];
@@ -347,7 +370,7 @@ XML;
 	}
 	public function execRefresh($params=Array()) {
 		$errorMessage='Ошибка при обращении к DataSource::execRefresh';
-		if (!$this->getPerm('read','refresh',$params)) throw new ExceptionNoReport('У Вас нет прав на чтение таблицы '.$this->tableCaption);
+		if (!$this->getPerm('read','refresh',$params)) throw new Exception('У Вас нет прав на чтение таблицы '.$this->tableCaption);
 		$select=$this->getSelect($params);
 		$fields=$this->getFields();
 		foreach($fields as $key=>$fld) {
@@ -389,7 +412,7 @@ XML;
 	}
 	public function execSave($params=Array()) {
 		$errorMessage='Ошибка при обращении к DataSource::execSave';
-		if (!$this->getPerm('write','save',$params)) throw new ExceptionNoReport('У Вас нет прав на внесение изменений в строку таблицы '.$this->tableCaption);
+		if (!$this->getPerm('write','save',$params)) throw new Exception('У Вас нет прав на внесение изменений в строку таблицы '.$this->tableCaption);
 
 		if ($params['row.new']==1) {
 			return $this->execInsert($params);
@@ -401,7 +424,7 @@ XML;
 	}
 	public function execUpdate($params=Array()) {
 		$errorMessage='Ошибка при обращении к DataSource::execUpdate';
-		if (!$this->getPerm('write','save',$params)) throw new ExceptionNoReport('У Вас нет прав на внесение изменений в строку таблицы '.$this->tableCaption);
+		if (!$this->getPerm('write','save',$params)) throw new Exception('У Вас нет прав на внесение изменений в строку таблицы '.$this->tableCaption);
 		$result=Array();
 		$fields=$this->getFields();
 		$id=$params['id'];
@@ -460,7 +483,7 @@ XML;
 	}
 	public function execInsert($params=Array()) {
 		$errorMessage='Ошибка при обращении к DataSource::execInsert';
-		if (!$this->getPerm('write','save',$params)) throw new ExceptionNoReport('У Вас нет прав на внесение изменений в строку таблицы '.$this->tableCaption);
+		if (!$this->getPerm('write','save',$params)) throw new Exception('У Вас нет прав на внесение изменений в строку таблицы '.$this->tableCaption);
 		$result=Array();
 		$fields=$this->getFields();
 		$sqlFields='';
@@ -529,7 +552,7 @@ XML;
 	}
 	public function execCopy($params=Array()) {
 		$errorMessage='Ошибка при обращении к DataSource::execCopy';
-		if (!$this->getPerm('write','copy',$params)) throw new ExceptionNoReport('У Вас нет прав на правку таблицы '.$this->tableCaption);
+		if (!$this->getPerm('write','copy',$params)) throw new Exception('У Вас нет прав на правку таблицы '.$this->tableCaption);
 
 		$p=$params;
 		$p['filter.id']=$params['id'];
@@ -549,7 +572,7 @@ XML;
 		$p['row.new']=1;
 		if ($this->getField('ord')) $p['ord']=$this->getOrdAppendAfter($params);
 		$lst=$this->execSave($p);
-		if (count($lst)!=1) throw new ExceptionNoReport('Ошибка при копировании - не удалось вставить строку!!!');
+		if (count($lst)!=1) throw new Exception('Ошибка при копировании - не удалось вставить строку!!!');
 		$recResult=$lst[0];
 		
 		$recResult['row.destmode']='after';
@@ -579,7 +602,7 @@ XML;
 				$sqlName=strtolower($name);
 				$isEmpty=!$rec[$sqlName];
 				if ($fld['type']=='ref' && $rec[$sqlName]=='00000000-0000-0000-0000-000000000000') $isEmpty=true;
-				if ($isEmpty) throw new ExceptionNoReport('Не заполнено значение поля '.$fld['caption']);
+				if ($isEmpty) throw new Exception('Не заполнено значение поля '.$fld['caption']);
 			}
 		}
 		return $result;
@@ -591,7 +614,7 @@ XML;
 	public function execDelete($params=Array()) {
 		$errorMessage='Ошибка при обращении к DataSource::execDelete';
 		if (!$params['#recursLevel']) {
-			if (!$this->getPerm('write','delete',$params)) throw new ExceptionNoReport('У Вас нет прав на удаление строки таблицы '.$this->tableCaption);
+			if (!$this->getPerm('write','delete',$params)) throw new Exception('У Вас нет прав на удаление строки таблицы '.$this->tableCaption);
 		}
 		
 		if ($params['#recursLevel']>15) throw new Exception('Удаление невозможно, обнаружилось зацикливание ссылок при анализе ссылочной целостности');
@@ -658,7 +681,7 @@ where
 	`{$ref['to.table']}`.`{$ref['to.field']}` in ({$idlist})
 SQL;
 			$rec=$this->pdoFetch($sql);
-			if ($rec['n']>0) throw new ExceptionNoReport("Удаление невозможно, значение используется в связанной таблице {$dataSourceRef->tableCaption} ({$dataSourceRef->tableName})");
+			if ($rec['n']>0) throw new Exception("Удаление невозможно, значение используется в связанной таблице {$dataSourceRef->tableCaption} ({$dataSourceRef->tableName})");
 		}
 	}
 	protected function _execDeleteRestrictSqlSrv($params=Array()) {
@@ -681,7 +704,7 @@ where
 	[{$ref['to.table']}].[{$ref['to.field']}] in ({$idlist})
 SQL;
 			$rec=$this->pdoFetch($sql);
-			if ($rec['n']>0) throw new ExceptionNoReport("Удаление невозможно, значение используется в связанной таблице {$dataSourceRef->tableCaption} ({$dataSourceRef->tableName})");
+			if ($rec['n']>0) throw new Exception("Удаление невозможно, значение используется в связанной таблице {$dataSourceRef->tableCaption} ({$dataSourceRef->tableName})");
 		}
 	}
 	protected function _execDeleteCascadeMySql($params=Array()) {
@@ -793,7 +816,7 @@ SQL;
 
 	public function execShift($params=Array()) {
 		$errorMessage='Ошибка при обращении к DataSource::execShift';
-		if (!$this->getPerm('write','shift',$params)) throw new ExceptionNoReport('У Вас нет прав на перемещение строки в таблице '.$this->tableCaption);
+		if (!$this->getPerm('write','shift',$params)) throw new Exception('У Вас нет прав на перемещение строки в таблице '.$this->tableCaption);
 		$mode=$params['#request.mode'];
 		if ($mode!='after' && $mode!='before' && $mode!='last' && $mode!='first') throw new Exception("Недопустимый параметр '{$mode}' операции перемещения строки");
 		if (!$this->getField('ord')) throw new Exception('Нет поля ord, перемещение строки невозможно');
@@ -923,7 +946,7 @@ SQL;
 			$name=$fld['name'];
 			if (isset($params["filter.{$name}"]) && !isset($params[$name])) $params[$name]=$params["filter.{$name}"];
 		}
-		if (!$this->getPerm('write','append',$params)) throw new ExceptionNoReport('У Вас нет прав на добавление в таблицу '.$this->tableCaption);
+		if (!$this->getPerm('write','append',$params)) throw new Exception('У Вас нет прав на добавление в таблицу '.$this->tableCaption);
 		
 		$mode=$params['#request.mode'];
 		if ($mode!='first' && $mode!='after' && $mode!='before') $mode='last';
@@ -1064,7 +1087,7 @@ SQL;
 	protected function _goReorder($params=Array(), $isReorderAll=false) {
 		$errorMessage='Ошибка при обращении к DataSource::_goReorder';
 		if (!$this->getField('ord')) return true;
-		if (!$this->getPerm('write','reorder',$params)) throw new ExceptionNoReport('У Вас нет прав на пересортировку строк в таблице '.$this->tableCaption);
+		if (!$this->getPerm('write','reorder',$params)) throw new Exception('У Вас нет прав на пересортировку строк в таблице '.$this->tableCaption);
 		$select=$this->_getReorderSelect($params);
 		
 		if (!$isReorderAll) {
@@ -1663,8 +1686,6 @@ PHP;
 
 /**
 Класс кэширующего хранилища данных
-@package lib
-@subpackage datasource
 */
 class DataStorage {
 	function __construct($tableName) {
@@ -1812,8 +1833,6 @@ class DataStorage {
 }
 /**
 Класс строки кэширующего хранилища данных
-@package lib
-@subpackage datasource
 */
 class DataItem {
 	function __construct($tableName, $id) {

@@ -1,8 +1,6 @@
 <?php
 /**
 Система проверки прав
-@package lib
-@subpackage perm
 */
 
 /**
@@ -49,8 +47,6 @@ function getPP($name, $default='') {
 
 /**
 Класс контроллер прав
-@package lib
-@subpackage perm
 */
 class PermController {
 	function __construct() {
