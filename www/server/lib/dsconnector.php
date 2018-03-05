@@ -40,6 +40,15 @@ class DSConnector {
 		$pdoDB=$this->getPDO();
 		return $pdoDB->str2Sql($str);
 	}
+/** Подготовить строку для корректной вставки в SQL запрос в раздел like секции where
+ *
+ * @param	string	$str строка
+ * @return	string строка подготовленная для корректной вставки в SQL запрос
+ */
+	public function str2SqlLike($str) {
+		$pdoDB=$this->getPDO();
+		return $pdoDB->str2SqlLike($str);
+	}
 /** Подготовить GUID для корректной вставки в SQL запрос
  *
  * @param	GUID	$str

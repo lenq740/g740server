@@ -731,6 +731,14 @@ class PDODataConnector extends PDO {
 	public function str2Sql($str) {
 		throw new Exception('Обращение к абстрактной функции PDODataConnector::str2Sql');
 	}
+/** Подготовить строку для корректной вставки в SQL запрос в раздел like секции where
+ *
+ * @param	string	$str строка
+ * @return	string строка подготовленная для корректной вставки в SQL запрос
+ */
+	public function str2SqlLike($str) {
+		throw new Exception('Обращение к абстрактной функции PDODataConnector::str2SqlLike');
+	}
 /** Подготовить выражение PHP для корректной вставки в SQL запрос
  *
  * @param	anytype	$value выражение
@@ -845,6 +853,17 @@ class PDODataConnectorMySql extends PDODataConnector {
 	public function str2Sql($str) {
 		return str2MySql($str);
 	}
+/** Подготовить строку для корректной вставки в SQL запрос в раздел like секции where
+ *
+ * @param	string	$str строка
+ * @return	string строка подготовленная для корректной вставки в SQL запрос
+ */
+	public function str2SqlLike($str) {
+		$result=$this->str2Sql($str);
+		$from=Array('%','_');
+		$to=Array('','');
+		return str_replace($from, $to, $result);
+	}
 /** Подготовить выражение PHP для корректной вставки в SQL запрос
  *
  * @param	anytype	$value выражение
@@ -909,6 +928,17 @@ class PDODataConnectorPgSql extends PDODataConnector {
 	public function str2Sql($str) {
 		return str2MySql($str);
 	}
+/** Подготовить строку для корректной вставки в SQL запрос в раздел like секции where
+ *
+ * @param	string	$str строка
+ * @return	string строка подготовленная для корректной вставки в SQL запрос
+ */
+	public function str2SqlLike($str) {
+		$result=$this->str2Sql($str);
+		$from=Array('%','_');
+		$to=Array('','');
+		return str_replace($from, $to, $result);
+	}
 /** Подготовить выражение PHP для корректной вставки в SQL запрос
  *
  * @param	anytype	$value выражение
@@ -965,6 +995,17 @@ class PDODataConnectorMSSql extends PDODataConnector {
  */
 	public function str2Sql($str) {
 		return str_replace("'", '"', $str);
+	}
+/** Подготовить строку для корректной вставки в SQL запрос в раздел like секции where
+ *
+ * @param	string	$str строка
+ * @return	string строка подготовленная для корректной вставки в SQL запрос
+ */
+	public function str2SqlLike($str) {
+		$result=$this->str2Sql($str);
+		$from=Array('%','_');
+		$to=Array('','');
+		return str_replace($from, $to, $result);
 	}
 /** Подготовить выражение PHP для корректной вставки в SQL запрос
  *
