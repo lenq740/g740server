@@ -6,7 +6,9 @@
 require_once('dsconnector.php');
 require_once('lib-g740server.php');
 
-/** Класс предок для источника данных DataSource
+/** Класс DataSource - предок для классов источников данных
+ *
+ * Для каждой таблицы SQL сервера создается свой класс потомок DataSource и порождается экземпляр объекта этого класса.
  */
 class DataSource extends DSConnector{
 /// таблица, обязательно должно быть задано в потомке, автоматически заполняется автогенератором классов
@@ -24,7 +26,7 @@ class DataSource extends DSConnector{
 /// Ограничение на максимальное кол-во возвращаемых строк
 	public $selectLimit=0;
 
-/** Проверка доступности выполнения операции по правам в контексте вызова
+/** Проверка доступности выполнения операции по правам в контексте выполнения запроса
  *
  * @param	string	$permOper опрерация (read, write)
  * @param	string	$requestName запрос
@@ -37,7 +39,7 @@ class DataSource extends DSConnector{
 		return getPerm($permMode, $permOper);
 	}
 	
-/** Выполнить запрос, записать ответ в виде XML согласно протоколу G740
+/** Выполнить запрос, записать ответ в XMLWriter согласно протоколу G740
  *
  * @param	Array	$params контекст выполнения запроса
  */
@@ -75,7 +77,7 @@ class DataSource extends DSConnector{
 		$objResponseWriter->endElement();
 		return true;
 	}
-/** Записать результаты выполнения запроса, полученные в виде массива, в ответ XML согласно протоколу G740
+/** Записать результаты выполнения запроса, полученные в виде массива, в ответ XMLWriter согласно протоколу G740
  *
  * @param	Array	$lst результат выпонения запроса
  */
@@ -164,6 +166,12 @@ class DataSource extends DSConnector{
 XML;
 		return $result;
 	}
+/** Вернуть описание допустимых запросов и полей источника данных согласно протоколу G740
+ *
+ * @param	Array	$params контекст выполнения
+ * @param	Array	$requests позволяет переопределить список запросов
+ * @return	strXml описание допустимых запросов и полей источника данных согласно протоколу G740
+ */
 	public function getStrXmlDefinitionSections($params=Array(), $requests=null) {
 		$result=<<<XML
 {$this->getStrXmlDefinitionRequests($params, $requests)}
@@ -171,15 +179,26 @@ XML;
 XML;
 		return $result;
 	}
+/** Вернуть описание допустимых запросов источника данных согласно протоколу G740
+ *
+ * @param	Array	$params контекст выполнения
+ * @param	Array	$requests позволяет переопределить список запросов
+ * @return	strXml описание допустимых запросов и полей источника данных согласно протоколу G740
+ */
 	public function getStrXmlDefinitionRequests($params=Array(), $requests=null) {
 		if (!$requests) $requests=$this->getRequests();
 		return $this->autoGenXmlDefinitionRequests($requests);
 	}
+/** Вернуть описание полей источника данных согласно протоколу G740
+ *
+ * @param	Array	$params контекст выполнения
+ * @return	strXml описание допустимых запросов и полей источника данных согласно протоколу G740
+ */
 	public function getStrXmlDefinitionFields($params=Array()) {
 		return $this->autoGenXmlDefinitionFields();
 	}
-	
-	// Старый вариант построения секции описания дерева
+/** Старый вариант облегчения построения секции описания дерева, оставлен для обратной совместимости
+ */
 	public function getStrXmlDefItem($params=Array(), $dataSource, $rowType, $treeName='name', $treeDescription='name', $strXmlAddRequests='', $strXmlAddFields='') {
 		$requests=$dataSource->getRequests();
 		$r=$requests['refresh'];
@@ -212,8 +231,19 @@ XML;
 XML;
 		return $result;
 	}
-
-	// Новый вариант построения секции описания дерева
+/** Актуальный вариант построения секции описания дерева
+ * @param	Array	$params параметры вызова
+ * @param	DataSource	$dataSource источник данных, используемый для формирования описания секции дерева
+ * @return	strXml описание секции дерева
+ *
+ * params['row.type']
+ * params['tree.name']
+ * params['tree.description']
+ * params['tree.default.icon']
+ * params['tree.default.final']
+ * params['xml.requests']
+ * params['xml.fields']
+ */
 	public function getStrXmlDefinitionTreeSection($params=Array(), $dataSource) {
 		$rowType=$params['row.type'];
 		$treeName=$params['tree.name'];
@@ -259,17 +289,28 @@ XML;
 	}
 
 	
-	// Описание полей источника данных
+/// Описание полей источника данных
 	protected $fields=null;
-	public function getFields() {
-		if (!$this->fields) $this->fields=$this->initFields();
-		return $this->fields;
-	}
+/** Первоначально проинициализировать описание полей источника данных, если описание полей надо переопределить, то делать это надо тут
+ * @return	Array описание полей источника данных
+ */
 	protected function initFields() {
 		$result=Array();
 		return $result;
 	}
+/** Вернуть описание полей источника данных
+ * @return	Array описание полей источника данных
+ */
+	public function getFields() {
+		if (!$this->fields) $this->fields=$this->initFields();
+		return $this->fields;
+	}
+/// Вспомогательный массив для облегчения поиска описания поля по его имени
 	protected $_fieldsByName=null;
+/** Вернуть описание поля источника данных по имени поля
+ * @param	string	$name имя поля
+ * @return	Array описание поля источника данных
+ */
 	public function getField($name) {
 		if (!$this->_fieldsByName) {
 			$this->_fieldsByName=Array();
@@ -278,16 +319,25 @@ XML;
 		return $this->_fieldsByName[$name];
 	}
 	
-	// Описание связей с другими источниками данных
+/// Описание связей с другими источниками данных
 	protected $references=null;
-	public function getReferences() {
-		if (!$this->references) $this->references=$this->initReferences();
-		return $this->references;
-	}
+/** Первоначально проинициализировать описание связей с другими источниками данных
+ * @return	Array описание связей с другими источниками данных
+ */
 	protected function initReferences() {
 		$result=Array();
 		return $result;
 	}
+/** Вернуть описание связей с другими источниками данных
+ * @return	Array описание связей с другими источниками данных
+ */
+	public function getReferences() {
+		if (!$this->references) $this->references=$this->initReferences();
+		return $this->references;
+	}
+/** Вернуть описание связи с другим источником данных по имени связи
+ * @return	Array описание связи с другим источником данных по имени связи
+ */
 	public function getRef($name) {
 		$result=null;
 		if (!$this->references) $this->getReferences();
@@ -296,7 +346,11 @@ XML;
 		return $result;
 	}
 	
+/// Описание выполняемых источником данных операций
 	protected $_requests=null;
+/** Вернуть описание выполняемых источником данных операций
+ * @return	Array описание выполняемых источником данных операций
+ */
 	public function getRequests() {
 		if ($this->_requests) return $this->_requests;
 		$this->_requests=Array();
@@ -346,11 +400,18 @@ XML;
 		}
 		return $this->_requests;
 	}
+/** Вернуть описание выполняемой операции по ее имени
+ * @return	Array описание выполняемой операции по ее имени
+ */
 	protected function getRequest($request) {
 		$r=$this->getRequests();
 		return $r[$request];
 	}
 	
+/** Выполнить операцию, ответ вернуть в виде массива
+ * @param	Array	$params контекст выполнения
+ * @return	Array результат выполнения операции
+ */
 	public function exec($params=Array()) {
 		$requestName=$params['#request.name'];
 		$requestMode=$params['#request.mode'];
@@ -368,6 +429,10 @@ XML;
 		if ($requestName=='change') return $this->execChange($params);
 		throw new Exception('Операция '.$requestName.' не поддерживается источником данных '.$this->tableName);
 	}
+/** Выполнить операцию refresh, ответ вернуть в виде массива
+ * @param	Array	$params контекст выполнения
+ * @return	Array результат выполнения операции
+ */
 	public function execRefresh($params=Array()) {
 		$errorMessage='Ошибка при обращении к DataSource::execRefresh';
 		if (!$this->getPerm('read','refresh',$params)) throw new Exception('У Вас нет прав на чтение таблицы '.$this->tableCaption);
@@ -410,6 +475,10 @@ XML;
 		}
 		return $result;
 	}
+/** Выполнить операцию save, ответ вернуть в виде массива
+ * @param	Array	$params контекст выполнения
+ * @return	Array результат выполнения операции
+ */
 	public function execSave($params=Array()) {
 		$errorMessage='Ошибка при обращении к DataSource::execSave';
 		if (!$this->getPerm('write','save',$params)) throw new Exception('У Вас нет прав на внесение изменений в строку таблицы '.$this->tableCaption);
@@ -422,6 +491,10 @@ XML;
 		}
 		return Array();
 	}
+/** Ветка update опрерации save
+ * @param	Array	$params контекст выполнения
+ * @return	Array результат выполнения операции
+ */
 	public function execUpdate($params=Array()) {
 		$errorMessage='Ошибка при обращении к DataSource::execUpdate';
 		if (!$this->getPerm('write','save',$params)) throw new Exception('У Вас нет прав на внесение изменений в строку таблицы '.$this->tableCaption);
@@ -481,6 +554,10 @@ XML;
 		$result=$this->onAfterSave($result, $params);
 		return $result;
 	}
+/** Ветка insert опрерации save
+ * @param	Array	$params контекст выполнения
+ * @return	Array результат выполнения операции
+ */
 	public function execInsert($params=Array()) {
 		$errorMessage='Ошибка при обращении к DataSource::execInsert';
 		if (!$this->getPerm('write','save',$params)) throw new Exception('У Вас нет прав на внесение изменений в строку таблицы '.$this->tableCaption);
@@ -550,6 +627,10 @@ XML;
 		$result=$this->onAfterSave($result, $params);
 		return $result;
 	}
+/** Выполнить операцию copy, ответ вернуть в виде массива
+ * @param	Array	$params контекст выполнения
+ * @return	Array результат выполнения операции
+ */
 	public function execCopy($params=Array()) {
 		$errorMessage='Ошибка при обращении к DataSource::execCopy';
 		if (!$this->getPerm('write','copy',$params)) throw new Exception('У Вас нет прав на правку таблицы '.$this->tableCaption);
@@ -582,15 +663,22 @@ XML;
 		$result[]=$recResult;
 		return $result;
 	}
+/** Выполнить операцию change, ответ вернуть в виде массива
+ * @param	Array	$params контекст выполнения
+ * @return	Array результат выполнения операции
+ */
 	public function execChange($params=Array()) {
 		$result=Array();
 		return $result;
 	}
 	
-	// Обработка событий, в качестве параметра - результат операции
+/** Проверка результата операции save на корректность заполнения данных
+ * @param	Array	$result результат выполнения операции save
+ * @return	Array результат выполнения операции save
+ */
 	protected function onValid($result=Array()) {
 		$fields=$this->getFields();
-		foreach($result as $rec) {
+		foreach($result as &$rec) {
 			foreach($fields as $fld) {
 				$alias=$this->tableName;
 				if ($fld['table']) $alias=$fld['table'];
@@ -607,10 +695,19 @@ XML;
 		}
 		return $result;
 	}
+/** Постобработка результатов операции save
+ * @param	Array	$result результат выполнения операции save
+ * @param	Array	$params контекст выполнения
+ * @return	Array результат выполнения операции save
+ */
 	protected function onAfterSave($result=Array(), $params=Array()) {
 		return $result;
 	}
 	
+/** Выполнить операцию delete, ответ вернуть в виде массива
+ * @param	Array	$params контекст выполнения
+ * @return	Array результат выполнения операции
+ */
 	public function execDelete($params=Array()) {
 		$errorMessage='Ошибка при обращении к DataSource::execDelete';
 		if (!$params['#recursLevel']) {
@@ -661,6 +758,9 @@ SQL;
 		$this->pdo($sqlDelete);
 		return $result;
 	}
+/** Ветка restrict обработки ссылочной целостности при удалении, для SQL сервера MySql
+ * @param	Array	$params контекст выполнения
+ */
 	protected function _execDeleteRestrictMySql($params=Array()) {
 		$errorMessage='Ошибка при обращении к DataSource::_execDeleteRestrictMySql';
 		$idlist=$this->php2SqlIn($params['id']);
@@ -684,6 +784,9 @@ SQL;
 			if ($rec['n']>0) throw new Exception("Удаление невозможно, значение используется в связанной таблице {$dataSourceRef->tableCaption} ({$dataSourceRef->tableName})");
 		}
 	}
+/** Ветка restrict обработки ссылочной целостности при удалении, для SQL сервера SqlSrv
+ * @param	Array	$params контекст выполнения
+ */
 	protected function _execDeleteRestrictSqlSrv($params=Array()) {
 		$errorMessage='Ошибка при обращении к DataSource::_execDeleteRestrictSqlSrv';
 		$idlist=$this->php2SqlIn($params['id']);
@@ -707,6 +810,9 @@ SQL;
 			if ($rec['n']>0) throw new Exception("Удаление невозможно, значение используется в связанной таблице {$dataSourceRef->tableCaption} ({$dataSourceRef->tableName})");
 		}
 	}
+/** Ветка cascade обработки ссылочной целостности при удалении, для SQL сервера MySql
+ * @param	Array	$params контекст выполнения
+ */
 	protected function _execDeleteCascadeMySql($params=Array()) {
 		$errorMessage='Ошибка при обращении к DataSource::_execDeleteCascadeMySql';
 		$idlist=$this->php2SqlIn($params['id']);
@@ -737,6 +843,9 @@ SQL;
 			$dataSourceRef->execDelete($p);
 		}
 	}
+/** Ветка cascade обработки ссылочной целостности при удалении, для SQL сервера SqlSrv
+ * @param	Array	$params контекст выполнения
+ */
 	protected function _execDeleteCascadeSqlSrv($params=Array()) {
 		$errorMessage='Ошибка при обращении к DataSource::_execDeleteCascadeSqlSrv';
 		$idlist=$this->php2SqlIn($params['id']);
@@ -767,6 +876,9 @@ SQL;
 			$dataSourceRef->execDelete($p);
 		}
 	}
+/** Ветка clear обработки ссылочной целостности при удалении, для SQL сервера MySql
+ * @param	Array	$params контекст выполнения
+ */
 	protected function _execDeleteClearMySql($params=Array()) {
 		$errorMessage='Ошибка при обращении к DataSource::_execDeleteClearMySql';
 		$idlist=$this->php2SqlIn($params['id']);
@@ -790,6 +902,9 @@ SQL;
 			$this->pdo($sql);
 		}
 	}
+/** Ветка clear обработки ссылочной целостности при удалении, для SQL сервера SqlSrv
+ * @param	Array	$params контекст выполнения
+ */
 	protected function _execDeleteClearSqlSrv($params=Array()) {
 		$errorMessage='Ошибка при обращении к DataSource::_execDeleteClearSqlSrv';
 		$idlist=$this->php2SqlIn($params['id']);
@@ -814,6 +929,10 @@ SQL;
 		}
 	}
 
+/** Выполнить операцию shift, ответ вернуть в виде массива
+ * @param	Array	$params контекст выполнения
+ * @return	Array результат выполнения операции
+ */
 	public function execShift($params=Array()) {
 		$errorMessage='Ошибка при обращении к DataSource::execShift';
 		if (!$this->getPerm('write','shift',$params)) throw new Exception('У Вас нет прав на перемещение строки в таблице '.$this->tableCaption);
@@ -940,6 +1059,10 @@ SQL;
 		$result[]=$recResult;
 		return $result;
 	}
+/** Выполнить операцию append, ответ вернуть в виде массива
+ * @param	Array	$params контекст выполнения
+ * @return	Array результат выполнения операции
+ */
 	public function execAppend($params=Array()) {
 		$errorMessage='Ошибка при обращении к DataSource::execAppend';
 		foreach($this->getFields() as $key=>$fld) {
@@ -994,6 +1117,10 @@ SQL;
 		$result[]=$recResult;
 		return $result;
 	}
+/** Получить поле ord, помещающее строку первой, в контексте выполнения операции
+ * @param	Array	$params контекст выполнения
+ * @return	num значение поля ord
+ */
 	public function getOrdAppendFirst($params=Array()) {
 		if (!$this->getField('ord')) return 0;
 		$select=$this->_getReorderSelect($params);
@@ -1005,6 +1132,10 @@ SQL;
 		}
 		return $ord-100;
 	}
+/** Получить поле ord, помещающее строку последней, в контексте выполнения операции
+ * @param	Array	$params контекст выполнения
+ * @return	num значение поля ord
+ */
 	public function getOrdAppendLast($params=Array()) {
 		if (!$this->getField('ord')) return 0;
 		$select=$this->_getReorderSelect($params);
@@ -1020,6 +1151,11 @@ SQL;
 		}
 		return $ord+100;
 	}
+/** Получить поле ord, помещающее строку после указанной, в контексте выполнения операции
+ * @param	Array	$params контекст выполнения
+ * @param 	boolean $isNoReorder запрет пересортировки строк при необходимости
+ * @return	num значение поля ord
+ */
 	protected function getOrdAppendAfter($params=Array(), $isNoReorder=false) {
 		if (!$this->getField('ord')) return 0;
 		$id=$params['id'];
@@ -1053,6 +1189,11 @@ SQL;
 		}
 		return $ord;
 	}
+/** Получить поле ord, помещающее строку перед указанной, в контексте выполнения операции
+ * @param	Array	$params контекст выполнения
+ * @param 	boolean $isNoReorder запрет пересортировки строк при необходимости
+ * @return	num значение поля ord
+ */
 	protected function getOrdAppendBefore($params=Array(), $isNoReorder=false) {
 		if (!$this->getField('ord')) return 0;
 		$id=$params['id'];
@@ -1084,6 +1225,10 @@ SQL;
 		return $ord;
 	}
 	
+/** Выполнить пересортировку строк в контексте
+ * @param	Array	$params контекст выполнения
+ * @param 	boolean $isReorderAll пересортировка всех строк контекста
+ */
 	protected function _goReorder($params=Array(), $isReorderAll=false) {
 		$errorMessage='Ошибка при обращении к DataSource::_goReorder';
 		if (!$this->getField('ord')) return true;
@@ -1114,11 +1259,19 @@ SQL;
 		}
 		return true;
 	}
+/** Вернуть SQL запрос select для вычисления текущих значений поля ord контекста выполнения
+ * @param	Array	$params контекст выполнения
+ * @return 	string текст SQL запроса select
+ */
 	protected function _getReorderSelect($params=Array()) {
 		$p=$params;
 		$p['#request.name']='reorder';
 		return $this->getSelect($p);
 	}
+/** Отписать в SQL сервер новое значение поля ord строки
+ * @param	string $id
+ * @param	num $ord
+ */
 	protected function _goReorderUpdate($id, $ord) {
 		$driverName=$this->getDriverName();
 		$sqlId=($this->isGUID)?$this->guid2Sql($id):$this->str2Sql($id);
@@ -1134,8 +1287,10 @@ SQL;
 		$this->pdo($sql);
 		return true;
 	}
-
-	// Вычисление количества строк в результате запроса
+/** Вычислить кол-во строк в результате запроса для заданного контекста
+ * @param	Array	$params контекст выполнения
+ * @return 	num кол-во строк в результате запроса для заданного контекста
+ */
 	public function getRowCount($params=Array()) {
 		$select=$this->getSelectRowCount($params);
 		$errorMessage='Ошибка выполнения SQL запроса при подсчете кол-ва строк в таблице '.$this->tableCaption;
@@ -1150,6 +1305,10 @@ SQL;
 		if (!$result) $result=0;
 		return $result;
 	}
+/** Вернуть SQL запрос select для вычисления кол-ва строк для заданного контекста
+ * @param	Array	$params контекст выполнения
+ * @return 	string текст SQL запроса select
+ */
 	protected function getSelectRowCount($params=Array()) {
 		$selectFrom=$this->getSelectFrom($params);
 		$selectWhere=$this->getSelectWhere($params);
@@ -1168,7 +1327,11 @@ SQL;
 		return $result;
 	}
 
-	// Вычисление порядкового номера (0 - не найдено) строки с заданным id в результате запроса
+/** Вычисление порядкового номера (0 - не найдено) строки с заданным id в результате запроса
+ * @param	Array	$params контекст выполнения
+ * @param	string	$id id разыскиваемой строки
+ * @return 	num порядковый номер (0 - не найдено) строки с заданным id в результате запроса
+ */
 	public function getRowNumber($params=Array(), $id) {
 		$select=$this->getSelectRowNumber($params, $id);
 		$errorMessage='Ошибка выполнения SQL запроса при вычислении порядкового номера строки в таблице '.$this->tableCaption;
@@ -1183,6 +1346,11 @@ SQL;
 		if (!$result) $result=0;
 		return $result;
 	}
+/** Вернуть SQL запрос select для вычисления порядкового номера строки
+ * @param	Array	$params контекст выполнения
+ * @param	string	$id id разыскиваемой строки
+ * @return 	string текст SQL запроса select
+ */
 	protected function getSelectRowNumber($params=Array(), $id) {
 		$driverName=$this->getDriverName();
 		$result='';
@@ -1197,6 +1365,11 @@ SQL;
 		}
 		return $result;
 	}
+/** Вернуть SQL запрос select для вычисления порядкового номера строки, для SQL сервера MySql
+ * @param	Array	$params контекст выполнения
+ * @param	string	$id id разыскиваемой строки
+ * @return 	string текст SQL запроса select
+ */
 	protected function _getSelectRowNumberMySql($params=Array(), $id) {
 		$selectFrom=$this->getSelectFrom($params);
 		$selectWhere=$this->getSelectWhere($params);
@@ -1231,6 +1404,11 @@ from
 SQL;
 		return $result;
 	}
+/** Вернуть SQL запрос select для вычисления порядкового номера строки, для SQL сервера SqlSrv
+ * @param	Array	$params контекст выполнения
+ * @param	string	$id id разыскиваемой строки
+ * @return 	string текст SQL запроса select
+ */
 	protected function _getSelectRowNumberSqlSrv($params=Array(), $id) {
 		$selectFrom=$this->getSelectFrom($params);
 		$selectWhere=$this->getSelectWhere($params);
@@ -1256,7 +1434,10 @@ SQL;
 		return $result;
 	}
 	
-	// Формирование запроса select
+/** Вернуть SQL запрос select для контекста выполнения
+ * @param	Array	$params контекст выполнения
+ * @return 	string текст SQL запроса select
+ */
 	public function getSelect($params=Array()) {
 		$driverName=$this->getDriverName();
 		$result='';
@@ -1271,6 +1452,10 @@ SQL;
 		}
 		return $result;
 	}
+/** Вернуть SQL запрос select для контекста выполнения, для SQL сервера MySql
+ * @param	Array	$params контекст выполнения
+ * @return 	string текст SQL запроса select
+ */
 	protected function _getSelectMySql($params=Array()) {
 		$selectFields=$this->getSelectFields($params);
 		$selectFrom=$this->getSelectFrom($params);
@@ -1310,6 +1495,10 @@ SQL;
 		}
 		return $result;
 	}
+/** Вернуть SQL запрос select для контекста выполнения, для SQL сервера SqlSrv
+ * @param	Array	$params контекст выполнения
+ * @return 	string текст SQL запроса select
+ */
 	protected function _getSelectSqlSrv($params=Array()) {
 		$selectFields=$this->getSelectFields($params);
 		$selectFrom=$this->getSelectFrom($params);
@@ -1367,18 +1556,34 @@ SQL;
 		}
 		return $result;
 	}
+/** Вернуть секцию fields SQL запроса select для контекста выполнения
+ * @param	Array	$params контекст выполнения
+ * @return 	string текст секции fields SQL запроса select
+ */
 	public function getSelectFields($params=Array()) {
 		return $this->autoGenGetSelectFields();
 	}
+/** Вернуть секцию from SQL запроса select для контекста выполнения
+ * @param	Array	$params контекст выполнения
+ * @return 	string текст секции from SQL запроса select
+ */
 	public function getSelectFrom($params=Array()) {
 		return $this->autoGenGetSelectFrom();
 	}
+/** Вернуть секцию where SQL запроса select для контекста выполнения
+ * @param	Array	$params контекст выполнения
+ * @return 	string текст секции where SQL запроса select
+ */
 	public function getSelectWhere($params=Array()) {
 		$result='';
 		$code=$this->autoGenGetSelectWhere();
 		eval($code);
 		return $result;
 	}
+/** Вернуть секцию order by SQL запроса select для контекста выполнения
+ * @param	Array	$params контекст выполнения
+ * @return 	string текст секции order by SQL запроса select
+ */
 	public function getSelectOrderBy($params=Array()) {
 		$result='';
 		$driverName=$this->getDriverName();
@@ -1392,7 +1597,7 @@ SQL;
 		return $result;
 	}
 	
-	// автогенерация
+/// Метод для автогенерации массива с описанием списка полей источника данных
 	public function autoGenGetSelectFields($fields=null, $tableName=null, $selectOtherFields=null, $driverName=null) {
 		$errorMessage='Ошибка при обращении к DataSource::autoGenGetSelectFields';
 		if (!$fields) $fields=$this->getFields();
@@ -1435,6 +1640,7 @@ SQL;
 		}
 		return $result;
 	}
+/// Метод для автогенерации секции from запроса select
 	public function autoGenGetSelectFrom($fields=null, $tableName=null, $driverName=null) {
 		$errorMessage='Ошибка при обращении к DataSource::autoGenGetSelectFrom';
 		if (!$fields) $fields=$this->getFields();
@@ -1471,6 +1677,7 @@ SQL;
 		}
 		return $result;
 	}
+/// Метод для автогенерации секции where запроса select
 	public function autoGenGetSelectWhere($fields=null, $tableName=null, $driverName=null) {
 		$errorMessage='Ошибка при обращении к DataSource::autoGenGetSelectFrom';
 		if (!$fields) $fields=$this->getFields();
@@ -1529,6 +1736,7 @@ PHP;
 		}
 		return $result;
 	}
+/// Метод для автогенерации раздела XML описания списка полей источника данных
 	public function autoGenXmlDefinitionFields($fields=null, $tableName=null) {
 		$errorMessage='Ошибка при обращении к DataSource::autoGenXmlDefinition';
 		if (!$fields) $fields=$this->getFields();
@@ -1624,6 +1832,7 @@ PHP;
 		$result=str_replace("\n<param ","\n\t\t<param ",$result);
 		return $result;
 	}
+/// Метод для автогенерации раздела XML описания списка запросов источника данных
 	public function autoGenXmlDefinitionRequests($requests=null, $tableName=null) {
 		$errorMessage='Ошибка при обращении к DataSource::autoGenXmlDefinitionRequests';
 		if (!$requests) $requests=$this->getRequests();
@@ -1652,6 +1861,7 @@ PHP;
 		return $result;
 	}
 	
+/// Вспомогательный метод для автогенерации
 	protected function _getAliases($fields=null, $tableName=null) {
 		$errorMessage='Ошибка при обращении к DataSource::_getAliases';
 		if (!$fields) $fields=$this->getFields();
