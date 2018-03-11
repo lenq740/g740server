@@ -348,56 +348,48 @@ XML;
 	
 /// Описание выполняемых источником данных операций
 	protected $_requests=null;
+/** Первоначально проинициализировать описание выполняемых источником данных операций
+ * @return	Array описание выполняемых источником данных операций
+ */
+	protected function initRequests() {
+		$result=Array();
+		$result['refresh']=Array(
+			'name'=>'refresh',
+			'permoper'=>'read'
+		);
+		$result['refreshrow']=Array(
+			'name'=>'refreshrow',
+			'permoper'=>'read'
+		);
+		$result['append']=Array(
+			'name'=>'append',
+			'permoper'=>'write'
+		);
+		$result['copy']=Array(
+			'name'=>'copy',
+			'permoper'=>'write'
+		);
+		$result['save']=Array(
+			'name'=>'save',
+			'permoper'=>'write'
+		);
+		$result['delete']=Array(
+			'name'=>'delete',
+			'permoper'=>'write'
+		);
+		if ($this->getField('ord')) {
+			$result['shift']=Array(
+				'name'=>'shift',
+				'permoper'=>'write'
+			);
+		}
+		return $result;
+	}
 /** Вернуть описание выполняемых источником данных операций
  * @return	Array описание выполняемых источником данных операций
  */
 	public function getRequests() {
-		if ($this->_requests) return $this->_requests;
-		$this->_requests=Array();
-		{	// refresh
-			$r=Array();
-			$r['name']='refresh';
-			$r['permoper']='read';
-			$this->_requests['refresh']=$r;
-		}
-		{	// refreshrow
-			$r=Array();
-			$r['name']='refreshrow';
-			$r['permoper']='read';
-			$this->_requests['refreshrow']=$r;
-		}
-		{	// append
-			$r=Array();
-			$r['name']='append';
-			$r['permoper']='write';
-			$this->_requests['append']=$r;
-		}
-		{	// copy
-			$r=Array();
-			$r['name']='copy';
-			$r['permoper']='write';
-			$this->_requests['copy']=$r;
-		}
-		{	// save
-			$r=Array();
-			$r['name']='save';
-			$r['permoper']='write';
-			$this->_requests['save']=$r;
-		}
-		{	// delete
-			$r=Array();
-			$r['name']='delete';
-			$r['permoper']='write';
-			$this->_requests['delete']=$r;
-		}
-		{	// shift
-			if ($this->getField('ord')) {
-				$r=Array();
-				$r['name']='shift';
-				$r['permoper']='write';
-				$this->_requests['shift']=$r;
-			}
-		}
+		if (!$this->_requests) $this->_requests=$this->initRequests();
 		return $this->_requests;
 	}
 /** Вернуть описание выполняемой операции по ее имени
