@@ -1886,16 +1886,27 @@ PHP;
 	}
 }
 
-/**
-Класс кэширующего хранилища данных
-*/
+/** Класс кэширующего хранилища данных DataStorage
+ *
+ * Обеспечивает доступ к данным только на чтение. Работает с базой данных через DataSource. 
+ * Кэширует начитанные данные, представляя их в виде дерева. Поддерживает автоматическую подчитку связанных данных.
+ * Механизм удобен для формирования HTML страниц на стороне сервера.
+ */
 class DataStorage {
+/** Создать экземпляр объекта DataStorage - по одному объекту на таблицу
+ *
+ * @param	string	$tableName таблица
+ */
 	function __construct($tableName) {
 		$this->dataSource=getDataSource($tableName);
 		$this->tableName=$this->dataSource->tableName;
 		$this->items=Array();
 	}
-	// Получить строку по id, если такой строки нет в базе, то возвращается пустая строка с id=false
+/** Получить элемент DataItem по id, если нет в базе, то возвращается специальный пустой элемент с id=false
+ *
+ * @param	string	$id
+ * @return	DataItem строка таблицы
+ */
 	public function getItem($id) {
 		$result=$this->items[$id];
 		if (!$result) {
@@ -1910,7 +1921,11 @@ class DataStorage {
 		}
 		return $result;
 	}
-	// Получить список строк по условию
+/** Получить список элементов DataItem по условию
+ *
+ * @param	Array $params параметры для передачи в DataSource.execRefresh()
+ * @return	Array список элементов DataItem
+ */
 	public function getItems($params=Array()) {
 		$lst=$this->dataSource->execRefresh($params);
 		$result=Array();
@@ -1923,31 +1938,59 @@ class DataStorage {
 		}
 		return $result;
 	}
-	// Вычислить количество строк в результате запроса
+/** Вычислить общее количество строк в результате запроса (без учета paginator.count)
+ *
+ * @param	Array $params параметры для передачи в DataSource.execRefresh()
+ * @return	num общее количество строк в результате запроса (без учета paginator.count)
+ */
 	public function getRowCount($params=Array()) {
 		return $this->dataSource->getRowCount($params);
 	}
-	// Вычислить порядковый номер (0 - не найдено) строки в результате запроса
+/** Вычислить порядковый номер (0 - не найдено) строки в результате запроса (без учета paginator.count)
+ *
+ * @param	Array $params параметры для передачи в DataSource.execRefresh()
+ * @param	string $id
+ * @return	num порядковый номер (0 - не найдено) строки в результате запроса (без учета paginator.count)
+ */
 	public function getRowNumber($params=Array(), $id) {
 		return $this->dataSource->getRowNumber($params, $id);
 	}
-	// Проверить, есть ли строка с таким id в начитанном кэше
+/** Проверить наличие строки в начитанном кэше
+ *
+ * @param	string $id
+ * @return	boolean наличие строки в начитанном кэше
+ */
 	public function getIsItem($id) {
 		return $this->items[$id]?true:false;
 	}
-	// Вернуть источник данных DataSource
+/** Вернуть источник данных DataSource, через который происходит взаимодействие с базой данных
+ *
+ * @return	DataSource источник данных DataSource, через который происходит взаимодействие с базой данных
+ */
 	public function getDataSource() {
 		return $this->dataSource;
 	}
-	// Вернуть описание поля по имени поля
+/** Вернуть описание поля
+ *
+ * @param	string $name имя поля
+ * @return	Array описание поля
+ */
 	public function getField($name) {
 		return $this->getDataSource()->getField($name);
 	}
-	// Вернуть описание связи по имени связи (<таблица>.<поле>, где поле не id)
+/** Вернуть описание связи
+ *
+ * @param	string $name имя связи (<таблица>.<поле>, где поле не id)
+ * @return	Array описание связи
+ */
 	public function getRef($name) {
 		return $this->getDataSource()->getRef($name);
 	}
-	// Загрузить недостающие строки связанной таблицы
+/** Загрузить недостающие строки связанной таблицы
+ *
+ * @param	string $refName имя связи (см _getRefNameForItem и _getRefNameForItems)
+ * @param	DataItem $fromItem элемент DataItem, для которого подгружаются значения связи, если не задан, подгружаются для всех начитанных в кэше элементов
+ */
 	public function _loadRefItems($refName, $fromItem=null) {
 		$ref=$this->getRef($refName);
 		if (!$ref) throw new Exception("Попытка обращения к несуществующей ссылке '{$refName}' в таблице '{$this->tableName}'");
@@ -1993,8 +2036,11 @@ class DataStorage {
 			}
 		}
 	}
-	// Преобразует краткое название связи в полное
-	//		допустимое краткое название - имя поля текущей таблицы, по которому связь
+/** Преобразует краткое название связи многие к одному в полное название связи
+ *
+ * @param	string $name допустимое краткое название связи многие к одному - имя поля текущей таблицы, по которому связь
+ * @param	string полное название связи (<таблица>.<поле>)
+ */
 	public function _getRefNameForItem($name) {
 		if ($this->getRef($name)) return $name;
 		if (strpos($name,'.')===false) {
@@ -2003,8 +2049,11 @@ class DataStorage {
 		}
 		return $name;
 	}
-	// Преобразует краткое название связи в полное
-	//		допустимое краткое название - имя связанной таблицы, если с этой таблицей есть только одна связь
+/** Преобразует краткое название связи один ко многим в полное название связи
+ *
+ * @param	string $name допустимое краткое название связи один ко многим - имя связанной таблицы, если с этой таблицей есть только одна связь
+ * @param	string полное название связи (<таблица>.<поле>)
+ */
 	public function _getRefNameForItems($name) {
 		global $_refNameForItems;
 		if ($this->getRef($name)) return $name;
@@ -2027,16 +2076,25 @@ class DataStorage {
 		}
 		return $name;
 	}
+/// Кэш для ускорения преобразования кратких названий связи в полные названия
 	protected $_refNameForItems=Array();
 	
+/// Таблица
 	protected $tableName='';
+/// Источник данных DataSource
 	protected $dataSource=null;
+/// Кэш начитанных элементов DataItem
 	protected $items=null;
 }
-/**
-Класс строки кэширующего хранилища данных
-*/
+
+/** Класс элемента строки кэширующего хранилища данных DataStorage
+ */
 class DataItem {
+/** Создать экземпляр объекта DataItem
+ *
+ * @param	string	$tableName таблица
+ * @param	string	$id
+ */
 	function __construct($tableName, $id) {
 		$this->tableName=$tableName;
 		$this->getDataStorage();
@@ -2044,31 +2102,61 @@ class DataItem {
 		$this->values=Array();
 		$this->refs=Array();
 	}
-	// Вернуть id строки
+/** Вернуть id элемента
+ *
+ * @return	string id элемента
+ */
 	public function getId() {
 		return $this->id;
 	}
-	// Вернуть значение поля
+/** Вернуть значение поля
+ *
+ * @param	string	$fieldName имя поля
+ * @return	anytype значение поля
+ */
 	public function get($fieldName) {
 		if ($fieldName=='id') return $this->getId();
 		if (!$this->getDataStorage()->getField($fieldName)) throw new Exception("Попытка обращения к несуществующему полю '{$this->tableName}.{$fieldName}'");
 		return $this->values[$fieldName];
 	}
+/** Вернуть преобразованное к HTML значение поля
+ *
+ * @param	string	$fieldName имя поля
+ * @return	string преобразованное к HTML значение поля
+ */
 	public function getHtml($fieldName) {
 		return str2Html($this->get($fieldName));
 	}
+/** Вернуть преобразованное к HTML значение поля типа date
+ *
+ * @param	string	$fieldName имя поля
+ * @return	string преобразованное к HTML значение поля типа date
+ */
 	public function getDateHtml($fieldName) {
 		return date2Html($this->get($fieldName));
 	}
+/** Вернуть преобразованное к XML атрибуту значение поля
+ *
+ * @param	string	$fieldName имя поля
+ * @return	string преобразованное к XML атрибуту значение поля
+ */
 	public function getAttr($fieldName) {
 		return str2Attr($this->get($fieldName));
 	}
+/** Вернуть преобразованное к вставке в строку JavaScript значение поля
+ *
+ * @param	string	$fieldName имя поля
+ * @return	string преобразованное к вставке в строку JavaScript значение поля
+ */
 	public function getJavaScript($fieldName) {
 		return str2JavaScript($this->get($fieldName));
 	}
-	
-	// Вернуть связанный item по имени одиночной связи (to.field='id')
-	//		если $isLoadAll=true пытается подгрузить одним запросом все недостающие строки связанной таблицы
+/** Вернуть связанный DataItem для связи многие к одному (to.field='id')
+ *
+ * @param	string	$refName имя связи (можно краткое)
+ * @param	boolean	$isLoadAll если true то пытается подгрузить одним запросом все связанные элементы для начитанного кэша
+ * @return	DataItem связанный DataItem для связи многие к одному
+ */
 	public function getRefItem($refName, $isLoadAll=false) {
 		$refName=$this->getDataStorage()->_getRefNameForItem($refName);
 		$ref=$this->getDataStorage()->getRef($refName);
@@ -2088,8 +2176,12 @@ class DataItem {
 		}
 		return $refDataStorage->getItem($value);
 	}
-	// Вернуть список связанных item по имени множественной связи (from.field='id')
-	//		если $isLoadAll=true пытается подгрузить одним запросом все недостающие строки связанной таблицы
+/** Вернуть список связанных DataItem для связи один ко многим (from.field='id')
+ *
+ * @param	string	$refName имя связи (можно краткое)
+ * @param	boolean	$isLoadAll если true то пытается подгрузить одним запросом все связанные элементы для начитанного кэша
+ * @return	Array список связанных DataItem
+ */
 	public function getRefItems($refName, $isLoadAll=false) {
 		$refName=$this->getDataStorage()->_getRefNameForItems($refName);
 		$ref=$this->getDataStorage()->getRef($refName);
@@ -2116,6 +2208,10 @@ class DataItem {
 		}
 		return $result;
 	}
+/** Очистить кэш связанных элементов, дабы при следующем чтении данные заново начитались
+ *
+ * @param	string	$refName имя связи (можно краткое), если не задано, то очистить кэш всех связей для элемента
+ */
 	public function clearRefItems($refName='') {
 		if ($refName) {
 			unset($this->refs[$refName]);
@@ -2124,21 +2220,29 @@ class DataItem {
 			$this->refs=Array();
 		}
 	}
-
+/** Вернуть DataStorage элемента
+ *
+ * @return	DataStorage
+ */
 	public function getDataStorage() {
 		return getDataStorage($this->tableName);
 	}
+/// Таблица
 	protected $tableName='';
+/// Id
 	protected $id=null;
+/// Значения полей
 	public $values=null;
+/// Кэш связей
 	public $refs=null;
 }
 
-/**
-Получить объект источника данных DataSource по имени
-@param	String	$name источник данных
-@return	DataSource объект источника данных
-*/
+/** Получить объект источника данных DataSource по имени
+ *
+ * Объекты подгружаются динамически по требованию. Имя согласовано с именем файла, в котором объект объявлен и создан.
+ * @param	string	$name источник данных
+ * @return	DataSource объект источника данных
+ */
 function getDataSource($name) {
 	global $registerDataSource;
 	
@@ -2168,15 +2272,17 @@ function getDataSource($name) {
 	if (!$registerDataSource[$name]) throw new Exception("Недопустимое имя источника данных '{$name}'");
 	return $registerDataSource[$name];
 }
+/// Кэш загруженных объектов DataSource
 $registerDataSource=Array();
-/**
-Получить объект кэширующего хранилища данных DataStorage по имени
-@param	String	$name источник данных
-@return	DataSource объект источника данных
-*/
+/** Получить объект хранилища данных DataStorage по имени
+ *
+ * @param	string	$tableName таблица
+ * @return	DataStorage
+ */
 function getDataStorage($tableName) {
 	global $_registerDataStorage;
 	if (!$_registerDataStorage[$tableName]) $_registerDataStorage[$tableName]=new DataStorage($tableName);
 	return $_registerDataStorage[$tableName];
 }
+/// Кэш загруженных объектов DataStorage
 $_registerDataStorage=Array();

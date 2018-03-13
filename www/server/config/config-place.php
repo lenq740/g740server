@@ -10,6 +10,6 @@
 //------------------------------------------------------------------------------
 $config['sqlHost']='localhost';
 $config['sqlLogin']='root';
-$config['sqlPassword']='918918';
+$config['sqlPassword']='1';
 $config['sqlDbName']='g740starter';
 $config['sqlCharSet']='utf8';
