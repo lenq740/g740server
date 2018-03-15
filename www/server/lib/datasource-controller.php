@@ -232,6 +232,7 @@ XML;
 		return $result;
 	}
 /** Актуальный вариант построения секции описания дерева
+ *
  * @param	Array	$params параметры вызова
  * @param	DataSource	$dataSource источник данных, используемый для формирования описания секции дерева
  * @return	strXml описание секции дерева
@@ -292,6 +293,7 @@ XML;
 /// Описание полей источника данных
 	protected $fields=null;
 /** Первоначально проинициализировать описание полей источника данных, если описание полей надо переопределить, то делать это надо тут
+ *
  * @return	Array описание полей источника данных
  */
 	protected function initFields() {
@@ -299,6 +301,7 @@ XML;
 		return $result;
 	}
 /** Вернуть описание полей источника данных
+ *
  * @return	Array описание полей источника данных
  */
 	public function getFields() {
@@ -308,6 +311,7 @@ XML;
 /// Вспомогательный массив для облегчения поиска описания поля по его имени
 	protected $_fieldsByName=null;
 /** Вернуть описание поля источника данных по имени поля
+ *
  * @param	string	$name имя поля
  * @return	Array описание поля источника данных
  */
@@ -322,6 +326,7 @@ XML;
 /// Описание связей с другими источниками данных
 	protected $references=null;
 /** Первоначально проинициализировать описание связей с другими источниками данных
+ *
  * @return	Array описание связей с другими источниками данных
  */
 	protected function initReferences() {
@@ -329,6 +334,7 @@ XML;
 		return $result;
 	}
 /** Вернуть описание связей с другими источниками данных
+ *
  * @return	Array описание связей с другими источниками данных
  */
 	public function getReferences() {
@@ -336,6 +342,7 @@ XML;
 		return $this->references;
 	}
 /** Вернуть описание связи с другим источником данных по имени связи
+ *
  * @return	Array описание связи с другим источником данных по имени связи
  */
 	public function getRef($name) {
@@ -349,6 +356,7 @@ XML;
 /// Описание выполняемых источником данных операций
 	protected $_requests=null;
 /** Первоначально проинициализировать описание выполняемых источником данных операций
+ *
  * @return	Array описание выполняемых источником данных операций
  */
 	protected function initRequests() {
@@ -386,6 +394,7 @@ XML;
 		return $result;
 	}
 /** Вернуть описание выполняемых источником данных операций
+ *
  * @return	Array описание выполняемых источником данных операций
  */
 	public function getRequests() {
@@ -393,6 +402,7 @@ XML;
 		return $this->_requests;
 	}
 /** Вернуть описание выполняемой операции по ее имени
+ *
  * @return	Array описание выполняемой операции по ее имени
  */
 	protected function getRequest($request) {
@@ -401,6 +411,7 @@ XML;
 	}
 	
 /** Выполнить операцию, ответ вернуть в виде массива
+ *
  * @param	Array	$params контекст выполнения
  * @return	Array результат выполнения операции
  */
@@ -422,6 +433,7 @@ XML;
 		throw new Exception('Операция '.$requestName.' не поддерживается источником данных '.$this->tableName);
 	}
 /** Выполнить операцию refresh, ответ вернуть в виде массива
+ *
  * @param	Array	$params контекст выполнения
  * @return	Array результат выполнения операции
  */
@@ -468,6 +480,7 @@ XML;
 		return $result;
 	}
 /** Выполнить операцию save, ответ вернуть в виде массива
+ *
  * @param	Array	$params контекст выполнения
  * @return	Array результат выполнения операции
  */
@@ -484,6 +497,7 @@ XML;
 		return Array();
 	}
 /** Ветка update опрерации save
+ *
  * @param	Array	$params контекст выполнения
  * @return	Array результат выполнения операции
  */
@@ -547,6 +561,7 @@ XML;
 		return $result;
 	}
 /** Ветка insert опрерации save
+ *
  * @param	Array	$params контекст выполнения
  * @return	Array результат выполнения операции
  */
@@ -620,6 +635,7 @@ XML;
 		return $result;
 	}
 /** Выполнить операцию copy, ответ вернуть в виде массива
+ *
  * @param	Array	$params контекст выполнения
  * @return	Array результат выполнения операции
  */
@@ -656,6 +672,7 @@ XML;
 		return $result;
 	}
 /** Выполнить операцию change, ответ вернуть в виде массива
+ *
  * @param	Array	$params контекст выполнения
  * @return	Array результат выполнения операции
  */
@@ -665,6 +682,7 @@ XML;
 	}
 	
 /** Проверка результата операции save на корректность заполнения данных
+ *
  * @param	Array	$result результат выполнения операции save
  * @return	Array результат выполнения операции save
  */
@@ -688,6 +706,7 @@ XML;
 		return $result;
 	}
 /** Постобработка результатов операции save
+ *
  * @param	Array	$result результат выполнения операции save
  * @param	Array	$params контекст выполнения
  * @return	Array результат выполнения операции save
@@ -697,6 +716,7 @@ XML;
 	}
 	
 /** Выполнить операцию delete, ответ вернуть в виде массива
+ *
  * @param	Array	$params контекст выполнения
  * @return	Array результат выполнения операции
  */
@@ -751,6 +771,7 @@ SQL;
 		return $result;
 	}
 /** Ветка restrict обработки ссылочной целостности при удалении, для SQL сервера MySql
+ *
  * @param	Array	$params контекст выполнения
  */
 	protected function _execDeleteRestrictMySql($params=Array()) {
@@ -777,6 +798,7 @@ SQL;
 		}
 	}
 /** Ветка restrict обработки ссылочной целостности при удалении, для SQL сервера SqlSrv
+ *
  * @param	Array	$params контекст выполнения
  */
 	protected function _execDeleteRestrictSqlSrv($params=Array()) {
@@ -803,6 +825,7 @@ SQL;
 		}
 	}
 /** Ветка cascade обработки ссылочной целостности при удалении, для SQL сервера MySql
+ *
  * @param	Array	$params контекст выполнения
  */
 	protected function _execDeleteCascadeMySql($params=Array()) {
@@ -836,6 +859,7 @@ SQL;
 		}
 	}
 /** Ветка cascade обработки ссылочной целостности при удалении, для SQL сервера SqlSrv
+ *
  * @param	Array	$params контекст выполнения
  */
 	protected function _execDeleteCascadeSqlSrv($params=Array()) {
@@ -869,6 +893,7 @@ SQL;
 		}
 	}
 /** Ветка clear обработки ссылочной целостности при удалении, для SQL сервера MySql
+ *
  * @param	Array	$params контекст выполнения
  */
 	protected function _execDeleteClearMySql($params=Array()) {
@@ -895,6 +920,7 @@ SQL;
 		}
 	}
 /** Ветка clear обработки ссылочной целостности при удалении, для SQL сервера SqlSrv
+ *
  * @param	Array	$params контекст выполнения
  */
 	protected function _execDeleteClearSqlSrv($params=Array()) {
@@ -922,6 +948,7 @@ SQL;
 	}
 
 /** Выполнить операцию shift, ответ вернуть в виде массива
+ *
  * @param	Array	$params контекст выполнения
  * @return	Array результат выполнения операции
  */
@@ -1052,6 +1079,7 @@ SQL;
 		return $result;
 	}
 /** Выполнить операцию append, ответ вернуть в виде массива
+ *
  * @param	Array	$params контекст выполнения
  * @return	Array результат выполнения операции
  */
@@ -1110,6 +1138,7 @@ SQL;
 		return $result;
 	}
 /** Получить поле ord, помещающее строку первой, в контексте выполнения операции
+ *
  * @param	Array	$params контекст выполнения
  * @return	num значение поля ord
  */
@@ -1125,6 +1154,7 @@ SQL;
 		return $ord-100;
 	}
 /** Получить поле ord, помещающее строку последней, в контексте выполнения операции
+ *
  * @param	Array	$params контекст выполнения
  * @return	num значение поля ord
  */
@@ -1144,6 +1174,7 @@ SQL;
 		return $ord+100;
 	}
 /** Получить поле ord, помещающее строку после указанной, в контексте выполнения операции
+ *
  * @param	Array	$params контекст выполнения
  * @param 	boolean $isNoReorder запрет пересортировки строк при необходимости
  * @return	num значение поля ord
@@ -1182,6 +1213,7 @@ SQL;
 		return $ord;
 	}
 /** Получить поле ord, помещающее строку перед указанной, в контексте выполнения операции
+ *
  * @param	Array	$params контекст выполнения
  * @param 	boolean $isNoReorder запрет пересортировки строк при необходимости
  * @return	num значение поля ord
@@ -1218,6 +1250,7 @@ SQL;
 	}
 	
 /** Выполнить пересортировку строк в контексте
+ *
  * @param	Array	$params контекст выполнения
  * @param 	boolean $isReorderAll пересортировка всех строк контекста
  */
@@ -1252,6 +1285,7 @@ SQL;
 		return true;
 	}
 /** Вернуть SQL запрос select для вычисления текущих значений поля ord контекста выполнения
+ *
  * @param	Array	$params контекст выполнения
  * @return 	string текст SQL запроса select
  */
@@ -1261,6 +1295,7 @@ SQL;
 		return $this->getSelect($p);
 	}
 /** Отписать в SQL сервер новое значение поля ord строки
+ *
  * @param	string $id
  * @param	num $ord
  */
@@ -1280,6 +1315,7 @@ SQL;
 		return true;
 	}
 /** Вычислить кол-во строк в результате запроса для заданного контекста
+ *
  * @param	Array	$params контекст выполнения
  * @return 	num кол-во строк в результате запроса для заданного контекста
  */
@@ -1298,6 +1334,7 @@ SQL;
 		return $result;
 	}
 /** Вернуть SQL запрос select для вычисления кол-ва строк для заданного контекста
+ *
  * @param	Array	$params контекст выполнения
  * @return 	string текст SQL запроса select
  */
@@ -1320,6 +1357,7 @@ SQL;
 	}
 
 /** Вычисление порядкового номера (0 - не найдено) строки с заданным id в результате запроса
+ *
  * @param	Array	$params контекст выполнения
  * @param	string	$id id разыскиваемой строки
  * @return 	num порядковый номер (0 - не найдено) строки с заданным id в результате запроса
@@ -1339,6 +1377,7 @@ SQL;
 		return $result;
 	}
 /** Вернуть SQL запрос select для вычисления порядкового номера строки
+ *
  * @param	Array	$params контекст выполнения
  * @param	string	$id id разыскиваемой строки
  * @return 	string текст SQL запроса select
@@ -1358,6 +1397,7 @@ SQL;
 		return $result;
 	}
 /** Вернуть SQL запрос select для вычисления порядкового номера строки, для SQL сервера MySql
+ *
  * @param	Array	$params контекст выполнения
  * @param	string	$id id разыскиваемой строки
  * @return 	string текст SQL запроса select
@@ -1397,6 +1437,7 @@ SQL;
 		return $result;
 	}
 /** Вернуть SQL запрос select для вычисления порядкового номера строки, для SQL сервера SqlSrv
+ *
  * @param	Array	$params контекст выполнения
  * @param	string	$id id разыскиваемой строки
  * @return 	string текст SQL запроса select
@@ -1427,6 +1468,7 @@ SQL;
 	}
 	
 /** Вернуть SQL запрос select для контекста выполнения
+ *
  * @param	Array	$params контекст выполнения
  * @return 	string текст SQL запроса select
  */
@@ -1445,6 +1487,7 @@ SQL;
 		return $result;
 	}
 /** Вернуть SQL запрос select для контекста выполнения, для SQL сервера MySql
+ *
  * @param	Array	$params контекст выполнения
  * @return 	string текст SQL запроса select
  */
@@ -1488,6 +1531,7 @@ SQL;
 		return $result;
 	}
 /** Вернуть SQL запрос select для контекста выполнения, для SQL сервера SqlSrv
+ *
  * @param	Array	$params контекст выполнения
  * @return 	string текст SQL запроса select
  */
@@ -1549,6 +1593,7 @@ SQL;
 		return $result;
 	}
 /** Вернуть секцию fields SQL запроса select для контекста выполнения
+ *
  * @param	Array	$params контекст выполнения
  * @return 	string текст секции fields SQL запроса select
  */
@@ -1556,6 +1601,7 @@ SQL;
 		return $this->autoGenGetSelectFields();
 	}
 /** Вернуть секцию from SQL запроса select для контекста выполнения
+ *
  * @param	Array	$params контекст выполнения
  * @return 	string текст секции from SQL запроса select
  */
@@ -1563,6 +1609,7 @@ SQL;
 		return $this->autoGenGetSelectFrom();
 	}
 /** Вернуть секцию where SQL запроса select для контекста выполнения
+ *
  * @param	Array	$params контекст выполнения
  * @return 	string текст секции where SQL запроса select
  */
@@ -1573,6 +1620,7 @@ SQL;
 		return $result;
 	}
 /** Вернуть секцию order by SQL запроса select для контекста выполнения
+ *
  * @param	Array	$params контекст выполнения
  * @return 	string текст секции order by SQL запроса select
  */

@@ -1,53 +1,53 @@
 <?php
 /**
-Система проверки прав
-*/
+ * @file
+ * Контроллер прав
+ */
 
-/**
-Проверить доступность требуемой функциональности по правам
-@param	String	$mode исходная строка
-@param	String	$operation исходная строка
-@return	Boolean доступность требуемой функциональности
-*/
+/** Проверить доступность требуемой функциональности по правам
+ *
+ * @param	String	$mode исходная строка
+ * @param	String	$operation исходная строка
+ * @return	Boolean доступность требуемой функциональности
+ */
 function getPerm($mode, $operation) {
 	$obj=getPermController();
 	if (!$obj) return false;
 	return $obj->getPerm($mode, $operation);
 }
-/**
-Выполнить аутентификацию пользователя
-@param	String	$login
-@param	String	$password
-@return	Boolean	успешность аутентификации
-*/
+/** Выполнить аутентификацию пользователя
+ *
+ * @param	String	$login
+ * @param	String	$password
+ * @return	Boolean	успешность аутентификации
+ */
 function execConnect($login, $password) {
 	$obj=getPermController();
 	if (!$obj) return false;
 	return $obj->execConnect($login, $password);
 }
-/**
-Сбросить аутентифицированного пользователя
-@return	Boolean	успешность
-*/
+/** Сбросить аутентифицированного пользователя
+ *
+ * @return	Boolean	успешность
+ */
 function execDisconnect() {
 	$obj=getPermController();
 	if (!$obj) return false;
 	return $obj->execDisconnect();
 }
-/**
-Получить параметр, сохраненный для аутентифицированного пользователя
-@param	String	$name имя параметра
-@param	String	$default значение по умолчанию
-@return	String	значение параметра
-*/
+/** Получить параметр, сохраненный для аутентифицированного пользователя
+ *
+ * @param	String	$name имя параметра
+ * @param	String	$default значение по умолчанию
+ * @return	String	значение параметра
+ */
 function getPP($name, $default='') {
 	if (array_key_exists("connect_{$name}", $_SESSION)) return $_SESSION["connect_{$name}"];
 	return $default;
 }
 
-/**
-Класс контроллер прав
-*/
+/** Класс контроллер прав
+ */
 class PermController {
 	function __construct() {
 		global $_objPermController;
@@ -101,10 +101,10 @@ class PermController {
 	}
 }
 
-/**
-Получить актуальный контроллер прав
-@return	PermController объект контроллера прав
-*/
+/** Получить актуальный контроллер прав
+ *
+ * @return	PermController объект контроллера прав
+ */
 function getPermController() {
 	global $_objPermController;
 	if ($_objPermController instanceof PermController) return $_objPermController;
@@ -117,4 +117,5 @@ function getPermController() {
 	$_objPermController=new PermController();
 	return $_objPermController;
 }
+/// Актуальный контроллер прав
 $_objPermController=null;

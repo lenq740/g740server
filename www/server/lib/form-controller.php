@@ -1,12 +1,20 @@
 <?php
 /**
-Библиотека источников данных
-*/
+ * @file
+ * Контроллер экранных форм
+ */
 
-/**
-Класс предок для экранной формы
-*/
+/** Класс предок контроллеров экранных форм
+ */
 class FormController {
+/** Вернуть описание экранной формы
+ *
+ * Обычно описание экранной формы берется из XML файла, в нем производятся макрозамены
+ * @param	Array	$params
+ * @return	strXml описание экранной формы
+ *
+ * param['#request.form'] - имя экранной формы
+ */
 	public function getStrXmlDefinition($params=Array()) {
 		$macro=$this->getDefinitionMacro($params);
 		$result=$this->getDefinitionTemplate($params, $macro);
@@ -24,9 +32,19 @@ class FormController {
 		$result=str_replace($from, $to, $result);
 		return $result;
 	}
+/** Вызывается после обработки запроса источником данных. Позволяет дописать что-нибудь в ответ.
+ *
+ * @param	Array	$params
+ * @param	Array	$events
+ */
 	public function go($params=Array(), $events=Array()) {
 		return true;
 	}
+/** Вернуть список макрозамен для описания экранной формы
+ *
+ * @param	Array	$params
+ * @return	Array список макрозамен
+ */
 	protected function getDefinitionMacro($params=Array()) {
 		$result=Array();
 		$result['%form%']=$params['#request.form'];
@@ -35,6 +53,12 @@ class FormController {
 		$result['%urlRoot%']=$urlRoot;
 		return $result;
 	}
+/** Вернуть шаблон описания экранной формы, обычно берется из файла
+ *
+ * @param	Array	$params
+ * @param	Array	$macro
+ * @return	string шаблон описания экранной формы
+ */
 	protected function getDefinitionTemplate($params=Array(), $macro=Array()) {
 		$form=$params['#request.form'];
 		$fileName=$macro['%TemplateFileName%'];
@@ -45,6 +69,10 @@ class FormController {
 		$result=file_get_contents($fileName);
 		return $result;
 	}
+/** Вернуть описание главного меню, по описанию из таблицы sysmenu
+ *
+ * @return	string описание главного меню, по описанию из таблицы sysmenu
+ */
 	protected function getSysMenuBar() {
 		$dataSourceSysMenu=getDataSource('sysmenu');
 		if (!$dataSourceSysMenu) return '';
@@ -95,6 +123,7 @@ XML;
 XML;
 		return $result;
 	}
+/// Вспомогательная рекурсивная процедура для построения описания главного меню
 	protected function _getSysMenuBarRecursive($id, &$items) {
 		$result='';
 		
@@ -147,6 +176,11 @@ XML;
 	}
 }
 
+/** Получить объект контроллера формы по имени
+ *
+ * @param	String	$name имя формы
+ * @return	FormController объект контроллера формы
+ */
 function getFormController($name) {
 	global $_registerFormController;
 	$str=$name;
@@ -169,4 +203,5 @@ function getFormController($name) {
 	if (!$_registerFormController[$name]) $_registerFormController[$name]=new FormController();
 	return $_registerFormController[$name];
 }
+/// Кэш контроллеров форм
 $_registerFormController=Array();

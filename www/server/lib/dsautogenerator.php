@@ -1,24 +1,40 @@
 <?php
 /**
-Генератор объектов модели данных по описаниям из базы данных
-*/
+ * @file
+ * Автоматический генератор объектов доступа к данным DataSource по описанию структуры базы данных
+ *
+ */
 require_once('dsconnector.php');
 require_once('datasource-controller.php');
 
 /**
-Класс автогенератор источников данных
-*/
+ * Класс автоматической генерации источников данных
+ *
+ * Структура таблиц, ссылочная целостность, поля и атрибуты полей должны быть описаны в таблицах: systable, sysfield, sysfieldparams.
+ * По этим описаниям автоматически строятся объекты доступа к данным DataSource. В последствии эти объекты можно использовать непосредственно,
+ * а можно вносить в них изменения, порождая потомков.
+ */
 class DSAutoGenerator extends DSConnector {
-	protected $dataStructure=Array();			// Тут ввиде вложенных массивов описание структуры базы данных, взятое из systable и sysfield
-	protected $dataStructureRef=Array();		// Тут ссылочная целостность
+/// Описание структуры базы данных, взятое из systable и sysfield
+	protected $dataStructure=Array();
+/// Описание ссылочной целостности и связей
+	protected $dataStructureRef=Array();
+/// Флажок - логировать процесс генерации через echo
 	protected $isEcho=true;
+/** Создать экземпляр объекта DSAutoGenerator
+ *
+ * @param	Array	$params
+ *
+ * param['isEcho']
+ */
 	function __construct($params=Array()) {
 		if ($params['isEcho']) $this->isEcho=true;
 		$this->initDataStructure();
 	}
-/**
-Инициализировать описание структуры данных
-*/
+/** Загрузить описание структуры данных из базы в переменные
+ *
+ * @return	boolean успешность выполнения загрузки
+ */
 	protected function initDataStructure() {
 		$errorMessage='Ошибка при обращении к DSAutoGenerator::initDataStructure';
 		if ($this->isEcho) {
@@ -46,10 +62,11 @@ SQL;
 		}
 		return true;
 	}
-/**
-Вспомогательная процедура, для инициализации описания структуры данных таблицы
-@param	String $tableName
-*/
+/** Вспомогательная процедура, для загрузки описания структуры данных таблицы
+ *
+ * @param	string	$tableName таблица
+ * @return	boolean успешность выполнения загрузки
+ */
 	protected function _initDataStructureTable($tableName) {
 		$errorMessage='Ошибка при обращении к DSAutoGenerator::_initDataStructureTable';
 		if ($tableName!=$this->str2Sql($tableName)) throw new Exception($errorMessage.', недопустимое имя таблицы '.$tableName);
@@ -159,6 +176,10 @@ SQL;
 		unset($dsT);
 		return true;
 	}
+/** Вспомогательная процедура, для загрузки описания ссылочной целостности и связей
+ *
+ * @return	boolean успешность выполнения загрузки
+ */
 	protected function _initDataStructureRef() {
 		$this->dataStructureRef=Array();
 		foreach($this->dataStructure as $tableName=>$dsTable) {
@@ -206,10 +227,10 @@ SQL;
 		}
 		return true;
 	}
-/**
-Сгенерить источники данных
-@param	mixed[] params
-*/
+/** Сгенерить источники данных
+ *
+ * @param	Array $params
+ */
 	public function goDataSources($params=Array()) {
 		$errorMessage='Ошибка при обращении к DSAutoGenerator::goDataSources';
 		if ($this->isEcho) {
@@ -255,12 +276,13 @@ PHP;
 			echo '<script>document.body.scrollIntoView(false)</script>'; flush();
 		}
 	}
-/**
-Вернуть описание автосгенеренных источников данных
-@param	mixed[] params
-<li>	params['tableName']
-@return	String описание автосгенеренных источников данных
-*/
+/** Вернуть описание автосгенеренного источника данных
+ *
+ * @param	Array $params
+ * @return	String описание автосгенеренных источников данных
+ *
+ *	params['tableName']
+ */
 	public function getDataSource($params=Array()) {
 		$errorMessage='Ошибка при обращении к DSAutoGenerator::getDataSource';
 		$D='$';
@@ -382,6 +404,13 @@ return new {$className}();
 PHP;
 		return $result;
 	}
+/** Вернуть описание связей для автосгенерации источника данных
+ *
+ * @param	Array $params
+ * @return	String описание связей для автосгенерации источника данных
+ *
+ *	params['tableName']
+ */
 	protected function _getDataSourceTableRef($params=Array()) {
 		$errorMessage='Ошибка при обращении к DSAutoGenerator::_getDataSourceTableRef';
 		$D='$';
@@ -440,6 +469,13 @@ PHP;
 		}
 		return $this->strTabShift($result,1);
 	}
+/** Вернуть описание полей для автосгенерации источника данных
+ *
+ * @param	Array $params
+ * @return	String описание полей для автосгенерации источника данных
+ *
+ *	params['tableName']
+ */
 	protected function _getDataSourceFields($fields, $tableName) {
 		$errorMessage='Ошибка при обращении к DSAutoGenerator::_getDataSourceFields';
 		$D='$';
@@ -466,15 +502,15 @@ PHP;
 		}
 		return $result;
 	}
-	
-/**
-Построить массив описателей полей для источника данных
-@param	mixed[] params
-<li>	params['tableName']
-<li>	params['fields']
-<li>	params['aliases']
-@return	String описание автосгенеренных источников данных
-*/
+/** Построить массив описателей полей для источника данных
+ *
+ * @param	Array $params
+ * @return	String описание автосгенеренных источников данных
+ *
+ * params['tableName']
+ * params['fields']
+ * params['aliases']
+ */
 	protected function _convertFieldsToDataSourceFields($params=Array()) {
 		$errorMessage='Ошибка при обращении к DSAutoGenerator::_convertFieldsToDataSourceFields';
 		$result=Array();
@@ -546,22 +582,23 @@ PHP;
 		}
 		return $result;
 	}
-/**
-Рекурсивная процедура формирование списка полей и подключаемых таблиц
-@param	mixed[] params
-<li>	params['tableName']	- имя таблицы
-<li>	params['aliasName']	- имя таблицы, используемое в SQL запросе
-<li>	params['level']		- уровень рекурсии, не выше 4-х
-$param	Array &$fields	- формируемый список полей
-<li>	fld['name']		- имя поля в таблице
-<li>	fld['table']	- имя таблицы
-<li>	fld['alias']	- имя таблицы, используемое в SQL запросе
-$param	mixed[] &$aliases	- формируемый список имен таблиц, используемых в SQL запросе
-<li>	als['table']	- имя таблицы
-<li>	als['alias']	- имя таблицы, используемое в SQL запросе
-<li>	$als['parent.alias']
-<li>	$als['parent.refid']
-*/
+/** Рекурсивная процедура формирование списка полей и подключаемых таблиц
+ *
+ * @param	Array $params
+ * @param	Array &$fields	- формируемый список полей
+ * @param	Array &$aliases	- формируемый список имен таблиц, используемых в SQL запросе
+ *
+ * params['tableName'] - имя таблицы
+ * params['aliasName'] - имя таблицы, используемое в SQL запросе
+ * params['level'] - уровень рекурсии, не выше 4-х
+ * fld['name'] - имя поля в таблице
+ * fld['table']	- имя таблицы
+ * fld['alias']	- имя таблицы, используемое в SQL запросе
+ * als['table']	- имя таблицы
+ * als['alias']	- имя таблицы, используемое в SQL запросе
+ * $als['parent.alias']
+ * $als['parent.refid']
+ */
 	protected function _buildDataSourceInfo($params, &$fields, &$aliases) {
 		$errorMessage='Ошибка при обращении к DSAutoGenerator::_buildDataSourceInfo';
 
@@ -623,23 +660,23 @@ $param	mixed[] &$aliases	- формируемый список имен табл
 		}
 		return true;
 	}
-/**
-Записать строку в файл
-@param	String $fileName имя файла
-@param	String $value содержимое
-*/
+/** Записать строку в файл
+ *
+ * @param	string $fileName имя файла
+ * @param	string $value содержимое
+ */
 	protected function writeFile($fileName, $value)	{
 		$errorMessage='Ошибка при обращении к DSAutoGenerator::writeFile';
 		if (!$handle = fopen($fileName, 'w')) throw new Exception($errorMessage.", не удалось создать файл {$fileName}");
 		if (fwrite($handle, $value) === FALSE) throw new Exception($errorMessage.", не удалось произвести запись файл {$fileName}");
 		fclose($handle);
 	}
-/**
-Сдвиг текстового блока вправо на заданное кол-во знаков табуляции
-@param	String	$str
-@param	Integer	$tabShift
-@return	String	сдвинутый текстовый блок
-*/
+/** Сдвиг текстового блока вправо на заданное кол-во знаков табуляции
+ *
+ * @param	string	$str
+ * @param	num	$tabShift
+ * @return	string	сдвинутый текстовый блок
+ */
 	protected function strTabShift($str='', $tabShift=1) {
 		$strTab='';
 		for($i=0; $i<$tabShift; $i++) $strTab.="\t";
@@ -667,31 +704,49 @@ $param	mixed[] &$aliases	- формируемый список имен табл
 	}
 }
 
-/**
-Класс предок для модификатора класса при автогенерации
-*/
+/** Класс предок для модификатора DataSource при автогенерации
+ *
+ * Позволяет внести изменения в процесс автогенерации DataSource
+ */
 class DataSourceModify {
+/** Модифицировать описания полей
+ *
+ * @param	Array	$fields - список полей
+ * @return	Array модифицированный список полей
+ */
 	public function getFields($fields) {
 		return $fields;
 	}
+/** Модифицировать секцию fields запроса select
+ *
+ * @param	string	$selectFields секция fields запроса select
+ * @return	string модифицированная секция fields запроса select
+ */
 	public function getSelectFields($selectFields) {
 		return $selectFields;
 	}
+/** Модифицировать секцию from запроса select
+ *
+ * @param	string	$selectFrom секция fields запроса select
+ * @return	string модифицированная секция from запроса select
+ */
 	public function getSelectFrom($selectFrom) {
 		return $selectFrom;
 	}
+/** Модифицировать секцию order by запроса select
+ *
+ * @param	string	$selectOrderBy секция order by запроса select
+ * @return	string модифицированная секция order by запроса select
+ */
 	public function getSelectOrderBy($selectOrderBy) {
 		return $selectOrderBy;
 	}
-	public function getRequests($requests) {
-		return $requests;
-	}
 }
-/**
-Получить объект модификатора класса источника данных по имени
-@param	String	$name источник данных
-@return	DataSourceModify объект модификатора класса источника данных
-*/
+/** Получить объект модификатора класса источника данных по имени
+ *
+ * @param	String	$name имя источника данных
+ * @return	DataSourceModify объект модификатора класса источника данных
+ */
 function getDataSourceModify($name) {
 	global $registerDataSourceModify;
 	
@@ -716,4 +771,5 @@ function getDataSourceModify($name) {
 	if (!$result) $result=null;
 	return $result;
 }
+/// Кэш модификаторов DataSourceModify
 $registerDataSourceModify=Array();
