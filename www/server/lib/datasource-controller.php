@@ -629,6 +629,7 @@ XML;
 			$lastId=$this->getPDO()->lastInsertId();
 		}
 		if (!$lastId) $lastId='0';
+		$this->onAfterInsert($lastId);
 		$result=$this->execRefresh(Array('filter.id'=>$lastId));
 		$result=$this->onValid($result);
 		$result=$this->onAfterSave($result, $params);
@@ -713,6 +714,12 @@ XML;
  */
 	protected function onAfterSave($result=Array(), $params=Array()) {
 		return $result;
+	}
+/** Постобработка insert
+ *
+ * @param	string	$id
+ */
+	protected function onAfterInsert($id) {
 	}
 	
 /** Выполнить операцию delete, ответ вернуть в виде массива
