@@ -9,6 +9,7 @@ require_once('config/.config.php');
 require_once('lib/datasource-controller.php');
 require_once('lib/form-controller.php');
 
+$config['path.root.html.entry']=getCfg('path.root');
 $config['path.root']=pathConcat('..',getCfg('path.root'));
 
 $objResponseWriter=initObjResponseWriter();
