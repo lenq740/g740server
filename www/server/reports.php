@@ -11,7 +11,6 @@ require_once('lib/datasource-controller.php');
 require_once('lib/dsautogenerator.php');
 
 $config['path.root']=pathConcat('..',getCfg('path.root'));
-$hrefRoot=getCfg('href.root');
 
 /**
 Класс предок для отчетов
@@ -69,7 +68,8 @@ function getHtmlHead($params=Array()) {
 	header("Content-type: text/html; charset=utf-8");
 	header("Cache-Control: no-store, no-cache, must-revalidate");
 	header("Cache-Control: post-check=0, pre-check=0", false);
-	$pathResource=pathConcat(getCfg('path.root'),getCfg('path.root.resource'));
+	$pathResource=pathConcat(getCfg('href.root'),getCfg('path.root.resource'));
+	if ($pathResource!='') $pathResource='/'.$pathResource;
 	$result=<<<HTML
 <!doctype html>
 <html lang="ru">
@@ -84,7 +84,8 @@ HTML;
 	return $result;
 }
 function getHtmlFooter($params=Array()) {
-	$pathResource=pathConcat(getCfg('path.root'),getCfg('path.root.resource'));
+	$pathResource=pathConcat(getCfg('href.root'),getCfg('path.root.resource'));
+	if ($pathResource!='') $pathResource='/'.$pathResource;
 	$result="\n".<<<HTML
 	<script src="{$pathResource}/bootstrap-3.3.6/js/bootstrap.min.js"></script>
 </body>

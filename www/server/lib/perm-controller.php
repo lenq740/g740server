@@ -6,14 +6,14 @@
 
 /** Проверить доступность требуемой функциональности по правам
  *
- * @param	String	$mode исходная строка
- * @param	String	$operation исходная строка
+ * @param	String	$permMode режим по правам
+ * @param	String	$permOperation операция
  * @return	Boolean доступность требуемой функциональности
  */
-function getPerm($mode, $operation) {
+function getPerm($permMode, $permOperation) {
 	$obj=getPermController();
 	if (!$obj) return false;
-	return $obj->getPerm($mode, $operation);
+	return $obj->getPerm($permMode, $permOperation);
 }
 /** Выполнить аутентификацию пользователя
  *

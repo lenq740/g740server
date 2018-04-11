@@ -6,9 +6,13 @@ header("Cache-Control: post-check=0, pre-check=0", false);
 require_once('server/config/.config.php');
 require_once('server/lib/lib-base.php');
 $config['path.root']=pathConcat('',getCfg('path.root'));
-$pathResource=pathConcat(getCfg('path.root'),getCfg('path.root.resource'));
+
+$pathResource=pathConcat(getCfg('href.root'),getCfg('path.root.resource'));
 $pathG740Client=pathConcat($pathResource,getCfg('g740client'));
-$pathG740Server=pathConcat(getCfg('path.root'),getCfg('path.root.server'),'index.php');
+$pathG740Server=pathConcat(getCfg('href.root'),getCfg('path.root.server'),'index.php');
+if ($pathResource!='') $pathResource='/'.$pathResource;
+if ($pathG740Client!='') $pathG740Client='/'.$pathG740Client;
+if ($pathG740Server!='') $pathG740Server='/'.$pathG740Server;
 ?>
 <!DOCTYPE HTML>
 <html>
