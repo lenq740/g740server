@@ -157,7 +157,7 @@ class DataSource extends DSConnector{
 		}
 		{	// $attrReadOnly
 			$attrReadOnly='';
-			if (!$this->getPerm('write')) $attrReadOnly='readonly="1"';
+			if (!getPerm($this->permMode?$this->permMode:$this->tableName, 'write')) $attrReadOnly='readonly="1"';
 		}
 		$result=<<<XML
 <rowset {$attrDataSource} {$attrRowset} {$attrReadOnly}>
