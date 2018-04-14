@@ -14,8 +14,8 @@ require_once('lib/datasource-controller.php');
 require_once('lib/dsautogenerator.php');
 
 $config['path.root']=pathConcat('..',getCfg('path.root'));
-$hrefRoot=getCfg('href.root');
-$pathG740Client=pathConcat(getCfg('path.root'),getCfg('path.root.resource'));
+$pathResource=pathConcat(getCfg('href.root'),getCfg('path.root.resource'));
+if ($pathResource!='') $pathResource='/'.$pathResource;
 
 /**
 Класс предок для утилит
@@ -72,8 +72,8 @@ echo <<<HTML
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 	<title>Утилиты</title>
-	<link rel="stylesheet" type="text/css" href="{$pathG740Client}/utils/reset.css">
-	<link rel="stylesheet" type="text/css" href="{$pathG740Client}/utils/utils.css">
+	<link rel="stylesheet" type="text/css" href="{$pathResource}/utils/reset.css">
+	<link rel="stylesheet" type="text/css" href="{$pathResource}/utils/utils.css">
 </head>
 <body>
 <h1>Утилиты</h1>
