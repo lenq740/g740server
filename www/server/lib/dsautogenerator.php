@@ -393,7 +393,7 @@ public function getSelectOrderBy({$D}params=Array()) {
 SQL;
 }
 // Этот метод демонстрирует результаты метода getStrXmlDefinitionFields
-public function getStrXmlDefinitionFields({$D}params=Array()) {
+public function getStrXmlDefinitionFieldsDemo({$D}params=Array()) {
 	{$D}result=<<<XML
 {$resultXmlDefinitionFields}
 XML;

@@ -25,7 +25,7 @@ class DataSource extends DSConnector{
 	public $isSaveOnAppend=false;
 /// Ограничение на максимальное кол-во возвращаемых строк
 	public $selectLimit=0;
-
+	
 /** Проверка доступности выполнения операции по правам в контексте выполнения запроса
  *
  * @param	string	$permOper опрерация (read, write)
@@ -36,9 +36,9 @@ class DataSource extends DSConnector{
 	public function getPerm($permOper='read', $requestName='', $params=Array()) {
 		$permMode=$this->permMode;
 		if (!$permMode) $permMode=$this->tableName;
-		return getPerm($permMode, $permOper);
+		$result=getPerm($permMode, $permOper);
+		return $result;
 	}
-	
 /** Выполнить запрос, записать ответ в XMLWriter согласно протоколу G740
  *
  * @param	Array	$params контекст выполнения запроса
