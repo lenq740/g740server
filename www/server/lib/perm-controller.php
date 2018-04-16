@@ -10,11 +10,7 @@
  * @param	String	$permOperation операция
  * @return	Boolean доступность требуемой функциональности
  */
-<<<<<<< HEAD
-function getPerm($permMode, $permOperation='read') {
-=======
 function getPerm($permMode, $permOperation='') {
->>>>>>> e248883d12e353fb877c3892aad465b6aa47dee2
 	$obj=getPermController();
 	if (!$obj) return false;
 	return $obj->getPerm($permMode, $permOperation);

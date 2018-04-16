@@ -25,6 +25,11 @@ class DataSource extends DSConnector{
 	public $isSaveOnAppend=false;
 /// Ограничение на максимальное кол-во возвращаемых строк
 	public $selectLimit=0;
+
+/// Дополнительная проверка операций write - строка не ReadOnly
+	public $isPermTestRowReadOnly=false;
+/// Дополнительная проверка - после выполнения запроса save строка должна оставаться не ReadOnly
+	public $isPermTestRowReadOnlyAfterSave=false;
 	
 /** Проверка доступности выполнения операции по правам в контексте выполнения запроса
  *
@@ -37,8 +42,39 @@ class DataSource extends DSConnector{
 		$permMode=$this->permMode;
 		if (!$permMode) $permMode=$this->tableName;
 		$result=getPerm($permMode, $permOper);
+		if (!$result) return $result;
+		
+		// Стандартные проверки для write
+		if ($permOper=='write') {
+			if ($requestName=='append' || $requestName=='copy') {
+				if ($this->onParentRowReadOnly(Array(),$params)) return false;
+			}
+			else if ($this->isPermTestRowReadOnly) {
+				if (!isset($params['id'])) return false;
+				$id=$params['id'];
+				if (is_array($id)) return false;
+				if ($requestName!='save' || !$params['row.new']) {
+					$lst=$this->execRefresh(Array('filter.id'=>$id));
+					if (count($lst)!=1) return false;
+					$row=$lst[0];
+					if ($row['row.readonly']) return false;
+				}
+			}
+		}
 		return $result;
 	}
+/** Проверка строки на ReadOnly по значениям полей и правам
+ *
+ * @param	Array	$row значения полей
+ * @return	boolean ReadOnly строки
+ */
+	public function getIsRowReadOnly($row) {
+		if ($row['row.readonly']) return true;
+		if ($this->onRowReadOnly($row)) return true;
+		if ($this->onParentRowReadOnly($row)) return true;
+		return false;
+	}
+
 /** Выполнить запрос, записать ответ в XMLWriter согласно протоколу G740
  *
  * @param	Array	$params контекст выполнения запроса
@@ -289,7 +325,6 @@ XML;
 		return $result;
 	}
 
-	
 /// Описание полей источника данных
 	protected $fields=null;
 /** Первоначально проинициализировать описание полей источника данных, если описание полей надо переопределить, то делать это надо тут
@@ -457,25 +492,26 @@ XML;
 		}
 		
 		while ($rec=$this->pdoFetch($q)) {
-			$res=Array();
-			if (isset($rec['id'])) $res['id']=$rec['id'];
-			if (isset($rec['row_readonly'])) $res['row.readonly']=$rec['row_readonly'];
-			if (isset($rec['row_color'])) $res['row.color']=$rec['row_color'];
-			if (isset($rec['row_type'])) $res['row.type']=$rec['row_type'];
-			if (isset($rec['row_icon'])) $res['row.icon']=$rec['row_icon'];
-			if (isset($rec['row_empty'])) $res['row.empty']=$rec['row_empty'];
-			if (isset($rec['row_final'])) $res['row.final']=$rec['row_final'];
+			$row=Array();
+			if (isset($rec['id'])) $row['id']=$rec['id'];
+			if (isset($rec['row_readonly'])) $row['row.readonly']=$rec['row_readonly'];
+			if (isset($rec['row_color'])) $row['row.color']=$rec['row_color'];
+			if (isset($rec['row_type'])) $row['row.type']=$rec['row_type'];
+			if (isset($rec['row_icon'])) $row['row.icon']=$rec['row_icon'];
+			if (isset($rec['row_empty'])) $row['row.empty']=$rec['row_empty'];
+			if (isset($rec['row_final'])) $row['row.final']=$rec['row_final'];
 			foreach($fields as $key=>$fld) {
 				$name=$fld['name'];
 				$sqlName=$fld['sqlname'];
-				$res[$name]='';
-				if (isset($rec[$sqlName])) $res[$name]=$rec[$sqlName];
-				if (isset($rec[$sqlName.'_readonly'])) $res[$name.'.readonly']=$rec[$sqlName.'_readonly'];
-				if (isset($rec[$sqlName.'_color'])) $res[$name.'.color']=$rec[$sqlName.'_color'];
-				if (isset($rec[$sqlName.'_visible'])) $res[$name.'.visible']=$rec[$sqlName.'_visible'];
+				$row[$name]='';
+				if (isset($rec[$sqlName])) $row[$name]=$rec[$sqlName];
+				if (isset($rec[$sqlName.'_readonly'])) $row[$name.'.readonly']=$rec[$sqlName.'_readonly'];
+				if (isset($rec[$sqlName.'_color'])) $row[$name.'.color']=$rec[$sqlName.'_color'];
+				if (isset($rec[$sqlName.'_visible'])) $row[$name.'.visible']=$rec[$sqlName.'_visible'];
 			}
-			$result[]=&$res;
-			unset($res);
+			if ($this->getIsRowReadOnly($row)) $row['row.readonly']=1;
+			$result[]=&$row;
+			unset($row);
 		}
 		return $result;
 	}
@@ -487,14 +523,14 @@ XML;
 	public function execSave($params=Array()) {
 		$errorMessage='Ошибка при обращении к DataSource::execSave';
 		if (!$this->getPerm('write','save',$params)) throw new Exception('У Вас нет прав на внесение изменений в строку таблицы '.$this->tableCaption);
-
+		$result=Array();
 		if ($params['row.new']==1) {
-			return $this->execInsert($params);
+			$result=$this->execInsert($params);
 		}
 		else {
-			return $this->execUpdate($params);
+			$result=$this->execUpdate($params);
 		}
-		return Array();
+		return $result;
 	}
 /** Ветка update опрерации save
  *
@@ -558,6 +594,11 @@ XML;
 		$result=$this->execRefresh(Array('filter.id'=>$id));
 		$result=$this->onValid($result);
 		$result=$this->onAfterSave($result, $params);
+		if ($this->isPermTestRowReadOnlyAfterSave) {
+			foreach($result as &$row) {
+				if ($row['row.readonly']) throw new Exception(errorMessage.' - строка только для чтения');
+			}
+		}
 		return $result;
 	}
 /** Ветка insert опрерации save
@@ -633,6 +674,11 @@ XML;
 		$result=$this->execRefresh(Array('filter.id'=>$lastId));
 		$result=$this->onValid($result);
 		$result=$this->onAfterSave($result, $params);
+		if ($this->isPermTestRowReadOnlyAfterSave) {
+			foreach($result as &$row) {
+				if ($row['row.readonly']) throw new Exception(errorMessage.' - строка только для чтения');
+			}
+		}
 		return $result;
 	}
 /** Выполнить операцию copy, ответ вернуть в виде массива
@@ -720,6 +766,23 @@ XML;
  * @param	string	$id
  */
 	protected function onAfterInsert($id) {
+	}
+/** Проверка строки на ReadOnly по значениям полей и правам
+ *
+ * @param	Array	$row значения полей
+ * @return	boolean ReadOnly строки
+ */
+	protected function onRowReadOnly($row=Array()) {
+		return false;
+	}
+/** Проверка строки родительского источника данных на ReadOnly
+ *
+ * @param	Array	$row значения полей
+ * @param	Array	$params параметры операции
+ * @return	boolean ReadOnly строки родительского источника данных
+ */
+	protected function onParentRowReadOnly($row=Array(), $params=Array()) {
+		return false;
 	}
 	
 /** Выполнить операцию delete, ответ вернуть в виде массива

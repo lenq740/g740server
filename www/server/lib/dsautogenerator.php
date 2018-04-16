@@ -245,7 +245,6 @@ SQL;
 			$value=<<<PHP
 <?php
 {$this->getDataSource($p)}
-?>
 PHP;
 			$fileName=$tableName.'-autogen.php';
 			$fullName=pathConcat(getCfg('path.root'), getCfg('path.root.datasources'), 'autogen', $fileName);
