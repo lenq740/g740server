@@ -69,6 +69,9 @@ class DataSource extends DSConnector{
  * @return	boolean ReadOnly строки
  */
 	public function getIsRowReadOnly($row) {
+		$permMode=$this->permMode;
+		if (!$permMode) $permMode=$this->tableName;
+		if (!getPerm($permMode, 'write')) return true;
 		if ($row['row.readonly']) return true;
 		if ($this->onRowReadOnly($row)) return true;
 		if ($this->onParentRowReadOnly($row)) return true;
