@@ -923,12 +923,13 @@ where
 SQL;
 			$q=$this->pdo($sql, 'Удаление невозможно, ошибка в запросе проверки ссылочной целостности');
 			while($rec=$this->pdoFetch($q)) $refIdList[]=$rec['id'];
-			if (count($refIdList)==0) return;
-			$p=Array();
-			$p['id']=$refIdList;
-			$p['#recursLevel']=1;
-			if ($params['#recursLevel']) $p['#recursLevel']=$params['#recursLevel']+1;
-			$dataSourceRef->execDelete($p);
+			if (count($refIdList)>0) {
+				$p=Array();
+				$p['id']=$refIdList;
+				$p['#recursLevel']=1;
+				if ($params['#recursLevel']) $p['#recursLevel']=$params['#recursLevel']+1;
+				$dataSourceRef->execDelete($p);
+			}
 		}
 	}
 /** Ветка cascade обработки ссылочной целостности при удалении, для SQL сервера SqlSrv
@@ -957,12 +958,13 @@ where
 SQL;
 			$q=$this->pdo($sql, 'Удаление невозможно, ошибка в запросе проверки ссылочной целостности');
 			while($rec=$this->pdoFetch($q)) $refIdList[]=$rec['id'];
-			if (count($refIdList)==0) return;
-			$p=Array();
-			$p['id']=$refIdList;
-			$p['#recursLevel']=1;
-			if ($params['#recursLevel']) $p['#recursLevel']=$params['#recursLevel']+1;
-			$dataSourceRef->execDelete($p);
+			if (count($refIdList)>0) {
+				$p=Array();
+				$p['id']=$refIdList;
+				$p['#recursLevel']=1;
+				if ($params['#recursLevel']) $p['#recursLevel']=$params['#recursLevel']+1;
+				$dataSourceRef->execDelete($p);
+			}
 		}
 	}
 /** Ветка clear обработки ссылочной целостности при удалении, для SQL сервера MySql
