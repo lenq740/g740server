@@ -3,6 +3,12 @@ Options -Indexes -ExecCGI
 #Открываем файлы на просмотр без авторизации
 order deny,allow
 allow from all
+#Указываем index.php как точку входа при обращении к каталогу
+DirectoryIndex index.htm index.html index.php
 
-#Отключаем механизм переадресации
-RewriteEngine off
+#Запускаем механизм переадресации
+RewriteEngine on
+#Все что не файл и не каталог перенаправляем на index.php
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteRule ^(.*)$ index.php [L]

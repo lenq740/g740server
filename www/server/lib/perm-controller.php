@@ -49,10 +49,17 @@ function getPP($name, $default='') {
 /** Класс контроллер прав
  */
 class PermController {
+/// Конструктор, регистрация экземпляра класса
 	function __construct() {
 		global $_objPermController;
 		$_objPermController=$this;
 	}
+/** Проверить доступность требуемой функциональности по правам
+ *
+ * @param	String	$mode режим по правам
+ * @param	String	$operation операция
+ * @return	Boolean доступность требуемой функциональности
+ */
 	public function getPerm($mode, $operation) {
 		if (!$_SESSION['connect_ok']) return false;
 		if ($_SESSION['connect_sys']) return true;
@@ -75,6 +82,12 @@ class PermController {
 		}
 		return false;
 	}
+/** Выполнить аутентификацию пользователя
+ *
+ * @param	String	$login
+ * @param	String	$password
+ * @return	Boolean	успешность аутентификации
+ */
 	public function execConnect($login, $password) {
 		$this->execDisconnect();
 		if ($login=='root' && $password=='1') {
@@ -91,6 +104,10 @@ class PermController {
 		}
 		return false;
 	}
+/** Сбросить аутентифицированного пользователя
+ *
+ * @return	Boolean	успешность
+ */
 	public function execDisconnect() {
 		$lstClear=Array();
 		foreach($_SESSION as $name=>$value) {

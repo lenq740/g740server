@@ -4,7 +4,6 @@
  * контроллер визуализации страниц сайта
  */
 require_once('lib-base.php');
-require_once('lib-g740server.php');
 require_once('lib-html.php');
 require_once('perm-controller.php');
 require_once('datasource-controller.php');
@@ -12,15 +11,13 @@ require_once('datasource-controller.php');
 /** Класс PageViewer - предок визуализаторов страниц сайта
  */
 class PageViewer {
+/// имя визуализатора страницы
 	public $mode='abstract';
 	
-/** Конструктор, регистрация экземпляра класса
- */
+/// Конструктор, регистрация экземпляра класса
 	function __construct() {
-		global $_lstModeOfObjPage;
-		global $_htObjPage;
-		if (!$_htObjPage[$this->mode]) $_lstModeOfObjPage[]=$this->mode;
-		$_htObjPage[$this->mode]=$this;
+		global $_registerObjPage;
+		if (!$_registerObjPage[$this->mode]) $_registerObjPage[$this->mode]=$this;
 	}
 /** Разбор параметров для запроса к странице
  *
@@ -119,6 +116,7 @@ class PageViewer {
 /** Класс PageViewerBootStrap - предок визуализаторов страниц сайта на BootStrap
  */
 class PageViewerBootStrap extends PageViewer {
+/// имя визуализатора страницы
 	public $mode='abstract.bootstrap';
 
 /** Содержимое страницы
@@ -304,20 +302,18 @@ class Widget {
 	public $objDataStorage=null;
 /// родительский объект, используемый для обработки событий
 	public $objCallback=null;
-/// заранее начитанный список строк
-	public $items=null;
-/// условия для начитки списка строк
+/// начитанный список строк
+	protected $items=null;
+/// условия для начитки списка строк (без параметров пагинации)
 	public $filter=Array();
+/// уникальный идентификатор экземпляра виджета
+	public $guid='';
+	
+	function __construct() {
+		$this->guid=getGUID();
+	}
 
 /** Содержимое виджета
- *
- * @param	Array	$info
- * @return	String	Содержимое виджета
- *
- * - $info['objPageViewer']
- * - $info['datasource']
- * - $info['objDataStorage']
- * - $info['items']
  */
 	public function get() {
 		return '';
@@ -330,9 +326,9 @@ class Widget {
  * @return	PageViewer
  */
 function getObjPage($mode) {
-	global $_htObjPage;
-	$result=$_htObjPage[$mode];
-	if (!$result) $result=$_htObjPage['default'];
+	global $_registerObjPage;
+	$result=$_registerObjPage[$mode];
+	if (!$result) $result=$_registerObjPage['default'];
 	if (!$result) throw new Exception("Не найдена страница '{$mode}'");
 	if (!$result instanceof PageViewer) throw new Exception("Не найдена страница '{$mode}'");
 	return $result;
@@ -376,7 +372,7 @@ function getWidget($name) {
  * @return	Array	начитанные параметры
  */
 function getInputParams() {
-	global $_lstModeOfObjPage;
+	global $_registerObjPage;
 	$result=Array();
 	// Вытаскиваем из запроса URL
 	$scriptUrl=$_SERVER["SCRIPT_NAME"];
@@ -394,8 +390,7 @@ function getInputParams() {
 	$lstUrl=explode('/',$url);
 	while(count($lstUrl)>0 && trim($lstUrl[count($lstUrl)-1])=='') unset($lstUrl[count($lstUrl)-1]);
 
-	foreach($_lstModeOfObjPage as $mode) {
-		$objPage=getObjPage($mode);
+	foreach($_registerObjPage as $objPage) {
 		if (!$objPage) continue;
 		$result=$objPage->getInputParams($lstUrl);
 		if ($result['mode']) break;
@@ -419,6 +414,218 @@ function getHref($params=Array()) {
 	return '/'.pathConcat(getCfg('href.root'), $href);
 }
 
-$_lstModeOfObjPage=Array();
-$_htObjPage=Array();
+/** Точка входа контроллера страниц
+ */
+function goPageController() {
+	try {
+		$pdoDB=new PDODataConnectorMySql(
+			getCfg('sqlDbName'),
+			getCfg('sqlLogin'),
+			getCfg('sqlPassword'),
+			getCfg('sqlCharSet'),
+			getCfg('sqlHost')
+		);
+		regPDO($pdoDB,'default');
+		$pdoDB->beginTransaction();
+		try {
+			$filePages=pathConcat(getCfg('path.root'),getCfg('path.root.module'),'pages','pages.php');
+			if (file_exists($filePages)) include_once($filePages);
+			
+			$params=getInputParams();	// Ищем страницу и начитываем для нее параметры
+			$objPage=getObjPage($params['mode']);
+			$html=$objPage->getPage($params);
+			$objPage->sendHttpHeaders($params);
+			if ($pdoDB->inTransaction()) $pdoDB->commit();
+		}
+		catch (Exception $e) {
+			if ($pdoDB->inTransaction()) $pdoDB->rollBack();
+			throw new Exception($e->getMessage());
+		}
+	}
+	catch (Exception $e) {
+		errorLog($e);
+		$objPage=getObjPage('error');
+		if ($objPage) {
+			$p=$objPage->getPageParams($params);
+			foreach($p as $name=>$value) $params[$name]=$value;
+			$html=$objPage->getPage($params);
+			$objPage->sendHttpHeaders($params);
+		}
+	}
+	if ($html) echo $html;
+}
+
+/** Шаблон подключения визуализатора g740
+ *
+ * @param	Array	$info
+ * @param	Array	$icons
+ * @return	string шаблон подключения визуализатора g740
+ *
+ * - $info['title'] - заголовок проекта
+ * - $info['path-g740client'] - путь до g740client
+ * - $info['path-g740icons-css'] - путь до css файла с иконками
+ * - $info['class-app-color'] - 'app-color-red', 'app-color-black'
+ *
+ * - $info['config-urlServer'] - путь до точки входа серверных скриптов
+ * - $info['config-mainFormName'] - 'formMain', 'formMainWithMenuBar'
+ * - $info['config-login-mainFormLoginUrl'] - путь до страницы аутентификации, если она сделана отдельно
+ * - $info['config-login-loginUrl']
+ * - $info['config-login-iconUrl']
+ * - $info['config-login-isReloadBeforeLogin']
+ * - $info['config-login-width']
+ * - $info['config-login-height']
+ * - $info['config-login-iconWidth']
+ * - $info['config-login-title']
+ */
+function getPageControllerG740Client($info=Array(), $icons=Array()) {
+	$htmlTitle=str2Html($info['title']);
+	$attrPathG740Client=str2Attr($info['path-g740client']);
+	$jsPathG740Client=str2JavaScript($info['path-g740client']);
+	$attrPathG740IconsCSS=str2Attr($info['path-g740icons-css']);
+	
+	$htmlConfig='';
+	if ($info['config-urlServer']) {
+		$jsUrlServer=str2JavaScript($info['config-urlServer']);
+		$htmlConfig.="\n".<<<HTML
+	conf['urlServer']='{$jsUrlServer}';
+HTML;
+	}
+	if ($info['config-mainFormName']) {
+		$jsMainFormName=str2JavaScript($info['config-mainFormName']);
+		$htmlConfig.="\n".<<<HTML
+	conf['mainFormName']='{$jsMainFormName}';
+HTML;
+	}
+	if ($info['config-login-mainFormLoginUrl']) {
+		$jsMainFormLoginUrl=str2JavaScript($info['config-login-mainFormLoginUrl']);
+		$htmlConfig.="\n".<<<HTML
+	conf['mainFormLoginUrl']='{$jsMainFormLoginUrl}';
+HTML;
+	}
+
+	if (isset($info['config-login-loginUrl'])) {
+		$jsValue=str2JavaScript($info['config-login-loginUrl']);
+		$htmlConfig.="\n".<<<HTML
+	confDialogLogin['loginUrl']='{$jsValue}';
+HTML;
+	}
+	if (isset($info['config-login-iconUrl'])) {
+		$jsValue=str2JavaScript($info['config-login-iconUrl']);
+		$htmlConfig.="\n".<<<HTML
+	confDialogLogin['iconUrl']='{$jsValue}';
+HTML;
+	}
+	if (isset($info['config-login-isReloadBeforeLogin'])) {
+		$jsValue=$info['config-login-isReloadBeforeLogin']?'true':'false';
+		$htmlConfig.="\n".<<<HTML
+	confDialogLogin['isReloadBeforeLogin']='{$jsValue}';
+HTML;
+	}
+	if (isset($info['config-login-width'])) {
+		$jsValue=str2JavaScript($info['config-login-width']);
+		$htmlConfig.="\n".<<<HTML
+	confDialogLogin['width']='{$jsValue}';
+HTML;
+	}
+	if (isset($info['config-login-height'])) {
+		$jsValue=str2JavaScript($info['config-login-height']);
+		$htmlConfig.="\n".<<<HTML
+	confDialogLogin['height']='{$jsValue}';
+HTML;
+	}
+	if (isset($info['config-login-iconWidth'])) {
+		$jsValue=str2JavaScript($info['config-login-iconWidth']);
+		$htmlConfig.="\n".<<<HTML
+	confDialogLogin['iconWidth']='{$jsValue}';
+HTML;
+	}
+	if (isset($info['config-login-title'])) {
+		$jsValue=str2JavaScript($info['config-login-title']);
+		$htmlConfig.="\n".<<<HTML
+	confDialogLogin['title']='{$jsValue}';
+HTML;
+	}
+	
+	$htmlIcons='';
+	foreach($icons as $iconName=>$iconClass) {
+		$jsName=str2JavaScript($iconName);
+		$jsClass=str2JavaScript($iconClass);
+		if ($htmlIcons) $htmlIcons.="\n";
+		$htmlIcons.=<<<HTML
+	icons['{$jsName}']='{$jsClass}';
+HTML;
+	}
+	
+	$result=<<<HTML
+<!DOCTYPE HTML>
+<html>
+<head>
+	<meta http-equiv="X-UA-Compatible" content="IE=9"/>
+	<meta http-equiv="Cache-Control" content="no-cache">
+	<meta http-equiv="Content-Language" content="ru"/>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<title>{$htmlTitle}</title>
+
+	<link rel="stylesheet" type="text/css" href="{$attrPathG740Client}/js/g740/cssdojo/main.css"/>
+	<link rel="stylesheet" type="text/css" href="{$attrPathG740Client}/js/g740/main.css"/>
+	<link rel="stylesheet" type="text/css" href="{$attrPathG740IconsCSS}"/>
+	
+<!-- подключаем сжатую версию Dojo -->
+	<script type="text/javascript">
+		dojoConfig = {
+			has: {
+				"dojo-firebug": true,
+				"dojo-debug-messages": true
+			},
+			cacheBust: true,
+			parseOnLoad: false,
+			async: true,
+			baseUrl: "{$jsPathG740Client}/js/dojocompressed",
+			packages: [
+				{
+					name: 'g740',
+					location: '../g740'
+				}
+			]
+		};
+	</script>
+	<script type="text/javascript" src="{$attrPathG740Client}/js/dojocompressed/dojo.js.uncompressed.js"></script>
+	<script type="text/javascript" src="{$attrPathG740Client}/js/dojocompressed/g740-dojo.js"></script>
+</head>
+<body class="g740 {$info['class-app-color']}">
+<!-- Выделяем место под размещение главной формы приложения -->
+	<div id="FormPanelMain"></div>
+<!--[if IE]>
+<script>
+	document.documentElement.className+=' IE';
+</script>
+<![endif]-->
+	<script>
+		require(
+			[
+				'g740',
+				'dojo/domReady!'
+			],
+			function() {
+// Конфигурируем визуализатор
+	var conf=g740.config;
+	var confDialogLogin=conf['dialogLogin'];
+	conf['mainFormDomNode']='FormPanelMain';	// Узел DOM, в ктором размещается главная форма приложения
+{$htmlConfig}
+// Расширяем стандартный набор иконок, которые можно использовать в кнопочках и узлах дерева
+	var icons=g740.icons._items;
+{$htmlIcons}
+	g740.application.doG740ShowForm();
+			}
+		);
+	</script>
+</body>
+</html>
+HTML;
+	return $result;
+}
+
+/// Список зарегистрированных страниц 
+$_registerObjPage=Array();
+/// Список зарегистрированных виджетов
 $_registerWidget=Array();

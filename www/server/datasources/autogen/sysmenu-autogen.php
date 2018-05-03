@@ -157,7 +157,7 @@ sysmenu.klsparent, sysmenu.ord, sysmenu.id
 SQL;
 }
 // Этот метод демонстрирует результаты метода getStrXmlDefinitionFields
-public function getStrXmlDefinitionFields($params=Array()) {
+public function getStrXmlDefinitionFieldsDemo($params=Array()) {
 	$result=<<<XML
 <fields>
 <field name="klsparent" type="ref" caption="Ссылка на родителя">
@@ -177,4 +177,3 @@ XML;
 }
 }
 return new DataSource_Sysmenu();
-?>

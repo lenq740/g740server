@@ -27,6 +27,7 @@ protected function initFields() {
 		$fld['caption']='Описание';
 		$fld['maxlength']='255';
 		$fld['len']='25';
+		$fld['stretch']='1';
 		$result[]=$fld;
 	}
 	{	// klssystablecategory - Ссылка на категорию таблицы
@@ -97,7 +98,6 @@ protected function initFields() {
 		$fld['maxlength']='255';
 		$fld['len']='12';
 		$fld['notnull']='1';
-		$fld['stretch']='1';
 		$fld['refname']='name';
 		$fld['refid']='klssystablecategory';
 		$result[]=$fld;
@@ -184,11 +184,11 @@ systable.klssystablecategory, systable.tablename, systable.id
 SQL;
 }
 // Этот метод демонстрирует результаты метода getStrXmlDefinitionFields
-public function getStrXmlDefinitionFields($params=Array()) {
+public function getStrXmlDefinitionFieldsDemo($params=Array()) {
 	$result=<<<XML
 <fields>
 <field name="tablename" type="string" caption="Таблица" notnull="1" len="12" maxlength="255"/>
-<field name="name" type="string" caption="Описание" len="25" maxlength="255"/>
+<field name="name" type="string" caption="Описание" stretch="1" len="25" maxlength="255"/>
 <field name="klssystablecategory" type="ref" caption="Ссылка на категорию таблицы" notnull="1">
 	<ref datasource="systablecategory"/>
 </field>
@@ -198,11 +198,10 @@ public function getStrXmlDefinitionFields($params=Array()) {
 <field name="orderby" type="memo" caption="Сортировка" stretch="1"/>
 <field name="fields" type="memo" caption="Дополнительные поля" stretch="1"/>
 <field name="permmode" type="string" caption="Режим по правам" len="12" maxlength="255"/>
-<field name="systablecategory_name" type="string" caption="Категория" notnull="1" stretch="1" len="12" maxlength="255" refid="klssystablecategory" refname="name"/>
+<field name="systablecategory_name" type="string" caption="Категория" notnull="1" len="12" maxlength="255" refid="klssystablecategory" refname="name"/>
 </fields>
 XML;
 	return $result;
 }
 }
 return new DataSource_Systable();
-?>

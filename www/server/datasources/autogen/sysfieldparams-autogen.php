@@ -60,7 +60,6 @@ protected function initFields() {
 		$fld['caption']='Описание поля';
 		$fld['maxlength']='255';
 		$fld['len']='25';
-		$fld['stretch']='1';
 		$fld['refname']='name';
 		$fld['refid']='klssysfield';
 		$result[]=$fld;
@@ -161,7 +160,7 @@ sysfieldparams.klssysfield, sysfieldparams.name
 SQL;
 }
 // Этот метод демонстрирует результаты метода getStrXmlDefinitionFields
-public function getStrXmlDefinitionFields($params=Array()) {
+public function getStrXmlDefinitionFieldsDemo($params=Array()) {
 	$result=<<<XML
 <fields>
 <field name="klssysfield" type="ref" caption="Ссылка на поле" notnull="1">
@@ -170,7 +169,7 @@ public function getStrXmlDefinitionFields($params=Array()) {
 <field name="name" type="string" caption="Параметр" notnull="1" len="15" maxlength="255"/>
 <field name="val" type="memo" caption="Значение" len="65"/>
 <field name="sysfield_fieldname" type="string" caption="Поле" notnull="1" len="15" maxlength="255" refid="klssysfield" refname="fieldname"/>
-<field name="sysfield_name" type="string" caption="Описание поля" stretch="1" len="25" maxlength="255" refid="klssysfield" refname="name"/>
+<field name="sysfield_name" type="string" caption="Описание поля" len="25" maxlength="255" refid="klssysfield" refname="name"/>
 <field name="sysfield_klssysfieldtype" type="string" caption="Ссылка на тип поля" refid="klssysfield" refname="klssysfieldtype"/>
 <field name="sysfieldtype_name" type="string" caption="Тип" notnull="1" len="12" maxlength="255" readonly="1"/>
 <field name="sysfieldtype_g740type" type="string" caption="Тип в g740" len="15" maxlength="255" readonly="1"/>
@@ -180,4 +179,3 @@ XML;
 }
 }
 return new DataSource_Sysfieldparams();
-?>

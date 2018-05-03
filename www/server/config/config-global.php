@@ -6,6 +6,11 @@
 */
 $config=Array();
 
+/// список дополнительных подключаемых иконкок
+$config['g740.icons']=Array(
+	'disabled'=>'starter-icons-disabled'
+);
+
 //--------------------------------------------------------------------
 // Пути - все пути без завершающего слеша!!!
 //--------------------------------------------------------------------
@@ -35,6 +40,10 @@ $config['path.root.reports']='server/module/reports';
 $config['path.root.export-import']='server/export-import';
 // Путь от корня проекта до логов
 $config['path.root.log']='server/log';
+
+// время Московское
+$config['timezone']='Etc/GMT-3';
+
 
 // Служебные настройки админки
 $config['datasourceIsGUID']=false;	// не использовать GUID в качестве ID

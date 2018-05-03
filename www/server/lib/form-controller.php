@@ -13,7 +13,7 @@ class FormController {
  * @param	Array	$params
  * @return	strXml описание экранной формы
  *
- * param['#request.form'] - имя экранной формы
+ *  - param['#request.form'] - имя экранной формы
  */
 	public function getStrXmlDefinition($params=Array()) {
 		$macro=$this->getDefinitionMacro($params);

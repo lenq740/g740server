@@ -161,7 +161,7 @@ sysfieldtype.ord, sysfieldtype.id
 SQL;
 }
 // Этот метод демонстрирует результаты метода getStrXmlDefinitionFields
-public function getStrXmlDefinitionFields($params=Array()) {
+public function getStrXmlDefinitionFieldsDemo($params=Array()) {
 	$result=<<<XML
 <fields>
 <field name="name" type="string" caption="Тип" notnull="1" len="12" maxlength="255"/>
@@ -180,4 +180,3 @@ XML;
 }
 }
 return new DataSource_Sysfieldtype();
-?>

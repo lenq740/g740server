@@ -358,7 +358,7 @@ sysfield.klssystable, sysfield.ord, sysfield.id
 SQL;
 }
 // Этот метод демонстрирует результаты метода getStrXmlDefinitionFields
-public function getStrXmlDefinitionFields($params=Array()) {
+public function getStrXmlDefinitionFieldsDemo($params=Array()) {
 	$result=<<<XML
 <fields>
 <field name="klssystable" type="ref" caption="Ссылка на родительскую таблицу" notnull="1">
@@ -396,4 +396,3 @@ XML;
 }
 }
 return new DataSource_Sysfield();
-?>

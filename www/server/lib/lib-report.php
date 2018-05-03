@@ -1,75 +1,63 @@
 <?php
 /**
+ * @file
  * Генератор отчетов в виде таблиц с подитогами
  */
 
-/**
-Класс, генератор отчетов в виде таблиц с подитогами
-
-<pre>
-Создание:
-	$objReport=new ReportBuilder($params)
-		$params['fields']	- описание колонок отчета
-		$params['rows']		- массив строк, возвращаемых запросом
-		$para['sql']		- SQL запрос
-Описание колонок
-		$field['caption']		- заголовок
-		$field['subcaption']	- заголовок
-		$field['fieldname']		- имя поля
-		$field['type']			- str, num, date
-		$field['dec']			- количество десятичных знаков после запятой
-		$field['width']			- ширина колонки
-		$field['tgroup']		- группировать по коллонке (итог на изменение значения)
-		$field['tsum']			- 1, sum, count
-Публичные методы:
-	$objReport->SetFields($fields)	- задать новые описания fields
-	$objReport->Get();				- Отчет
-	
-</pre>
-*/
+/** Класс, генератор отчетов в виде таблиц с подитогами
+ *
+ * Создание:
+ *	$objReport=new ReportBuilder($params)
+ *		$params['fields']	- описание колонок отчета
+ *		$params['rows']		- массив строк, возвращаемых запросом
+ *		$para['sql']		- SQL запрос
+ * Описание колонок
+ *		$field['caption']		- заголовок
+ *		$field['subcaption']	- заголовок
+ *		$field['fieldname']		- имя поля
+ *		$field['type']			- str, num, date
+ *		$field['dec']			- количество десятичных знаков после запятой
+ *		$field['width']			- ширина колонки
+ *		$field['tgroup']		- группировать по коллонке (итог на изменение значения)
+ *		$field['tsum']			- 1, sum, count
+ * Публичные методы:
+ *	$objReport->SetFields($fields)	- задать новые описания fields
+ *	$objReport->Get();				- Отчет
+ */
 class ReportBuilder {
-/**
-@var Array[] массив mixed[] описаний колонок отчета
-<li>	$field['caption']		- заголовок
-<li>	$field['subcaption']	- заголовок
-<li>	$field['fieldname']		- имя поля
-<li>	$field['type']			- str, num, date
-<li>	$field['dec']			- количество десятичных знаков после запятой
-<li>	$field['width']			- ширина колонки
-<li>	$field['tgroup']		- группировать по коллонке (итог на изменение значения)
-<li>	$field['tsum']			- 1, sum, count
-*/
+
+/** массив описаний колонок отчета
+ *
+ * - $field['caption'] - заголовок
+ * - $field['subcaption'] - заголовок
+ * - $field['fieldname'] - имя поля
+ * - $field['type'] - str, num, date
+ * - $field['dec'] - количество десятичных знаков после запятой
+ * - $field['width'] - ширина колонки
+ * - $field['tgroup'] - группировать по коллонке (итог на изменение значения)
+ * - $field['tsum'] - 1, sum, count
+ */
 	protected $fields=null;
-/**
-@var Integer количество колонок отчета
-*/
+	
+/// количество колонок отчета
 	protected $fieldsCount=0;
-/**
-@var Integer количество колонок, по которым производится группировка
-*/
+/// количество колонок, по которым производится группировка
 	protected $itogCount=0;
-/**
-@var Integer позиция первой колонки, по которой производится суммирование
-*/
+/// позиция первой колонки, по которой производится суммирование
 	protected $indexTSum=0;
-	
-/**
-@var mixed[] всего
-*/
+/// массив итогов
 	protected $total=null;
-	
-/**
-@var Array[] массив mixed[] строк отчета
-*/
+/// массив строк отчета
 	protected $rows=null;
 	
-/**
-Конструктор, создать экземпляр объекта
-@param	mixed[]	$para
-<li>	$para['fields']	- описание колонок отчета
-<li>	$para['rows']	- строки
-<li>	$para['sql']	- SQL запрос
-*/
+/** Конструктор, создать экземпляр объекта
+ *
+ * @param	Array	$para
+ *
+ * - para['fields']	- описание колонок отчета
+ * - para['rows']	- строки
+ * - para['sql']	- SQL запрос
+ */
 	function __construct($para)	{
 		if (!$para) throw new Exception('Не задан para');
 		if (!$para['fields']) throw new Exception('Не задан para[fields]');
@@ -93,20 +81,17 @@ class ReportBuilder {
 			}
 		}
 	}
-	
-/**
-Деструктор, уничтожить экземпляр объекта
-*/
+/** Деструктор, уничтожить экземпляр объекта
+ */
 	function __destruct() {
 		unset($this->fields);
 		unset($this->rows);
 		unset($this->total);
 	}
-
-/**
-Задать описатель колонок отчета
-@param	Array[] массив mixed[] описаний колонок отчета
-*/
+/** Задать описатель колонок отчета
+ *
+ * @param	Array $fields массив описаний колонок отчета
+ */
 	public function SetFields($fields) {
 		$this->fields=Array();
 		$count=count($fields);
@@ -135,11 +120,10 @@ class ReportBuilder {
 		$this->fieldsCount=count($this->fields);
 		$this->ItogInit();
 	}
-	
-/**
-Построить строки заголовка таблицы, если есть общие подзаголовки, объединяющие несколько колонок
-@return	String	HTML текст заголовка таблицы
-*/
+/** Построить строки заголовка таблицы, если есть общие подзаголовки, объединяющие несколько колонок
+ *
+ * @return	string	HTML текст заголовка таблицы
+ */
 	private function GetTrCaptionIfSubCaption() {
 		$result='';
 		$result.="\n".<<<HTML
@@ -209,11 +193,10 @@ HTML;
 HTML;
 		return $result;
 	}
-	
-/**
-Построить строки заголовка таблицы, если нет общих подзаголовков
-@return	String	HTML текст заголовка таблицы
-*/
+/** Построить строки заголовка таблицы, если нет общих подзаголовков
+ *
+ * @return	string	HTML текст заголовка таблицы
+ */
 	private function GetTrCaptionIfNotSubCaption() {
 		$result='';
 		$fields=&$this->fields;
@@ -236,11 +219,9 @@ HTML;
 HTML;
 		return $result;
 	}
-	
-/**
-Построить строки заголовка таблицы
-@return	String	HTML текст заголовка таблицы
-*/
+/** Построить строки заголовка таблицы
+ * @return	string	HTML текст заголовка таблицы
+ */
 	protected function GetTrCaption() {
 		$fields=&$this->fields;
 		$count=$this->fieldsCount;
@@ -255,14 +236,13 @@ HTML;
 		if ($isSubCaption) return $this->GetTrCaptionIfSubCaption();
 		return $this->GetTrCaptionIfNotSubCaption();
 	}
-
-/**
-Построить ячейку таблицы
-@param	String значение ячейки
-@param	String тип str, num, date
-@param	Integer количество знаков после запятой
-@return	String	HTML текст ячейки таблицы
-*/
+/** Построить ячейку таблицы
+ *
+ * @param	string	$value значение ячейки
+ * @param	string	$type тип str, num, date
+ * @param	num	$dec количество знаков после запятой
+ * @return	string	HTML текст ячейки таблицы
+ */
 	protected function GetTd($value, $type='str', $dec=0) {
 		$result='';
 		$htmlValue=str2html($value);
@@ -278,10 +258,8 @@ HTML;
 HTML;
 		return $result;
 	}
-	
-/**
-Инициализировать структуры данных, предназначенные для хранения промежуточных итогов
-*/
+/** Инициализировать структуры данных, предназначенные для хранения промежуточных итогов
+ */
 	private function ItogInit() {
 		$fields=&$this->fields;
 		$count=$this->fieldsCount;
@@ -318,11 +296,10 @@ HTML;
 		}
 		$this->itogCount=$itogCount;
 	}
-	
-/**
-Добавить значения очередной строки к промежуточным итогам
-@param	mixed[] строка отчета
-*/
+/** Добавить значения очередной строки к промежуточным итогам
+ *
+ * @param	Array	$rec строка отчета
+ */
 	private function ItogAdd($rec) {
 		$fields=&$this->fields;
 		$count=$this->fieldsCount;
@@ -361,12 +338,11 @@ HTML;
 			}
 		}
 	}
-	
-/**
-Опредилить старший из изменившихся итогов
-@param	mixed[] строка отчета
-@return	Integer	колонка, соответствующая изменившимся итогам, если итоги не нужны, то -1
-*/
+/** Опредилить старший из изменившихся итогов
+ *
+ * @param	Array	$rec строка отчета
+ * @return	num	колонка, соответствующая изменившимся итогам, если итоги не нужны, то -1
+ */
 	private function ItogTestLevel($rec) {
 		$result=-1;
 		$fields=&$this->fields;
@@ -383,11 +359,11 @@ HTML;
 		return $result;
 	}
 
-/**
-Построить строку итогов в таблице отчета
-@param	Integer Колонка, соответствующая итогам
-@return	String	HTML текст строки таблицы
-*/
+/** Построить строку итогов в таблице отчета
+ *
+ * @param	num	$level Колонка, соответствующая итогам
+ * @return	string	HTML текст строки таблицы
+ */
 	private function GetItogTr($level) {
 		$result='';
 		$fields=&$this->fields;
@@ -442,11 +418,10 @@ HTML;
 		}
 		return $result;
 	}
-
-/**
-Построить строку общих итогов в таблице отчета
-@return	String	HTML текст строки таблицы
-*/
+/** Построить строку общих итогов в таблице отчета
+ *
+ * @return	string	HTML текст строки таблицы
+ */
 	protected function GetTotalTr() {
 		$result='';
 		$fields=&$this->fields;
@@ -477,12 +452,11 @@ HTML;
 HTML;
 		return $result;
 	}
-	
-/**
-Построить строки итогов в таблице отчета
-@param	Integer Колонка, соответствующая итогам, начиная с которых итоги нужны
-@return	String	HTML текст строк таблицы
-*/
+/** Построить строки итогов в таблице отчета
+ *
+ * @param	num	$level Колонка, соответствующая итогам, начиная с которых итоги нужны
+ * @return	string	HTML текст строк таблицы
+ */
 	protected function GetItogTrAllLevel($level) {
 		$result='';
 		$fields=&$this->fields;
@@ -496,13 +470,12 @@ HTML;
 		}
 		return $result;
 	}
-	
-/**
-Построить очередную строку отчета
-@param	mixed[] строка отчета
-@param	Boolean признак первой строки
-@return	String	HTML текст строк таблицы
-*/
+/** Построить очередную строку отчета
+ *
+ * @param	Array	$rec строка отчета
+ * @param	boolean	$isFirstRec признак первой строки
+ * @return	string	HTML текст строк таблицы
+ */
 	protected function GetRowTr($rec, $isFirstRec) {
 		$result='';
 		$fields=&$this->fields;
@@ -528,11 +501,10 @@ HTML;
 		$this->ItogAdd($rec);
 		return $result;
 	}
-
-/**
-Построить таблицу отчета
-@return	String	HTML текст таблицы
-*/
+/** Построить таблицу отчета
+ *
+ * @return	string	HTML текст таблицы
+ */
 	protected function GetReportTable() {
 		$result='';
 		$result.="\n".<<<HTML
@@ -555,11 +527,10 @@ HTML;
 		$this->ItogInit();
 		return $result;
 	}
-	
-/**
-Построить каскадную таблицу стилей
-@return	String	HTML текст таблицы стилей
-*/
+/** Построить каскадную таблицу стилей
+ *
+ * @return	string	HTML текст таблицы стилей
+ */
 	protected function GetReportCss() {
 		$result="\n".<<<HTML
 <style type="text/css">
@@ -606,11 +577,10 @@ HTML;
 HTML;
 		return $result;
 	}
-	
-/**
-Построить отчет
-@return	String	HTML текст отчета
-*/
+/** Построить отчет
+ *
+ * @return	string	HTML текст отчета
+ */
 	public function Get() {
 		$result='';
 		$result.=$this->GetReportCss();

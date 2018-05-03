@@ -4,7 +4,9 @@
  * Библиотека - модель данных
  */
 require_once('dsconnector.php');
+require_once('lib-base.php');
 require_once('lib-g740server.php');
+require_once('perm-controller.php');
 
 /** Класс DataSource - предок для классов источников данных
  *
@@ -2103,7 +2105,7 @@ class DataStorage {
 	}
 /** Вернуть описание связи
  *
- * @param	string $name имя связи (<таблица>.<поле>, где поле не id)
+ * @param	string $name имя связи (таблица.поле, где поле не id)
  * @return	Array описание связи
  */
 	public function getRef($name) {
@@ -2162,7 +2164,7 @@ class DataStorage {
 /** Преобразует краткое название связи многие к одному в полное название связи
  *
  * @param	string $name допустимое краткое название связи многие к одному - имя поля текущей таблицы, по которому связь
- * @param	string полное название связи (<таблица>.<поле>)
+ * @return	string полное название связи (таблица.поле)
  */
 	public function _getRefNameForItem($name) {
 		if ($this->getRef($name)) return $name;
@@ -2175,7 +2177,7 @@ class DataStorage {
 /** Преобразует краткое название связи один ко многим в полное название связи
  *
  * @param	string $name допустимое краткое название связи один ко многим - имя связанной таблицы, если с этой таблицей есть только одна связь
- * @param	string полное название связи (<таблица>.<поле>)
+ * @return	string полное название связи (таблица.поле)
  */
 	public function _getRefNameForItems($name) {
 		global $_refNameForItems;

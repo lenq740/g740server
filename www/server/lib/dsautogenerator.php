@@ -470,10 +470,9 @@ PHP;
 	}
 /** Вернуть описание полей для автосгенерации источника данных
  *
- * @param	Array $params
+ * @param	Array $fields
+ * @param	String $tableName
  * @return	String описание полей для автосгенерации источника данных
- *
- *	params['tableName']
  */
 	protected function _getDataSourceFields($fields, $tableName) {
 		$errorMessage='Ошибка при обращении к DSAutoGenerator::_getDataSourceFields';
@@ -506,9 +505,9 @@ PHP;
  * @param	Array $params
  * @return	String описание автосгенеренных источников данных
  *
- * params['tableName']
- * params['fields']
- * params['aliases']
+ * - params['tableName']
+ * - params['fields']
+ * - params['aliases']
  */
 	protected function _convertFieldsToDataSourceFields($params=Array()) {
 		$errorMessage='Ошибка при обращении к DSAutoGenerator::_convertFieldsToDataSourceFields';
