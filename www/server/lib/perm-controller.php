@@ -48,7 +48,7 @@ function getPP($name, $default='') {
 
 /** Класс контроллер прав
  */
-class PermController {
+class PermController extends DSConnector{
 /// Конструктор, регистрация экземпляра класса
 	function __construct() {
 		global $_objPermController;
