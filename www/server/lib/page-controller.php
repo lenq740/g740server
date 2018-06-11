@@ -250,7 +250,7 @@ HTML;
 		$result=Array();
 		$result[]=Array(
 			'href'=>'/',
-			'name'=>'Сайт ЦТИ'
+			'name'=>'home'
 		);
 		return $result;
 	}
@@ -416,7 +416,7 @@ function getHref($params=Array()) {
 
 /** Точка входа контроллера страниц
  */
-function goPageController() {
+function goPageController($isTrace=false) {
 	try {
 		$pdoDB=new PDODataConnectorMySql(
 			getCfg('sqlDbName'),
@@ -432,6 +432,9 @@ function goPageController() {
 			if (file_exists($filePages)) include_once($filePages);
 			
 			$params=getInputParams();	// Ищем страницу и начитываем для нее параметры
+			
+			if ($isTrace) trace($params);
+			
 			$objPage=getObjPage($params['mode']);
 			$html=$objPage->getPage($params);
 			$objPage->sendHttpHeaders($params);
