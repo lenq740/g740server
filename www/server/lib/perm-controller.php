@@ -43,8 +43,9 @@ function execDisconnect() {
  * @return	String	значение параметра
  */
 function getPP($name, $default='') {
-	if (array_key_exists("connect_{$name}", $_SESSION)) return $_SESSION["connect_{$name}"];
-	return $default;
+	$obj=getPermController();
+	if (!$obj) return $default;
+	return $obj->getPP($name, $default);
 }
 
 /** Класс контроллер прав
@@ -116,6 +117,16 @@ class PermController extends DSConnector{
 		}
 		foreach($lstClear as $name) unset($_SESSION[$name]);
 		return true;
+	}
+/** Получить параметр, сохраненный для аутентифицированного пользователя
+ *
+ * @param	String	$name имя параметра
+ * @param	String	$default значение по умолчанию
+ * @return	String	значение параметра
+ */
+	public function getPP($name, $default='') {
+		if (array_key_exists("connect_{$name}", $_SESSION)) return $_SESSION["connect_{$name}"];
+		return $default;
 	}
 }
 
