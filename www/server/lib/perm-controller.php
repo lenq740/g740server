@@ -63,14 +63,14 @@ class PermController extends DSConnector{
  * @return	Boolean доступность требуемой функциональности
  */
 	public function getPerm($mode, $operation) {
-		if (!$_SESSION['connect_ok']) return false;
-		if ($_SESSION['connect_sys']) return true;
+		if (!getPP('ok')) return false;
+		if (getPP('sys')) return true;
 		if ($mode=='connected') return true;
 		if ($mode=='sys') {
 			return false;
 		}
 		if ($mode=='adm') {
-			if ($_SESSION['connect_adm']) return true;
+			if (getPP('adm')) return true;
 			return false;
 		}
 		if ($mode=='sysref') {
@@ -79,7 +79,7 @@ class PermController extends DSConnector{
 		}
 		if ($mode=='admref') {
 			if ($operation=='read') return true;
-			if ($_SESSION['connect_adm']) return true;
+			if (getPP('adm')) return true;
 			return false;
 		}
 		return false;
