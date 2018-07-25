@@ -6,12 +6,6 @@ function __construct() {
 	$this->tableCaption='Главное меню системы';
 	$this->permMode='sysref';
 	$this->isGUID=false;
-	$this->selectOtherFields=<<<SQL
-case when exists(select * from sysmenu child where child.klsparent=sysmenu.id)  then 0 else 1 end as row_empty,
-"menuitem" as row_type,
-sysmenu.icon as row_icon
-
-SQL;
 }
 // Тут описываются поля источника данных
 protected function initFields() {
@@ -123,9 +117,8 @@ public function getSelectFields($params=Array()) {
 	`sysmenu`.*,
 	`sysmenu_1`.`name` as `sysmenu_1_name`,
 case when exists(select * from sysmenu child where child.klsparent=sysmenu.id)  then 0 else 1 end as row_empty,
-"menuitem" as row_type,
+'menuitem' as row_type,
 sysmenu.icon as row_icon
-
 SQL;
 	return $result;
 }
