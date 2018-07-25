@@ -3,6 +3,7 @@
  * @file
  * Библиотека функций - расширение базового набора под server G740
  */
+require_once('dsconnector.php');
 require_once('lib-base.php');
 
 //------------------------------------------------------------------------------
@@ -225,231 +226,380 @@ function domXml2StrXml($domXml) {
 //------------------------------------------------------------------------------
 // Backup, Restore
 //------------------------------------------------------------------------------
+/** Класс полезных утилит для работы с базами данных
+ *
+ * backup, restore, оптимизация таблиц и т.д.
+ */
+class DBUtility extends DSConnector{
+/// имя XML файла для backup и restore
+	public $xmlFileName='';
+
+/// экземпляр XMLWriter
+	protected $xmlWriter=null;
+/// экземпляр XMLReader
+	protected $xmlReader=null;
+	
+/** Получить текущий или создать по имени файла объект XMLWriter
+ *
+ * @return	XMLWriter
+ */
+	public function getXmlWriter() {
+		if (!$this->xmlWriter) {
+			$this->xmlWriter = new XMLWriter();
+			$this->xmlWriter->openURI($this->xmlFileName);
+			$this->xmlWriter->startDocument('1.0','utf-8');
+			$this->xmlWriter->startElement('tables');
+		}
+		return $this->xmlWriter;
+	}
+/** Получить текущий или создать по имени файла объект XMLReader
+ *
+ * @return	XMLReader
+ */
+	public function getXmlReader() {
+		if (!$this->xmlReader) {
+			$this->xmlReader=new XMLReader();
+			$this->xmlReader->open($this->xmlFileName,'utf-8');
+		}
+		return $this->xmlReader;
+	}
+/** Все отписать в файл и закрыть XMLWriter
+ */
+	public function xmlSave() {
+		if ($this->xmlWriter) {
+			$this->xmlWriter->endElement();
+			$this->xmlWriter->endDocument();
+			$this->xmlWriter->flush();
+		}
+		unset($this->xmlWriter);
+		unset($this->xmlReader);
+	}
+
 /** Сохранение таблицы в XML
  *
  * @param	Array	$para параметры
  *
- * - $para['xmlWriter']
  * - $para['tableName']
  * - $para['isEcho']
- * - $para['isOptimize']
  */
-function saveTableToXmlWriter($para) {
-	if (!$para) throw new Exception('Не задан para');
-	$pdoDB=getPDO();
-	$xmlWriter=$para['xmlWriter'];
-	$tableName=$para['tableName'];
-	$isEcho=$para['isEcho'];
-	$isOptimize=$para['isOptimize'];
-	
-	$xmlWriter->startElement('table');
-	$xmlWriter->writeAttribute('name', $tableName);
+	public function saveTable($para) {
+		if (!$para) throw new Exception('Не задан para');
+		$xmlWriter=$this->getXmlWriter();
+		$tableName=$para['tableName'];
+		$isEcho=$para['isEcho'];
+		$isOptimize=$para['isOptimize'];
+		
+		$xmlWriter->startElement('table');
+		$xmlWriter->writeAttribute('name', $tableName);
 
-	$sql='select * from '.$tableName;
-	$q=$pdoDB->pdo($sql);
-	$i=0;
-	while ($rec=$pdoDB->pdoFetch($q))
-	{
-		$xmlWriter->startElement('row');
-		foreach($rec as $key=>$value) {
-			$s=$value;
-			$s=str_replace("\n",'~',$s);
-			$xmlWriter->writeAttribute(strtolower($key),$s);
+		$driverName=$this->getDriverName();
+		if ($driverName=='mysql') {
+			$sql="select * from `{$tableName}`";
+		}
+		else if ($driverName=='sqlsrv') {
+			$sql="select * from [dbo].[{$tableName}]";
+		}
+		else {
+			throw new Exception("Неизвестный драйвер базы данных '{$driverName}'");
+		}
+		$q=$this->pdo($sql);
+		$i=0;
+		while ($rec=$this->pdoFetch($q))
+		{
+			$xmlWriter->startElement('row');
+			foreach($rec as $key=>$value) {
+				$s=$value;
+				$s=str_replace("\n",'~',$s);
+				$s=str_replace("\r",'',$s);
+				$xmlWriter->writeAttribute(strtolower($key),$s);
+			}
+			$xmlWriter->endElement();
+			$i++;
+			if ($isEcho && ($i % 500)==0) {
+				$xmlWriter->flush();
+				echo '. '; flush();
+			}
 		}
 		$xmlWriter->endElement();
-		$i++;
-		if ($isEcho && ($i % 500)==0) {
-			$xmlWriter->flush();
-			echo '. '; flush();
-		}
-	}
-	$xmlWriter->endElement();
-	$xmlWriter->flush();
-	if ($isOptimize) {
+		$xmlWriter->flush();
+
 		if ($isEcho) {
 			echo 'optimize '; flush();
 		}
-		opimizeTable($tableName);
+		$this->opimizeTable($tableName);
 		if ($isEcho) {
 			echo 'ok '; flush();
 		}
 	}
-}
+
 /** Загрузка списка таблиц из XML
  *
  * @param	Array $para параметры
  *
- * - $para['fileName']
  * - $para['tables']
  * - $para['isEcho']
- * - $para['isOptimize']
- * - $para['isDisableKeys']
  */
-function loadTablesFromXmlReader($para) {
-	if (!$para) throw new Exception('Не задан para');
-	$fileName=$para['fileName'];
-	if (!file_exists($fileName)) throw new Exception('Отсутствует файл '.$fileName);
-	$isEcho=$para['isEcho'];
-	$tables=$para['tables'];
-	$tbl=Array();
-	foreach($tables as $key=>$tableName) $tbl[strtolower($tableName)]=true;
-	$xmlReader=new XMLReader();
-	$xmlReader->open($fileName,'utf-8');
-	while(true) {
-		if($xmlReader->nodeType == XMLReader::ELEMENT && $xmlReader->localName=='table') {
-			$tableName=strtolower($xmlReader->getAttribute('name'));
-			if ($tbl[$tableName]) {
-				$p=Array();
-				$p['xmlReader']=$xmlReader;
-				$p['tableName']=$tableName;
-				$p['isEcho']=$para['isEcho'];
-				$p['isOptimize']=$para['isOptimize'];
-				$p['isDisableKeys']=$para['isDisableKeys'];
-				if ($isEcho) {
-					echo '<div class="message">'.$tableName.': '; flush();
+	public function loadTables($para) {
+		if (!$para) throw new Exception('Не задан para');
+		unset($this->xmlReader);
+		$xmlReader=$this->getXmlReader();
+		$isEcho=$para['isEcho'];
+		$tables=$para['tables'];
+		$tbl=Array();
+		foreach($tables as $key=>$tableName) $tbl[strtolower($tableName)]=true;
+		while(true) {
+			if($xmlReader->nodeType == XMLReader::ELEMENT && $xmlReader->localName=='table') {
+				$tableName=strtolower($xmlReader->getAttribute('name'));
+				if ($tbl[$tableName]) {
+					$p=Array();
+					$p['tableName']=$tableName;
+					$p['isEcho']=$isEcho;
+					if ($isEcho) {
+						echo '<div class="message">'.$tableName.': '; flush();
+					}
+					$this->loadTable($p);
+					if ($isEcho) {
+						echo 'Ok!</div>'; flush();
+						echo '<script>document.body.scrollIntoView(false)</script>'; flush();
+					}
+					unset($p);
+					continue;
 				}
-				_loadTableFromXmlReader($p);
-				if ($isEcho) {
-					echo 'Ok!</div>'; flush();
-					echo '<script>document.body.scrollIntoView(false)</script>'; flush();
+				else {
+					$xmlReader->next();
+					continue;
 				}
-				unset($p);
-				continue;
 			}
-			else {
-				$xmlReader->next();
-				continue;
-			}
+			if (!$xmlReader->read()) break;
 		}
-		if (!$xmlReader->read()) break;
 	}
-	$xmlReader->close();
-	unset($xmlReader);
-}
+
 /** Загрузка таблицы из XML
  *
  * @param	Array $para параметры
  *
- * - $para['xmlReader']
  * - $para['tableName']
  * - $para['fields']
  * - $para['isEcho']
- * - $para['isOptimize']
- * - $para['isDisableKeys']
  */
-function _loadTableFromXmlReader($para) {
-	if (!$para) throw new Exception('Не задан para');
-	$pdoDB=getPDO();
-	$xmlReader=$para['xmlReader'];
-	$tableName=$para['tableName'];
-	$fields=$para['fields'];
-	$isEcho=$para['isEcho'];
-	$isOptimize=$para['isOptimize'];
-	$isDisableKeys=$para['isDisableKeys'];
-	if (!$fields) $fields=Array();
+	protected function loadTable($para) {
+		if (!$para) throw new Exception('Не задан para');
+		$xmlReader=$this->getXmlReader();
+		$tableName=$para['tableName'];
+		$fields=$para['fields'];
+		$isEcho=$para['isEcho'];
+		if (!$fields) $fields=Array();
 
-	if ($xmlReader->nodeType != XMLReader::ELEMENT) throw new Exception('Недопустимый текущий элемент');
-	if ($xmlReader->localName!='table') throw new Exception('Недопустимый текущий элемент');
-	if (strtolower($xmlReader->getAttribute('name'))!=$tableName) throw new Exception('Недопустимый текущий элемент');
-	
-	if ($isDisableKeys) {
+		if ($xmlReader->nodeType != XMLReader::ELEMENT) throw new Exception('Недопустимый текущий элемент');
+		if ($xmlReader->localName!='table') throw new Exception('Недопустимый текущий элемент');
+		if (strtolower($xmlReader->getAttribute('name'))!=$tableName) throw new Exception('Недопустимый текущий элемент');
+
 		if ($isEcho) {
-			echo 'disable keys '; flush();
+			echo 'очистка '; flush();
 		}
-		$pdoDB->pdo("lock table {$tableName} write");
-		$pdoDB->pdo("alter table {$tableName} disable keys");
+		$this->beforeLoadTable($tableName);
 		if ($isEcho) {
 			echo 'ok '; flush();
 		}
-	}
 
-	if ($isEcho) {
-		echo 'delete '; flush();
-	}
-	$pdoDB->pdo('TRUNCATE TABLE '.$tableName);
-	if ($isOptimize) opimizeTable($tableName);
-	if ($isEcho) {
-		echo 'ok '; flush();
-	}
-
-	$i=0;
-	$xmlReader->read();
-	if (!$pdoDB->inTransaction()) $pdoDB->beginTransaction();
-	while(true) {
-		if($xmlReader->nodeType == XMLReader::ELEMENT) {
-			if ($xmlReader->localName=='table') break;
-			if ($xmlReader->localName=='row'){
-				$sqlFields='';
-				$sqlValues='';
-				$sqlDelim='';
-				
-				while ($xmlReader->moveToNextAttribute()) {
-					$fieldName=strtolower($xmlReader->localName);
-					$value=$xmlReader->value;
-					if ($value!='') {
-						$sqlFields=$sqlFields . $sqlDelim . '`'.$fieldName.'`';
-						$value=str_replace('~', '\n', $value);
-						$value=str_replace("'", '"', $value);
-						$sqlValues=$sqlValues . $sqlDelim . "'" . $value . "'";
-						$sqlDelim=',';
-					}
-				}
-				if ($sqlDelim) {
-					$sqlInsert='insert into ' . $tableName . ' (' . $sqlFields . ') values (' . $sqlValues . ')';
-					$pdoDB->pdo($sqlInsert, "Ошибка при вставке строки в таблицу {$tableName}");
-				}
-				if ($isEcho && ($i % 500)==0) {
-					$pdoDB->commit();
-					echo '. '; flush();
-					$pdoDB->beginTransaction();
-				}
-				$i++;
-			}
+		$pdoDB=$this->getPDO();
+		$driverName=$this->getDriverName();
+		if ($driverName=='mysql') {
+			$sql="select * from `{$tableName}`";
 		}
-		if (!$xmlReader->read()) break;
-	}
-	$pdoDB->commit();
-
-	if ($isDisableKeys) {
-		if ($isEcho) {
-			echo 'enable keys '; flush();
+		else if ($driverName=='sqlsrv') {
+			$sql="select * from [dbo].[{$tableName}]";
 		}
-		$pdoDB->pdo("alter table {$tableName} enable keys");
-		$pdoDB->pdo("unlock tables");
-		if ($isEcho) {
-			echo 'ok '; flush();
+		else {
+			throw new Exception("Неизвестный драйвер базы данных '{$driverName}'");
 		}
-	}
-
-	if ($isEcho) {
-		echo 'set max(id) '; flush();
-	}
-	$rec=$pdoDB->pdoFetch('select max(id) as id from '.$tableName);
-	$maxId=$rec['id'];
-	if (!$maxId) $maxId=0;
-	$pdoDB->pdo('ALTER TABLE '.$tableName.' AUTO_INCREMENT='.$maxId);
-	if ($isEcho) {
-		echo 'ok '; flush();
-	}
 		
-	if ($isOptimize) {
-		if ($isEcho) {
-			echo 'optimize '; flush();
+		
+		$i=0;
+		$xmlReader->read();
+		while(true) {
+			if($xmlReader->nodeType == XMLReader::ELEMENT) {
+				if ($xmlReader->localName=='table') break;
+				if ($xmlReader->localName=='row'){
+					$sqlFields='';
+					$sqlValues='';
+					$sqlDelim='';
+					
+					while ($xmlReader->moveToNextAttribute()) {
+						$fieldName=strtolower($xmlReader->localName);
+						$value=$xmlReader->value;
+						if ($value=='') continue;
+
+						if ($driverName=='mysql') {
+							$sqlFields=$sqlFields . $sqlDelim . '`'.$fieldName.'`';
+							$value=$this->str2Sql($value);
+							$value=str_replace('~', '\n', $value);
+							$sqlValues=$sqlValues . $sqlDelim . "'" . $value . "'";
+							$sqlDelim=',';
+						}
+						else if ($driverName=='sqlsrv') {
+							$sqlFields=$sqlFields . $sqlDelim . '['.$fieldName.']';
+							$value=$this->str2Sql($value);
+							$value=str_replace('~', '\n', $value);
+							$sqlValues=$sqlValues . $sqlDelim . "'" . $value . "'";
+							$sqlDelim=',';
+						}
+						else {
+							throw new Exception("Неизвестный драйвер базы данных '{$driverName}'");
+						}
+					}
+					if ($sqlDelim) {
+						if ($driverName=='mysql') {
+							$sqlInsert="insert into `{$tableName}` ({$sqlFields}) values ({$sqlValues})";
+						}
+						else if ($driverName=='sqlsrv') {
+							$sqlInsert=<<<SQL
+set identity_insert [dbo].[{$tableName}] ON;
+insert into [dbo].[{$tableName}] ({$sqlFields}) values ({$sqlValues});
+SQL;
+						}
+						else {
+							throw new Exception("Неизвестный драйвер базы данных '{$driverName}'");
+						}
+						$this->pdo($sqlInsert, "Ошибка при вставке строки в таблицу {$tableName}");
+					}
+					if ($isEcho && ($i % 500)==0) {
+						$pdoDB->commit();
+						echo '. '; flush();
+						$pdoDB->beginTransaction();
+					}
+					$i++;
+				}
+			}
+			if (!$xmlReader->read()) break;
 		}
-		opimizeTable($tableName);
+		if ($pdoDB->inTransaction()) $pdoDB->commit();
+		if (!$pdoDB->inTransaction()) $pdoDB->beginTransaction();
+
+		if ($isEcho) {
+			echo 'оптимизация '; flush();
+		}
+		$this->afterLoadTable($tableName);
 		if ($isEcho) {
 			echo 'ok '; flush();
 		}
 	}
-}
-/** Оптимизация таблицы в базе
+
+/** Обработка таблицы перед загрузкой в нее данных
+ *
+ * @param	String $tableName
+ */
+	protected function beforeLoadTable($tableName) {
+		$driverName=$this->getDriverName();
+		if ($driverName=='mysql') {
+			$this->beforeLoadTableMySql($tableName);
+		}
+		else if ($driverName=='sqlsrv') {
+			$this->beforeLoadTableSqlSrv($tableName);
+		}
+		else {
+			throw new Exception("Неизвестный драйвер базы данных '{$driverName}'");
+		}
+	}
+/** Обработка таблицы перед загрузкой в нее данных для MySql
+ *
+ * @param	String $tableName
+ */
+	protected function beforeLoadTableMySql($tableName) {
+		$this->pdo("lock table `{$tableName}` write");
+		$this->pdo("alter table `{$tableName}` disable keys");
+		$this->pdo("truncate table `{$tableName}`");
+	}
+/** Обработка таблицы перед загрузкой в нее данных для SqlSrv
+ *
+ * @param	String $tableName
+ */
+	protected function beforeLoadTableSqlSrv($tableName) {
+		$this->pdo("truncate table [dbo].[{$tableName}]");
+	}
+	
+/** Обработка таблицы после загрузки в нее данных
+ *
+ * @param	String $tableName
+ */
+	protected function afterLoadTable($tableName) {
+		$driverName=$this->getDriverName();
+		if ($driverName=='mysql') {
+			$this->afterLoadTableMySql($tableName);
+		}
+		else if ($driverName=='sqlsrv') {
+			$this->afterLoadTableSqlSrv($tableName);
+		}
+		else {
+			throw new Exception("Неизвестный драйвер базы данных '{$driverName}'");
+		}
+	}
+/** Обработка таблицы после загрузки в нее данных для MySql
+ *
+ * @param	string $tableName
+ */
+	protected function afterLoadTableMySql($tableName) {
+		$this->pdo("alter table `{$tableName}` enable keys");
+		$this->pdo("unlock tables");
+		$this->opimizeTable($tableName);
+		
+		$sql=<<<SQL
+select count(*) as n 
+from 
+	information_schema.COLUMNS
+where 
+	TABLE_SCHEMA=database() 
+and TABLE_NAME='{$tableName}' 
+and COLUMN_NAME='id'
+and EXTRA like '%auto_increment%'
+SQL;
+		$rec=$this->pdoFetch($sql);
+		$isAutoIncrement=($rec['n']==1);
+		if ($isAutoIncrement) {
+			$rec=$this->pdoFetch("select max(id) as id from `{$tableName}`");
+			$maxId=$rec['id'];
+			if (!$maxId) $maxId=0;
+			$this->pdo("ALTER TABLE `{$tableName}` AUTO_INCREMENT={$maxId}");
+		}
+	}
+/** Обработка таблицы после загрузки в нее данных для SqlSrv
+ *
+ * @param	String $tableName
+ */
+	protected function afterLoadTableSqlSrv($tableName) {
+	}
+
+	
+/** Оптимизация таблицы
  *
  * @param	String	$tableName
  */
-function opimizeTable($tableName) {
-	$pdoDB=getPDO();
-	$sql='check table '.$tableName;
-	$q=$pdoDB->pdo($sql);
-	$sql='optimize table '.$tableName;
-	$q=$pdoDB->pdo($sql);
+	public function opimizeTable($tableName) {
+		$driverName=$this->getDriverName();
+		if ($driverName=='mysql') {
+			$this->opimizeTableMySql($tableName);
+		}
+		else if ($driverName=='sqlsrv') {
+			$this->opimizeTableSqlSrv($tableName);
+		}
+		else {
+			throw new Exception("Неизвестный драйвер базы данных '{$driverName}'");
+		}
+	}
+/** Оптимизация таблицы для MySql
+ *
+ * @param	String	$tableName
+ */
+	protected function opimizeTableMySql($tableName) {
+		$sql='check table '.$tableName;
+		$q=$this->pdo($sql);
+		$sql='optimize table '.$tableName;
+		$q=$this->pdo($sql);
+	}
+/** Оптимизация таблицы для SqlSrv
+ *
+ * @param	String	$tableName
+ */
+	protected function opimizeTableSqlSrv($tableName) {
+	}
 }

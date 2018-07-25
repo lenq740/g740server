@@ -23,14 +23,15 @@ class UtilityRestore extends UtilController {
 		if (!getPerm('sys','write')) throw new Exception('У Вас нет прав на выполнение системных утилит, увы и ах...');
 		$pdoDB=getPDO();
 
+		$dbUtility = new DBUtility();
 		$fileName=pathConcat(getCfg('path.root'),getCfg('path.root.export-import'),'backup','backup.xml');
 		if (!is_file($fileName)) throw new Exception("Файл '{$fileName}' не найден");
-		$fileName=str_replace("\\","/",realpath($fileName));
-
+		$dbUtility->xmlFileName=str_replace("\\","/",realpath($fileName));
+		
+		
 		if ($isEcho) {
 			echo '<h2>Выполнение восстановления из резервной копии</h2>'; flush();
 		}
-		$pdoDB->commit();
 
 		if ($params['isdatastru']) {
 			if ($isEcho) {
@@ -48,12 +49,9 @@ HTML;
 			$lst[]='sysfieldparams';
 
 			$p=Array();
-			$p['fileName']=$fileName;
 			$p['tables']=$lst;
 			$p['isEcho']=true;
-			$p['isOptimize']=true;
-			$p['isDisableKeys']=true;
-			loadTablesFromXmlReader($p);
+			$dbUtility->loadTables($p);
 			if ($isEcho) {
 				echo '<script>document.body.scrollIntoView(false)</script>'; flush();
 				echo '</div>'; flush();
@@ -70,14 +68,11 @@ HTML;
 				flush();
 			}
 			$p=Array();
-			$p['fileName']=$fileName;
 			$lst=Array();
 			$lst[]='systable';
 			$p['tables']=$lst;
 			$p['isEcho']=true;
-			$p['isOptimize']=true;
-			$p['isDisableKeys']=true;
-			loadTablesFromXmlReader($p);
+			$dbUtility->loadTables($p);
 			if ($isEcho) {
 				echo '<script>document.body.scrollIntoView(false)</script>'; flush();
 			}
@@ -93,16 +88,13 @@ order by systable.tablename
 SQL;
 			$q=$pdoDB->pdo($sql);
 			while ($rec=$pdoDB->pdoFetch($q)) {
+				if ($rec['tablename']=='systable') continue;
 				$lst[]=$rec['tablename'];
 			}
-
 			$p=Array();
-			$p['fileName']=$fileName;
 			$p['tables']=$lst;
 			$p['isEcho']=true;
-			$p['isOptimize']=true;
-			$p['isDisableKeys']=true;
-			loadTablesFromXmlReader($p);
+			$dbUtility->loadTables($p);
 			if ($isEcho) {
 				echo '<script>document.body.scrollIntoView(false)</script>'; flush();
 				echo '</div>'; flush();
@@ -135,12 +127,9 @@ SQL;
 			}
 
 			$p=Array();
-			$p['fileName']=$fileName;
 			$p['tables']=$lst;
 			$p['isEcho']=true;
-			$p['isOptimize']=true;
-			$p['isDisableKeys']=true;
-			loadTablesFromXmlReader($p);
+			$dbUtility->loadTables($p);
 			if ($isEcho) {
 				echo '<script>document.body.scrollIntoView(false)</script>'; flush();
 				echo '</div>'; flush();
@@ -172,18 +161,14 @@ SQL;
 			}
 
 			$p=Array();
-			$p['fileName']=$fileName;
 			$p['tables']=$lst;
 			$p['isEcho']=true;
-			$p['isOptimize']=true;
-			$p['isDisableKeys']=true;
-			loadTablesFromXmlReader($p);
+			$dbUtility->loadTables($p);
 			if ($isEcho) {
 				echo '<script>document.body.scrollIntoView(false)</script>'; flush();
 				echo '</div>'; flush();
 			}
 		}
-		$pdoDB->beginTransaction();
 	}
 }
 return new UtilityRestore();

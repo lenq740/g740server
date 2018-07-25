@@ -13,8 +13,9 @@ require_once('dsconnector.php');
  */
 function getPerm($permMode, $permOperation='') {
 	$obj=getPermController();
-	if (!$obj) return false;
-	return $obj->getPerm($permMode, $permOperation);
+	$result=false;
+	if ($obj) $result=$obj->getPerm($permMode, $permOperation);
+	return $result;
 }
 /** Выполнить аутентификацию пользователя
  *
@@ -125,8 +126,9 @@ class PermController extends DSConnector{
  * @return	String	значение параметра
  */
 	public function getPP($name, $default='') {
-		if (array_key_exists("connect_{$name}", $_SESSION)) return $_SESSION["connect_{$name}"];
-		return $default;
+		$result=$default;
+		if (array_key_exists("connect_{$name}", $_SESSION)) $result=$_SESSION["connect_{$name}"];
+		return $result;
 	}
 }
 

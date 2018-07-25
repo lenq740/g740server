@@ -5,8 +5,8 @@
 	<panels>
 		<panel type="panel">
 			<toolbar default="1"/>
-			<panel type="tree" rowset="treemenu" caption="Структура меню" align="left" width="25%" splitter="1" border="1"/>
-			<panel type="panel" rowset="treemenu" border="1">
+			<panel type="tree" rowset="treemenu" caption="Структура меню" align="left" width="25%" splitter="1" border="0"/>
+			<panel type="panel" rowset="treemenu" border="0">
 				<panel type="fields" align="top" caption="Анкета элемента меню">
 					<field name="name" stretch="1"/>
 					<field name="form" stretch="1"/>

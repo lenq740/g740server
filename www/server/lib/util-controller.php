@@ -10,9 +10,18 @@ require_once('dsautogenerator.php');
 /** Класс предок для утилит
  */
 class UtilController {
+/** Получить параметры из url
+ *
+ * @return	Array	параметры
+ */
 	public function getParams() {
 		return Array();
 	}
+/** Выполнить утилиту
+ *
+ * @param	Array	$params параметры
+ * @param	Boolean	$isEcho логировать результат
+ */
 	public function go($params=Array(), $isEcho=false) {
 	}
 }
@@ -48,11 +57,12 @@ function getUtilController($name) {
 /** Выполнить утилиту по имени
  *
  * @param	String	$name имя формы
- * @return	FormController объект контроллера формы
+ * @param	Boolean	$isEcho логировать результат
  */
 function execUtilController($name, $isEcho=false) {
 	$obj=getUtilController($name);
 	$params=$obj->getParams();
-	return $obj->go($params, $isEcho);
+	$obj->go($params, $isEcho);
 }
+/// Кэш утилит
 $_registerUtilController=Array();

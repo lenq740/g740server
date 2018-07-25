@@ -28,10 +28,12 @@ class DataSource extends DSConnector{
 /// Ограничение на максимальное кол-во возвращаемых строк
 	public $selectLimit=0;
 
-/// Дополнительная проверка операций write - строка не ReadOnly
+/// Необходимость дополнительной проверки операций write - строка не ReadOnly
 	public $isPermTestRowReadOnly=false;
-/// Дополнительная проверка - после выполнения запроса save строка должна оставаться не ReadOnly
-	public $isPermTestRowReadOnlyAfterSave=false;
+/// Проверка на ReadOnly строки родительской таблицы - имя таблицы
+	public $permTestReadOnlyOwnerTableName='';
+/// Проверка на ReadOnly строки родительской таблицы - имя поля, по которому осуществляется связь с родительской таблицей
+	public $permTestReadOnlyOwnerLinkFieldName='';
 	
 /** Проверка доступности выполнения операции по правам в контексте выполнения запроса
  *
@@ -45,41 +47,94 @@ class DataSource extends DSConnector{
 		if (!$permMode) $permMode=$this->tableName;
 		$result=getPerm($permMode, $permOper);
 		if (!$result) return $result;
-		
 		// Стандартные проверки для write
-		if ($permOper=='write') {
-			if ($requestName=='append' || $requestName=='copy') {
-				if ($this->onParentRowReadOnly(Array(),$params)) return false;
+		if ($this->isPermTestRowReadOnly && $permOper=='write') {
+			if ($requestName=='append') {
+				// для append проверка встроена в операцию
+				$result=true;
 			}
-			else if ($this->isPermTestRowReadOnly) {
+			else if ($requestName=='save' || $params['row.new']) {
+				// для insert проверка встроена в операцию после вставки
+				$result=true;
+			}
+			else {
 				if (!isset($params['id'])) return false;
 				$id=$params['id'];
 				if (is_array($id)) return false;
-				if ($requestName!='save' || !$params['row.new']) {
-					$lst=$this->execRefresh(Array('filter.id'=>$id));
-					if (count($lst)!=1) return false;
-					$row=$lst[0];
-					if ($row['row.readonly']) return false;
-				}
+				
+				$lst=$this->execRefresh(Array('filter.id'=>$id));
+				if (count($lst)!=1) return false;
+				$row=$lst[0];
+				if ($row['row.readonly']) return false;
+				if ($this->getRowOwnerReadOnly($row)) return false;
 			}
 		}
 		return $result;
 	}
-/** Проверка строки на ReadOnly по значениям полей и правам
+
+/** Проставить в наборе строк readonly по строке родительской таблицы
+ *
+ * @param	Array	$result набор строк
+ * @return	Array результирующей набор строк с проставленными readonly
+ */
+	protected function getResultOwnerReadOnly(&$result) {
+		if (!$this->isPermTestRowReadOnly) return $result;
+		if (!$this->permTestReadOnlyOwnerTableName) return $result;
+		if (!$this->permTestReadOnlyOwnerLinkFieldName) return $result;
+		
+		$owners=Array();
+		foreach($result as &$row) {
+			if ($row['row.readonly']) continue;
+			$ownerId=$row[$this->permTestReadOnlyOwnerLinkFieldName];
+			if (!$ownerId) continue;
+			$owners[$ownerId]=$ownerId;
+		}
+		
+		$ownersReadOnly=Array();
+		$lstOwnerId=Array();
+		foreach($owners as $ownerId) {
+			$lstOwnerId[]=$ownerId;
+			$ownersReadOnly[$ownerId]=true;
+		}
+		if (!count($lstOwnerId)) return $result;
+		
+		$ownerDataSource=getDataSource($this->permTestReadOnlyOwnerTableName);
+		if (!$ownerDataSource) throw new Exception('Не найден родительский источник данных, неверное значение параметра permTestReadOnlyOwnerTableName');
+		foreach($ownerDataSource->execRefresh(Array('filter.id'=>$lstOwnerId)) as $rowOwner) {
+			$ownerId=$rowOwner['id'];
+			$ownersReadOnly[$ownerId]=$rowOwner['row.readonly']?true:false;
+		}
+		
+		foreach($result as &$row) {
+			$ownerId=$row[$this->permTestReadOnlyOwnerLinkFieldName];
+			if ($ownersReadOnly[$ownerId]) $row['row.readonly']=1;
+		}
+		
+		return $result;
+	}
+/** Проверить строку на ReadOnly по строке родительской таблицы
  *
  * @param	Array	$row значения полей
  * @return	boolean ReadOnly строки
  */
-	public function getIsRowReadOnly($row) {
-		$permMode=$this->permMode;
-		if (!$permMode) $permMode=$this->tableName;
-		if (!getPerm($permMode, 'write')) return true;
+	protected function getRowOwnerReadOnly($row) {
+		if (!$this->isPermTestRowReadOnly) return false;
+		if (!$this->permTestReadOnlyOwnerTableName) return false;
+		if (!$this->permTestReadOnlyOwnerLinkFieldName) return false;
 		if ($row['row.readonly']) return true;
-		if ($this->onRowReadOnly($row)) return true;
-		if ($this->onParentRowReadOnly($row)) return true;
+		$ownerId=$row[$this->permTestReadOnlyOwnerLinkFieldName];
+		if (!$ownerId) return true;
+		$ownerDataSource=getDataSource($this->permTestReadOnlyOwnerTableName);
+		if (!$ownerDataSource) throw new Exception('Не найден родительский источник данных, неверное значение параметра permTestReadOnlyOwnerTableName');
+		
+		$lstOwner=$ownerDataSource->execRefresh(Array('filter.id'=>$ownerId));
+		if (!count($lstOwner)) return true;
+		foreach($lstOwner as $rowOwner) {
+			if ($rowOwner['row.readonly']) return true;
+		}
 		return false;
 	}
-
+	
 /** Выполнить запрос, записать ответ в XMLWriter согласно протоколу G740
  *
  * @param	Array	$params контекст выполнения запроса
@@ -462,7 +517,10 @@ XML;
 		if ($requestName=='refreshrow') {
 			$id=$params['id'];
 			if (!$id) throw new Exception('Не задан id!!!');
-			return $this->execRefresh(Array('filter.id'=>$id));
+			$p=Array();
+			$p['filter.id']=$id;
+			if ($params['row.ownertest']) $p['row.ownertest']=$params['row.ownertest'];
+			return $this->execRefresh($p);
 		}
 		if ($requestName=='save') return $this->execSave($params);
 		if ($requestName=='append') return $this->execAppend($params);
@@ -496,6 +554,11 @@ XML;
 			throw new Exception($errorMessage);
 		}
 		
+		$rowReadOnly=false;
+		$permMode=$this->permMode;
+		if (!$permMode) $permMode=$this->tableName;
+		if (!getPerm($permMode, 'write')) $rowReadOnly=true;
+		
 		while ($rec=$this->pdoFetch($q)) {
 			$row=Array();
 			if (isset($rec['id'])) $row['id']=$rec['id'];
@@ -514,10 +577,14 @@ XML;
 				if (isset($rec[$sqlName.'_color'])) $row[$name.'.color']=$rec[$sqlName.'_color'];
 				if (isset($rec[$sqlName.'_visible'])) $row[$name.'.visible']=$rec[$sqlName.'_visible'];
 			}
-			if ($this->getIsRowReadOnly($row)) $row['row.readonly']=1;
+			if ($rowReadOnly || $this->onRowReadOnly($row)) $row['row.readonly']=1;
 			$result[]=&$row;
 			unset($row);
 		}
+		if ($params['row.ownertest'] && $this->isPermTestRowReadOnly && $this->permTestReadOnlyOwnerTableName && $this->permTestReadOnlyOwnerLinkFieldName) {
+			$this->getResultOwnerReadOnly($result);
+		}
+		
 		return $result;
 	}
 /** Выполнить операцию save, ответ вернуть в виде массива
@@ -599,9 +666,10 @@ XML;
 		$result=$this->execRefresh(Array('filter.id'=>$id));
 		$result=$this->onValid($result);
 		$result=$this->onAfterSave($result, $params);
-		if ($this->isPermTestRowReadOnlyAfterSave) {
+		if ($this->isPermTestRowReadOnly) {
 			foreach($result as &$row) {
-				if ($row['row.readonly']) throw new Exception(errorMessage.' - строка только для чтения');
+				if ($this->getRowOwnerReadOnly($row)) $row['row.readonly']=1;
+				if ($row['row.readonly']) throw new Exception('У Вас нет прав на внесение таких изменений в строку таблицы '.$this->tableCaption);
 			}
 		}
 		return $result;
@@ -679,9 +747,10 @@ XML;
 		$result=$this->execRefresh(Array('filter.id'=>$lastId));
 		$result=$this->onValid($result);
 		$result=$this->onAfterSave($result, $params);
-		if ($this->isPermTestRowReadOnlyAfterSave) {
+		if ($this->isPermTestRowReadOnly) {
 			foreach($result as &$row) {
-				if ($row['row.readonly']) throw new Exception(errorMessage.' - строка только для чтения');
+				if ($this->getRowOwnerReadOnly($row)) $row['row.readonly']=1;
+				if ($row['row.readonly']) throw new Exception('У Вас нет прав на вставку такой строки в таблицу '.$this->tableCaption);			
 			}
 		}
 		return $result;
@@ -780,15 +849,6 @@ XML;
 	protected function onRowReadOnly($row=Array()) {
 		return false;
 	}
-/** Проверка строки родительского источника данных на ReadOnly
- *
- * @param	Array	$row значения полей
- * @param	Array	$params параметры операции
- * @return	boolean ReadOnly строки родительского источника данных
- */
-	protected function onParentRowReadOnly($row=Array(), $params=Array()) {
-		return false;
-	}
 	
 /** Выполнить операцию delete, ответ вернуть в виде массива
  *
@@ -800,7 +860,6 @@ XML;
 		if (!$params['#recursLevel']) {
 			if (!$this->getPerm('write','delete',$params)) throw new Exception('У Вас нет прав на удаление строки таблицы '.$this->tableCaption);
 		}
-		
 		if ($params['#recursLevel']>15) throw new Exception('Удаление невозможно, обнаружилось зацикливание ссылок при анализе ссылочной целостности');
 		if (!isset($params['id'])) return Array();
 		$idlist=$this->php2SqlIn($params['id']);
@@ -1203,6 +1262,11 @@ SQL;
 			if ($mode=='after') $recResult['ord']=$this->getOrdAppendAfter($params);
 			if ($mode=='before') $recResult['ord']=$this->getOrdAppendBefore($params);
 		}
+		
+		if ($this->getRowOwnerReadOnly($recResult)) {
+			throw new Exception("У Вас нет прав на добавление такой строки в таблицу {$this->tableCaption}");
+		}
+		
 		if ($this->isSaveOnAppend) {
 			$lst=$this->execInsert($recResult);
 			if (count($lst)!=1) throw new Exception('Ошибка при сохранении добавляемой строки');

@@ -27,14 +27,10 @@ class UtilityBackup extends UtilController {
 		}
 		if (!getPerm('sys','write')) throw new Exception('У Вас нет прав на выполнение этой операции...');
 		
+		$dbUtility = new DBUtility();
 		$path=pathConcat(getCfg('path.root'),getCfg('path.root.export-import'),'backup');
 		if (!is_dir($path)) mkdir($path);
-		$fileName=str_replace("\\","/",realpath($path)).'/backup.xml';
-		
-		$xmlWriter = new XMLWriter();
-		$xmlWriter->openURI($fileName);
-		$xmlWriter->startDocument('1.0','utf-8');
-		$xmlWriter->startElement('tables');
+		$dbUtility->xmlFileName=str_replace("\\","/",realpath($path)).'/backup.xml';
 		
 		if ($params['isdatastru']) {
 			if ($isEcho) {
@@ -52,14 +48,12 @@ HTML;
 			$lst[]='sysfieldparams';
 			foreach($lst as $index=>$tableName) {
 				$p=Array();
-				$p['xmlWriter']=$xmlWriter;
 				$p['tableName']=$tableName;
 				$p['isEcho']=true;
-				$p['isOptimize']=true;
 				if ($isEcho) {
 					echo '<div class="message">'.$tableName.': '; flush();
 				}
-				saveTableToXmlWriter($p);
+				$dbUtility->saveTable($p);
 				if ($isEcho) {
 					echo '</div>'; flush();
 					echo '<script>document.body.scrollIntoView(false)</script>'; flush();
@@ -88,14 +82,12 @@ SQL;
 			$q=$pdoDB->pdo($sql);
 			while ($rec=$pdoDB->pdoFetch($q)) {
 				$p=Array();
-				$p['xmlWriter']=$xmlWriter;
 				$p['tableName']=$rec['tablename'];
 				$p['isEcho']=true;
-				$p['isOptimize']=true;
 				if ($isEcho) {
 					echo '<div class="message">'.$rec['tablename'].': '; flush();
 				}
-				saveTableToXmlWriter($p);
+				$dbUtility->saveTable($p);
 				if ($isEcho) {
 					echo '</div>'; flush();
 					echo '<script>document.body.scrollIntoView(false)</script>'; flush();
@@ -126,14 +118,12 @@ SQL;
 			$q=$pdoDB->pdo($sql);
 			while ($rec=$pdoDB->pdoFetch($q)) {
 				$p=Array();
-				$p['xmlWriter']=$xmlWriter;
 				$p['tableName']=$rec['tablename'];
 				$p['isEcho']=true;
-				$p['isOptimize']=true;
 				if ($isEcho) {
 					echo '<div class="message">'.$rec['tablename'].': '; flush();
 				}
-				saveTableToXmlWriter($p);
+				$dbUtility->saveTable($p);
 				if ($isEcho) {
 					echo '</div>'; flush();
 					echo '<script>document.body.scrollIntoView(false)</script>'; flush();
@@ -164,14 +154,12 @@ SQL;
 			$q=$pdoDB->pdo($sql);
 			while ($rec=$pdoDB->pdoFetch($q)) {
 				$p=Array();
-				$p['xmlWriter']=$xmlWriter;
 				$p['tableName']=$rec['tablename'];
 				$p['isEcho']=true;
-				$p['isOptimize']=true;
 				if ($isEcho) {
 					echo '<div class="message">'.$rec['tablename'].': '; flush();
 				}
-				saveTableToXmlWriter($p);
+				$dbUtility->saveTable($p);
 				if ($isEcho) {
 					echo '</div>'; flush();
 					echo '<script>document.body.scrollIntoView(false)</script>'; flush();
@@ -181,10 +169,8 @@ SQL;
 				echo '</div>'; flush();
 			}
 		}
-		$xmlWriter->endElement();
-		$xmlWriter->endDocument();
-		$xmlWriter->flush();
-		unset($xmlWriter);
+		$dbUtility->xmlSave();
+		unset($dbUtility);
 		if ($isEcho) {
 			echo 'Ok!</div>'; flush();
 			echo '<script>document.body.scrollIntoView(false)</script>'; flush();

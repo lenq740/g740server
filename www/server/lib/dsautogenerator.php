@@ -81,7 +81,8 @@ SQL;
 		$dsT['caption']=$rec['name'];
 		$dsT['permmode']=$rec['permmode'];
 		$dsT['selectorderby']=$rec['orderby'];
-		$dsT['selectfields']=$rec['fields'];
+		//$dsT['selectfields']=$rec['fields'];
+		$dsT['selectfields']='';
 
 		$dsT['fields']=Array();
 		$sql=<<<SQL

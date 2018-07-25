@@ -465,12 +465,15 @@ function goPageController($isTrace=false) {
  * @return	string шаблон подключения визуализатора g740
  *
  * - $info['title'] - заголовок проекта
+ * - $info['favicon'] - favicon
  * - $info['path-g740client'] - путь до g740client
  * - $info['path-g740icons-css'] - путь до css файла с иконками
- * - $info['class-app-color'] - 'app-color-red', 'app-color-black'
+ * - $info['iconset'] - набор иконок - 'default', 'cti'
  *
  * - $info['config-urlServer'] - путь до точки входа серверных скриптов
  * - $info['config-mainFormName'] - 'formMain', 'formMainWithMenuBar'
+ * - $info['config-appColorScheme'] - 'black', 'red', 'cti'
+ * - $info['config-iconSizeDefault'] - 'small', 'medium', 'large'
  * - $info['config-login-mainFormLoginUrl'] - путь до страницы аутентификации, если она сделана отдельно
  * - $info['config-login-loginUrl']
  * - $info['config-login-iconUrl']
@@ -505,7 +508,18 @@ HTML;
 	conf['mainFormLoginUrl']='{$jsMainFormLoginUrl}';
 HTML;
 	}
-
+	if ($info['config-appColorScheme']) {
+		$jsAppColorScheme=str2JavaScript($info['config-appColorScheme']);
+		$htmlConfig.="\n".<<<HTML
+	conf['appColorScheme']='{$jsAppColorScheme}';
+HTML;
+	}
+	if ($info['config-iconSizeDefault']) {
+		$jsIconSizeDefault=str2JavaScript($info['config-iconSizeDefault']);
+		$htmlConfig.="\n".<<<HTML
+	conf['iconSizeDefault']='{$jsIconSizeDefault}';
+HTML;
+	}
 	if (isset($info['config-login-loginUrl'])) {
 		$jsValue=str2JavaScript($info['config-login-loginUrl']);
 		$htmlConfig.="\n".<<<HTML
@@ -549,6 +563,28 @@ HTML;
 HTML;
 	}
 	
+	$htmlFavIcon='';
+	if ($info['favicon']) {
+		$path_info = pathinfo($info['favicon']);
+		$ext=strtolower($path_info['extension']);
+		$attrFaveIcon=str2Attr($info['favicon']);
+		if ($ext=='ico') {
+			$htmlFavIcon=<<<HTML
+<link rel="shortcut icon" href="{$attrFaveIcon}" type="image/x-icon"/>
+HTML;
+		}
+		else if ($ext=='png') {
+			$htmlFavIcon=<<<HTML
+<link rel="shortcut icon" href="{$attrFaveIcon}" type="image/png"/>
+HTML;
+		}
+		else {
+			$htmlFavIcon=<<<HTML
+<link rel="shortcut icon" href="{$attrFaveIcon}" type="image"  {$ext}/>
+HTML;
+		}
+	}
+	
 	$htmlIcons='';
 	foreach($icons as $iconName=>$iconClass) {
 		$jsName=str2JavaScript($iconName);
@@ -558,6 +594,10 @@ HTML;
 	icons['{$jsName}']='{$jsClass}';
 HTML;
 	}
+	
+	$iconset='default';
+	if (isset($info['iconset'])) $iconset=$info['iconset'];
+	
 	
 	$result=<<<HTML
 <!DOCTYPE HTML>
@@ -569,8 +609,11 @@ HTML;
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 	<title>{$htmlTitle}</title>
 
+	{$htmlFavIcon}	
+	
 	<link rel="stylesheet" type="text/css" href="{$attrPathG740Client}/js/g740/cssdojo/main.css"/>
 	<link rel="stylesheet" type="text/css" href="{$attrPathG740Client}/js/g740/main.css"/>
+	<link rel="stylesheet" type="text/css" href="{$attrPathG740Client}/js/g740/icons/iconset-{$iconset}/icons.css"/>
 	<link rel="stylesheet" type="text/css" href="{$attrPathG740IconsCSS}"/>
 	
 <!-- подключаем сжатую версию Dojo -->
@@ -595,7 +638,7 @@ HTML;
 	<script type="text/javascript" src="{$attrPathG740Client}/js/dojocompressed/dojo.js.uncompressed.js"></script>
 	<script type="text/javascript" src="{$attrPathG740Client}/js/dojocompressed/g740-dojo.js"></script>
 </head>
-<body class="g740 {$info['class-app-color']}">
+<body>
 <!-- Выделяем место под размещение главной формы приложения -->
 	<div id="FormPanelMain"></div>
 <!--[if IE]>
@@ -615,10 +658,12 @@ HTML;
 	var confDialogLogin=conf['dialogLogin'];
 	conf['mainFormDomNode']='FormPanelMain';	// Узел DOM, в ктором размещается главная форма приложения
 {$htmlConfig}
+
 // Расширяем стандартный набор иконок, которые можно использовать в кнопочках и узлах дерева
 	var icons=g740.icons._items;
 {$htmlIcons}
-	g740.application.doG740ShowForm();
+
+	g740.application.go();
 			}
 		);
 	</script>
