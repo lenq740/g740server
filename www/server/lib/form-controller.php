@@ -115,7 +115,7 @@ class FormController {
 </request>
 XML;
 		}
-		if ($_SESSION['connect_login']) $login=str2Attr($_SESSION['connect_login']);
+		if (getPP('login')) $login=str2Attr(getPP('login'));
 		$result=<<<XML
 <menubar login="{$login}">
 {$result}
