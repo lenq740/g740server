@@ -611,9 +611,9 @@ HTML;
 
 	{$htmlFavIcon}	
 	
-	<link rel="stylesheet" type="text/css" href="{$attrPathG740Client}/js/g740/cssdojo/main.css"/>
-	<link rel="stylesheet" type="text/css" href="{$attrPathG740Client}/js/g740/main.css"/>
-	<link rel="stylesheet" type="text/css" href="{$attrPathG740Client}/js/g740/icons/iconset-{$iconset}/icons.css"/>
+	<link rel="stylesheet" type="text/css" href="{$attrPathG740Client}/g740/cssdojo/main.css"/>
+	<link rel="stylesheet" type="text/css" href="{$attrPathG740Client}/g740/main.css"/>
+	<link rel="stylesheet" type="text/css" href="{$attrPathG740Client}/g740/icons/iconset-{$iconset}/icons.css"/>
 	<link rel="stylesheet" type="text/css" href="{$attrPathG740IconsCSS}"/>
 	
 <!-- подключаем сжатую версию Dojo -->
@@ -626,7 +626,7 @@ HTML;
 			cacheBust: true,
 			parseOnLoad: false,
 			async: true,
-			baseUrl: "{$jsPathG740Client}/js/dojocompressed",
+			baseUrl: "{$jsPathG740Client}/dojocompressed",
 			packages: [
 				{
 					name: 'g740',
@@ -635,8 +635,8 @@ HTML;
 			]
 		};
 	</script>
-	<script type="text/javascript" src="{$attrPathG740Client}/js/dojocompressed/dojo.js.uncompressed.js"></script>
-	<script type="text/javascript" src="{$attrPathG740Client}/js/dojocompressed/g740-dojo.js"></script>
+	<script type="text/javascript" src="{$attrPathG740Client}/dojocompressed/dojo.js.uncompressed.js"></script>
+	<script type="text/javascript" src="{$attrPathG740Client}/dojocompressed/g740-dojo.js"></script>
 </head>
 <body>
 <!-- Выделяем место под размещение главной формы приложения -->

@@ -689,9 +689,10 @@ XML;
 		$sqlDelim='';
 		$driverName=$this->getDriverName();
 		
-		if ($this->isGUID) {
+		$insertIdValue=$this->getInsertIdValue($params);
+		if ($insertIdValue) {
 			$name='id';
-			$sqlId=$this->guid2Sql($params['id']);
+			$sqlId=$this->str2Sql($insertIdValue);
 			$sqlName=strtolower($name);
 			$sqlFields.=$sqlDelim . $sqlName;
 			$sqlValues.=$sqlDelim . "'{$sqlId}'";
@@ -737,8 +738,8 @@ XML;
 			throw new Exception($errorMessage);
 		}
 
-		if ($this->isGUID) {
-			$lastId=$params['id'];
+		if ($insertIdValue) {
+			$lastId=$insertIdValue;
 		} else {
 			$lastId=$this->getPDO()->lastInsertId();
 		}
@@ -755,6 +756,13 @@ XML;
 		}
 		return $result;
 	}
+	protected function getInsertIdValue($params=Array()) {
+		$result='';
+		if ($this->isGUID) $result=$this->guid2Sql($params['id']);
+		return $result;
+	}
+	
+	
 /** Выполнить операцию copy, ответ вернуть в виде массива
  *
  * @param	Array	$params контекст выполнения

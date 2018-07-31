@@ -467,6 +467,45 @@ function cryptPassword($password) {
 	return md5($password . getCfg('crypt.md5.key'));
 }
 
+/** Обратимое шифрование, ключ 32 цифры от 0 до F (128 бит)
+ *
+ * @param	string	$plaintext текст
+ * @return	string зашифрованный текст
+ */
+function enCryptText($plaintext) {
+	$cipher = 'aes-128-cbc';
+	$key=getCfg('crypt.128.key');
+	$ivlen = openssl_cipher_iv_length($cipher);
+	$iv = openssl_random_pseudo_bytes($ivlen);
+	$ciphertext_raw = openssl_encrypt($plaintext, $cipher, $key, $options=OPENSSL_RAW_DATA, $iv);
+	$hmac = hash_hmac('sha256', $ciphertext_raw, $key, $as_binary=true);
+	$ciphertext = base64_encode($iv.$hmac.$ciphertext_raw);
+	return $ciphertext;
+}
+
+/** Расшифровка, ключ 32 цифры от 0 до F (128 бит)
+ *
+ * @param	string	$ciphertext зашифрованный текст
+ * @return	string исходный текст
+ */
+function deCryptText($ciphertext) {
+	$cipher = 'aes-128-cbc';
+	$key=getCfg('crypt.128.key');
+
+	$c = base64_decode($ciphertext);
+	$ivlen = openssl_cipher_iv_length($cipher);
+	$iv = substr($c, 0, $ivlen);
+	$hmac = substr($c, $ivlen, $sha2len=32);
+	$ciphertext_raw = substr($c, $ivlen+$sha2len);
+	$original_plaintext = openssl_decrypt($ciphertext_raw, $cipher, $key, $options=OPENSSL_RAW_DATA, $iv);
+	$calcmac = hash_hmac('sha256', $ciphertext_raw, $key, $as_binary=true);
+	if (hash_equals($hmac, $calcmac))//с PHP 5.6+ сравнение, не подверженное атаке по времени
+	{
+		return $original_plaintext;
+	}
+	return '';
+}
+
 //------------------------------------------------------------------------------
 // Конфигурационные настройки
 //------------------------------------------------------------------------------
