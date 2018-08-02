@@ -27,20 +27,6 @@ $isProcessEnded=false;
 try {
 //	вариант подключения генератора страниц
 	goPageController();
-/*
-	{	// вариант подключения клиента g740
-		$info=Array();
-		$info['title']='Заготовка проекта';
-		$info['path-g740client']='/'.pathConcat(getCfg('href.root'),getCfg('path.root.resource'),'g740client');
-		$info['path-g740icons-css']='/'.pathConcat($info['path-g740client'],'icons','icons.css');
-		$info['class-app-color']='app-color-red';
-		$info['config-urlServer']='/'.pathConcat(getCfg('href.root'),getCfg('path.root.server'),'index.php');
-		$info['config-mainFormName']='formMainWithMenuBar';
-		$info['config-login-isReloadBeforeLogin']=true;
-		$info['config-login-loginUrl']='/'.pathConcat(getCfg('href.root'),getCfg('path.root.resource'),'logoscreen','index.php');
-		echo getPageControllerG740Client($info, getCfg('g740.icons'));
-	}
-*/
 	$isProcessEnded=true;
 }
 catch (Exception $e) {

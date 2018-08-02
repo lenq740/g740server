@@ -4,7 +4,7 @@ class FormMain extends FormController {
 	protected function getDefinitionMacro($params=Array()) {
 		$result=parent::getDefinitionMacro($params);
 		$result['$sysmenubar$']=$this->getSysMenuBar();
-		$result['$background$']=pathConcat(getCfg('path.root.html.entry'),getCfg('path.root.resource'),'logoscreen/background.jpg');
+		$result['%background%']=pathConcat(getCfg('path.root.html.entry'),getCfg('path.root.resource'),getCfg('path.root.resource.prjlib'),'logoscreen/background.jpg');
 		return $result;
 	}
 }

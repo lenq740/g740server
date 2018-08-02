@@ -479,9 +479,15 @@ function enCryptText($plaintext) {
 	$iv = openssl_random_pseudo_bytes($ivlen);
 	$ciphertext_raw = openssl_encrypt($plaintext, $cipher, $key, $options=OPENSSL_RAW_DATA, $iv);
 	$hmac = hash_hmac('sha256', $ciphertext_raw, $key, $as_binary=true);
+
 	$ciphertext = base64_encode($iv.$hmac.$ciphertext_raw);
+	$from=Array('+','/','=');
+	$to=Array('й','ы','я');
+	$ciphertext=str_replace($from, $to, $ciphertext);
+	
 	return $ciphertext;
 }
+
 
 /** Расшифровка, ключ 32 цифры от 0 до F (128 бит)
  *
@@ -492,7 +498,11 @@ function deCryptText($ciphertext) {
 	$cipher = 'aes-128-cbc';
 	$key=getCfg('crypt.128.key');
 
+	$from=Array('й','ы','я');
+	$to=Array('+','/','=');
+	$ciphertext=str_replace($from, $to, $ciphertext);
 	$c = base64_decode($ciphertext);
+	
 	$ivlen = openssl_cipher_iv_length($cipher);
 	$iv = substr($c, 0, $ivlen);
 	$hmac = substr($c, $ivlen, $sha2len=32);

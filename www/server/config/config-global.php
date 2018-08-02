@@ -22,7 +22,7 @@ $config['path.root']='';
 
 // Путь от корня проекта до доступных ресурсов
 $config['path.root.resource']='resource';
-$config['g740client']='g740client';
+$config['path.root.resource.prjlib']='prjlib';
 
 // Путь от корня проекта до точки входа сервера G740
 $config['path.root.server']='server';
@@ -39,7 +39,7 @@ $config['path.root.reports']='server/module/reports';
 // Путь от корня проекта до папки экспорта и импорта
 $config['path.root.export-import']='server/export-import';
 // Путь от корня проекта до логов
-$config['path.root.log']='server/log';
+$config['path.root.log']='../log';
 
 // время Московское
 $config['timezone']='Etc/GMT-3';

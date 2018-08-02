@@ -1,0 +1,85 @@
+
+/****
+		dijit.form.TextBox
+		dijit.form.ValidationTextBox
+		dijit.form.SerializableTextBox
+		dijit.form.RangeBoundTextBox
+		dijit.form.NumberTextBox
+		dijit.form.CurrencyTextBox
+		dijit.form.NumberSpinner
+		dijit.form.ComboBox (partial)
+ ****/
+
+.g740 .dijitInputContainer input {
+	margin: 0 0.1em;
+}
+
+.g740 .dijitTextArea {
+	padding: 3px;
+}
+
+.g740 .dijitDateTextBox {
+	margin-top: -1px;
+}
+
+.g740 .dijitSelect .dijitButtonContents,
+.g740 .dijitSelect,
+.g740 .dijitTextBox {
+	background-color: white;
+}
+.g740 .dijitSelect,
+.g740 .dijitTextBox {
+	border:1px solid #b3b3b3;
+}
+.g740 .dijitTextBox.g740-widget-focused {
+	border:1px solid #d4464e !important;
+}
+
+.g740 .dijitSelect .dijitArrowButton,
+.g740 .dijitComboBox .dijitButtonNode {
+	padding: 0 0.2em;
+}
+.g740 .dijitSelect .dijitButtonContents,
+.g740 .dijitTextBox .dijitButtonNode {
+	/* line between the input area and the drop down button, and also between
+	 * the up and down buttons of a spinner
+	 */
+	border-color: #9b9b9b;
+}
+
+.g740 .dijitSelectFocused,
+.g740 .dijitTextBoxFocused {
+	/* input field when focused (ie: typing affects it) */
+	border-color:#406b9b;
+}
+.g740 .dijitSelectFocused TD,
+.g740 .dijitTextBoxFocused .dijitButtonNode {
+	border-color:#366dba;
+}
+
+.g740 .dijitError {
+	background-color:#f9f7ba;
+	background-image:none;
+}
+
+.g740 .dijitErrorFocused {
+	background-color:#f9f999;
+	background-image:none;
+}
+
+/* Validation errors  */
+.g740 .dijitValidationTextBoxError .dijitValidationIcon {
+	/* prevent height change when widget goes from valid to invalid state */
+	width: 16px;
+	background: transparent url('../images/warning.png') no-repeat center center;
+}
+
+/* The highlight is shown in the ComboBox menu. */
+.g740 .dijitComboBoxHighlightMatch {
+	background-color:#a5beda;
+}
+
+.g740 .dijitFocusedLabel {
+	/* for checkboxes or radio buttons, hatch border around the corresponding label, to indicate focus */
+	outline: 1px dotted #666666;
+}

@@ -35,15 +35,32 @@ class PageViewerAdmin extends PageViewer {
 		$info=Array();
 		$info['title']='Заготовка проекта';
 		$info['favicon']='favicon.png';
-		$info['path-g740client']='/'.pathConcat(getCfg('href.root'),getCfg('path.root.resource'),'g740client');
-		$info['path-g740icons-css']='/'.pathConcat($info['path-g740client'],'icons','icons.css');
-		$info['config-appColorScheme']='red';
+		$info['path-g740client']='/'.pathConcat(
+			getCfg('href.root'),
+			getCfg('path.root.resource'),
+			getCfg('path.root.resource.prjlib'),
+			'g740client'
+		);
+		$info['path-g740icons-css']='/'.pathConcat(
+			getCfg('href.root'),
+			getCfg('path.root.resource'),
+			getCfg('path.root.resource.prjlib'),
+			'icons',
+			'icons.css'
+		);
+
 		$info['iconset']='default';
+		$info['config-appColorScheme']='red';
 		$info['config-iconSizeDefault']='small';
 		$info['config-urlServer']='/'.pathConcat(getCfg('href.root'),getCfg('path.root.server'),'index.php');
 		$info['config-mainFormName']='formMainWithMenuBar';
 		$info['config-login-isReloadBeforeLogin']=true;
-		$info['config-login-loginUrl']='/'.pathConcat(getCfg('href.root'),getCfg('path.root.resource'),'logoscreen','index.php');
+		$info['config-login-loginUrl']='/'.pathConcat(
+			getCfg('href.root'),
+			getCfg('path.root.resource'),
+			getCfg('path.root.resource.prjlib'),
+			'logoscreen'
+		);
 		$result=getPageControllerG740Client($info, getCfg('g740.icons'));
 		return $result;
 	}

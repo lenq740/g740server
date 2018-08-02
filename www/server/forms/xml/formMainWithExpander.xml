@@ -1,0 +1,30 @@
+<form name="%form%">
+	<rowsets>
+		<rowset name="treemenu">
+			<param name="mode.treemenu" value="1"/>
+		</rowset>
+	</rowsets>
+	<panels>
+		<panel type="html" align="top" style="title"
+			color="#f7f8f9" 
+			bgcolor="#101e5a" 
+			caption="%title%" 
+			size="large" 
+			login="%login%"
+		>
+		</panel>
+<!-- Верхний заголовок -->
+		<panel 
+			type="form" 
+			background="%background%" 
+			bgopacity="0.3" 
+			rowset="treemenu"
+			size="medium"
+			menu.align="left"
+			menu.width="38px"
+			menu.maxwidth="400px"
+			menu.caption=""
+		>
+		</panel>
+	</panels>
+</form>
