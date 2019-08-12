@@ -1,0 +1,13 @@
+.project-icons-anketa {
+	background-image: url('anketa.png');
+}
+.project-icons-calendar {
+	background-image: url('calendar.png');
+}
+
+.icons-white .project-icons-anketa {
+	background-image: url('anketa-white.png');
+}
+.icons-white .project-icons-calendar {
+	background-image: url('calendar-white.png');
+}

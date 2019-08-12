@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tables>
+	<table name="systablecategory"/>
+	<table name="systable"/>
+	<table name="sysfieldtype">
+		<row id="1" name="Id" isid="1" isref="0" isdec="1" isstr="0" isdat="0" defvalue="" jstype="id" g740type="id" ord="10"/>
+		<row id="2" name="Строка" isid="0" isref="0" isdec="0" isstr="1" isdat="0" defvalue="" jstype="edit" g740type="string" ord="20"/>
+		<row id="3" name="Memo" isid="0" isref="0" isdec="0" isstr="1" isdat="0" defvalue="" jstype="memo" g740type="memo" ord="30"/>
+		<row id="4" name="Число" isid="0" isref="0" isdec="1" isstr="0" isdat="0" defvalue="0" jstype="num" g740type="num" ord="40"/>
+		<row id="5" name="Дата" isid="0" isref="0" isdec="0" isstr="0" isdat="1" defvalue="null" jstype="date" g740type="date" ord="50"/>
+		<row id="6" name="Галочка" isid="0" isref="0" isdec="1" isstr="0" isdat="0" defvalue="0" jstype="check" g740type="check" ord="60"/>
+		<row id="7" name="Ссылка" isid="0" isref="1" isdec="0" isstr="0" isdat="0" defvalue="" jstype="ref" g740type="ref" ord="70"/>
+		<row id="8" name="Список" isid="0" isref="0" isdec="0" isstr="0" isdat="0" defvalue="" jstype="list" g740type="list" ord="80"/>
+		<row id="9" name="Иконки" isid="0" isref="0" isdec="0" isstr="0" isdat="0" defvalue="" jstype="icons" g740type="icons" ord="90"/>
+		<row id="10" name="Радиогруппа" isid="0" isref="0" isdec="0" isstr="0" isdat="0" defvalue="" jstype="radio" g740type="radio" ord="100"/>
+		<row id="11" name="Список множественный" isid="0" isref="0" isdec="0" isstr="0" isdat="0" defvalue="" jstype="reflist" g740type="reflist" ord="110"/>
+		<row id="12" name="Дерево множественное" isid="0" isref="0" isdec="0" isstr="0" isdat="0" defvalue="" jstype="reftree" g740type="reftree" ord="120"/>
+	</table>
+	<table name="sysfield"/>
+	<table name="sysfieldparams"/>
+	<table name="sysappmenu">
+		<row id="-99" parentid="-99" name="root" description="root" form="" icon="" params="" permmode="" permoper="" ord="0"/>
+		<row id="1" parentid="-99" name="Уголок разработчика" description="" form="" icon="root" params="" permmode="root" permoper="read" ord="0"/>
+		<row id="2" parentid="1" name="Структура базы" description="" form="formSysTreeDataModel" icon="tree" params="" permmode="" permoper="" ord="0"/>
+		<row id="3" parentid="1" name="Главное меню системы" description="" form="formSysTreeMenu" icon="menu" params="" permmode="" permoper="" ord="10"/>
+		<row id="4" parentid="1" name="Типы полей базы данных" description="" form="formSysFieldType" icon="ref" params="" permmode="" permoper="" ord="20"/>
+	</table>
+</tables>

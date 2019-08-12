@@ -1,0 +1,29 @@
+<!--
+Сервер G740 Типы полей базы данных
+
+copyright 2018-2019 Galinsky Leonid lenq740@yandex.ru
+This project is released under the BSD license
+-->
+<form name="formSysFieldType" caption="Типы полей базы данных">
+	<rowsets>
+		<rowset name="sysfieldtype"/>
+	</rowsets>
+	<panels>
+		<panel>
+			<panel type="grid" rowset="sysfieldtype">
+				<toolbar default="1"/>
+				<fields>
+					<field name="name" stretch="1"/>
+					<field name="isid" />
+					<field name="isref" />
+					<field name="isdec" />
+					<field name="isstr"/>
+					<field name="isdat"/>
+					<field name="defvalue"/>
+					<field name="jstype"/>
+					<field name="g740type"/>
+				</fields>
+			</panel>
+		</panel>
+	</panels>
+</form>

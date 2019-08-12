@@ -1,0 +1,27 @@
+<!--
+Сервер G740 Журнал выполнения плановых работ
+
+copyright 2018-2019 Galinsky Leonid lenq740@yandex.ru
+This project is released under the BSD license
+-->
+<form name="%form%" caption="Журнал выполнения плановых работ">
+	<rowsets>
+		<rowset name="sysextlog" paginator.count="300">
+		</rowset>
+	</rowsets>
+	<panels>
+		<panel rowset="sysextlog">
+			<panel type="grid">
+				<toolbar>
+					<request name="refresh"/>
+				</toolbar>
+				<field name="icon"/>
+				<field name="d"/>
+				<field name="tstart" caption="с" len="5"/>
+				<field name="tend" caption="по" len="5"/>
+				<field name="name" caption="Процесс"/>
+				<field name="message"/>
+			</panel>
+		</panel>
+	</panels>
+</form>

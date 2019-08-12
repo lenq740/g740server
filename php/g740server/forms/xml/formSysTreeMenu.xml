@@ -1,0 +1,60 @@
+<!--
+Сервер G740 Главное меню системы
+
+copyright 2018-2019 Galinsky Leonid lenq740@yandex.ru
+This project is released under the BSD license
+-->
+<form name="%form%" caption="Главное меню системы">
+	<rowsets>
+		<rowset name="systreemenu"></rowset>
+	</rowsets>
+	<panels>
+		<panel type="panel" rowset="systreemenu">
+			<toolbar>
+				<request name="undo"/>
+				<request name="save"/>
+				<request name="refresh"/>
+				<separator/>
+				<request name="append"/>
+				<request name="copy"/>
+				<request name="append" mode="into"/>
+				<separator/>
+				<request name="delete"/>
+				<separator/>
+				<request name="move" confirm="Переместить?"/>
+				<separator/>
+				<request name="mark"/>
+				<request name="unmarkall"/>
+				<separator/>
+				<request name="shift" mode="first"/>
+				<request name="shift" mode="before"/>
+				<request name="shift" mode="after"/>
+				<request name="shift" mode="last"/>
+				<separator/>
+				<request caption="Экспорт таблиц" icon="backup" style="icontext">
+					<request name="form" form="formUtils" caption="Экспорт в XML" icon="xml">
+						<param name="name" value="backup"></param>
+						<param name="ismxlmenu" value="1"></param>
+					</request>
+				</request>
+				<request caption="Импорт таблиц" icon="restore" style="icontext">
+					<request name="form" form="formUtils" caption="Импорт из XML" icon="xml">
+						<param name="name" value="restore"></param>
+						<param name="ismxlmenu" value="1"></param>
+					</request>
+				</request>
+			</toolbar>
+			<panel type="tree" align="left" width="25%" splitter="1"/>
+				<panel type="scroll"  color="gray">
+					<panel type="fields" align="top" caption="Анкета элемента меню" captionup="1">
+						<field name="name" stretch="1" line="name"/>
+						<field name="icon" len="15" line="name"/>
+						<field name="form" stretch="1"/>
+						<field name="permmode" line="perm" stretch="1"/>
+						<field name="permoper" line="perm" stretch="1"/>
+						<field name="params" type="memo" stretch="1" enter="1" rows="10"/>
+					</panel>
+				</panel>
+		</panel>
+	</panels>
+</form>

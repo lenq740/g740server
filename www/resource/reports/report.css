@@ -1,0 +1,134 @@
+.params-report {
+	border-left-width: 4px;
+	border-left-style: solid;
+	border-left-color: #888;
+	background-color: #f9f9f9;
+	padding-left: 18px !important;
+	padding: 8px;
+	font-size: 100%;
+}
+.params-report .params-right {
+	text-align: right;
+}
+.params-report .params-bold {
+	font-weight: bold;
+}
+.params-report .separator {
+	height: 15px;
+}
+
+
+.table-report {
+	margin-top: 20px;
+}
+.table-report td {
+}
+.table-report th{
+	text-align: center;
+	font-weight: bold;
+	background-color: #f5f5f5;
+}
+.table-report .type-str {
+}
+.table-report .type-num {
+	text-align: right;
+}
+.table-report .title {
+}
+.table-report .itog {
+	vertical-align: top;
+	height: 30px;
+	background-color: #f5f5f5;
+	font-weight: bold;
+	font-size: 9pt; 
+}
+.table-report .total {
+	vertical-align: top;
+	height: 30px;
+	background-color: #f5f5f5;
+	font-weight: bold;
+}
+
+.table-report .title{
+	font-size: 13pt; 
+	background-color: #fAfAfA;
+}
+.table-report .title .level0{
+	margin-left: 0px;
+}
+.table-report .title .level1{
+	margin-left: 25px;
+}
+.table-report .title .level2{
+	margin-left: 50px;
+}
+.table-report .title .level3{
+	margin-left: 75px;
+}
+.table-report .title .level4{
+	margin-left: 100px;
+}
+.table-report .title .level5{
+	margin-left: 125px;
+}
+.table-report .title .level6{
+	margin-left: 125px;
+}
+.table-report .title .level7{
+	margin-left: 125px;
+}
+.table-report .title .level8{
+	margin-left: 125px;
+}
+.table-report .title .level9{
+	margin-left: 125px;
+}
+.table-report .title .level10{
+	margin-left: 125px;
+}
+
+
+
+.toolbarprint {
+	position: fixed;
+	left: 5px;
+	background-color: white;
+}
+.toolbarprint.width100 {
+	left: 0px;
+	width:100%;
+	box-shadow:1px 1px 1px 1px rgba(0,0,0,0.15);
+}
+.toolbarprint .btn {
+	float: left;
+	width: 40px;
+	height: 40px;
+	margin: 2px;
+	padding: 0px;
+	background-size: contain;
+	background-position: center;
+	background-repeat: no-repeat;
+	cursor: pointer;
+}
+.toolbarprint .btn:hover {
+}
+.toolbarprint .word {
+	background-image: url('word.svg');
+}
+.toolbarprint .xls {
+	background-image: url('excel.svg');
+}
+.toolbarprint .print {
+	background-image: url('print.svg');
+}
+.toolbarprintmargin {
+	height: 30px;
+}
+@media print {
+	.toolbarprint {
+		display: none !important;
+	}
+	.toolbarprintmargin {
+		display: none !important;
+	}
+}

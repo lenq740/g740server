@@ -1,0 +1,517 @@
+.g740-icons-default {
+	background-image: url('default.png');
+}
+.g740-icons-save {
+	background-image: url('save.png');
+}
+.g740-icons-undo {
+	background-image: url('undo.png');
+}
+.g740-icons-refresh {
+	background-image: url('refresh.png');
+}
+.g740-icons-refreshrow {
+	background-image: url('refreshrow.png');
+}
+.g740-icons-navigate {
+	background-image: url('navigate.png');
+}
+.g740-icons-edit {
+	background-image: url('edit.png');
+}
+.g740-icons-groupappend {
+	background-image: url('groupappend.png');
+}
+.g740-icons-append {
+	background-image: url('append.png');
+}
+.g740-icons-append-into {
+	background-image: url('append-into.png');
+}
+.g740-icons-delete {
+	background-image: url('delete.png');
+}
+.g740-icons-join {
+	background-image: url('join.png');
+}
+.g740-icons-expand {
+	background-image: url('expand.png');
+}
+.g740-icons-collapse {
+	background-image: url('collapse.png');
+}
+.g740-icons-marked {
+	background-image: url('marked.png');
+}
+.g740-icons-mark {
+	background-image: url('mark.png');
+}
+.g740-icons-markall {
+	background-image: url('markall.png');
+}
+.g740-icons-unmarkall {
+	background-image: url('unmarkall.png');
+}
+.g740-icons-mark-on {
+	background-image: url('mark-on.png');
+}
+.g740-icons-mark-off {
+	background-image: url('mark-off.png');
+}
+.g740-icons-move {
+	background-image: url('move-into.png');
+}
+.g740-icons-copy {
+	background-image: url('copy.png');
+}
+.g740-icons-link {
+	background-image: url('link-into.png');
+}
+.g740-icons-httpget {
+	background-image: url('httpget.png');
+}
+.g740-icons-httpput {
+	background-image: url('httpput.png');
+}
+.g740-icons-www {
+	background-image: url('www.png');
+}
+.g740-icons-shift-after {
+	background-image: url('shift-after.png');
+}
+.g740-icons-shift-before {
+	background-image: url('shift-before.png');
+}
+.g740-icons-shift-last {
+	background-image: url('shift-last.png');
+}
+.g740-icons-shift-first {
+	background-image: url('shift-first.png');
+}
+.g740-icons-find {
+	background-image: url('find.png');
+}
+.g740-icons-sort {
+	background-image: url('sort.png');
+}
+.g740-icons-timer {
+	background-image: url('timer.png');
+}
+.g740-icons-zip {
+	background-image: url('zip.png');
+}
+.g740-icons-xml {
+	background-image: url('xml.png');
+}
+.g740-icons-sql {
+	background-image: url('sql.png');
+}
+.g740-icons-word {
+	background-image: url('word.png');
+}
+.g740-icons-excel {
+	background-image: url('excel.png');
+}
+.g740-icons-print {
+	background-image: url('print.png');
+}
+.g740-icons-disconnect {
+	background-image: url('disconnect.png');
+}
+.g740-icons-table {
+	background-image: url('table.png');
+}
+.g740-icons-config {
+	background-image: url('config.png');
+}
+.g740-icons-computer {
+	background-image: url('computer.png');
+}
+.g740-icons-database {
+	background-image: url('database.png');
+}
+.g740-icons-backup {
+	background-image: url('backup.png');
+}
+.g740-icons-restore {
+	background-image: url('restore.png');
+}
+.g740-icons-log {
+	background-image: url('log.png');
+}
+.g740-icons-email {
+	background-image: url('email.png');
+}
+.g740-icons-folder {
+	background-image: url('folder.png');
+}
+.g740-icons-perm {
+	background-image: url('perm.png');
+}
+.g740-icons-user {
+	background-image: url('user.png');
+}
+.g740-icons-userrole {
+	background-image: url('userrole.png');
+}
+.g740-icons-usergroup {
+	background-image: url('usergroup.png');
+}
+.g740-icons-page {
+	background-image: url('page.png');
+}
+.g740-icons-dbtable {
+	background-image: url('dbtable.png');
+}
+.g740-icons-dbfield {
+	background-image: url('dbfield.png');
+}
+.g740-icons-help {
+	background-image: url('help.png');
+}
+.g740-icons-ok {
+	background-image: url('ok.png');
+}
+.g740-icons-cancel {
+	background-image: url('cancel.png');
+}
+.g740-icons-clear {
+	background-image: url('clear.png');
+}
+.g740-icons-go {
+	background-image: url('go.png');
+}
+.g740-icons-menu {
+	background-image: url('menu.png');
+}
+.g740-icons-debug {
+	background-image: url('debug.png');
+}
+.g740-icons-ref {
+	background-image: url('ref.png');
+}
+.g740-icons-reffolder {
+	background-image: url('reffolder.png');
+}
+.g740-icons-tree {
+	background-image: url('tree.png');
+}
+.g740-icons-region {
+	background-image: url('region.png');
+}
+.g740-icons-month {
+	background-image: url('month.png');
+}
+.g740-icons-api {
+	background-image: url('api.png');
+}
+.g740-icons-admin {
+	background-image: url('admin.png');
+}
+.g740-icons-root {
+	background-image: url('root.png');
+}
+.g740-icons-process {
+	background-image: url('process.png');
+}
+.g740-icons-process1 {
+	background-image: url('process1.png');
+}
+.g740-icons-execute {
+	background-image: url('execute.png');
+}
+.g740-icons-export {
+	background-image: url('export.png');
+}
+.g740-icons-import {
+	background-image: url('import.png');
+}
+.g740-icons-clipboard-copy {
+	background-image: url('clipboard-copy.png');
+}
+.g740-icons-clipboard-cut {
+	background-image: url('clipboard-cut.png');
+}
+.g740-icons-clipboard-paste {
+	background-image: url('clipboard-paste.png');
+}
+.g740-icons-check-on {
+	background-image: url('check-on.png');
+}
+.g740-icons-check-off {
+	background-image: url('check-off.png');
+}
+
+.icons-white .g740-icons-default {
+	background-image: url('default-white.png');
+}
+.icons-white .g740-icons-save {
+	background-image: url('save-white.png');
+}
+.icons-white .g740-icons-undo {
+	background-image: url('undo-white.png');
+}
+.icons-white .g740-icons-refresh {
+	background-image: url('refresh-white.png');
+}
+.icons-white .g740-icons-refreshrow {
+	background-image: url('refreshrow-white.png');
+}
+.icons-white .g740-icons-navigate {
+	background-image: url('navigate-white.png');
+}
+.icons-white .g740-icons-edit {
+	background-image: url('edit-white.png');
+}
+.icons-white .g740-icons-groupappend {
+	background-image: url('groupappend-white.png');
+}
+.icons-white .g740-icons-append {
+	background-image: url('append-white.png');
+}
+.icons-white .g740-icons-append-into {
+	background-image: url('append-into-white.png');
+}
+.icons-white .g740-icons-delete {
+	background-image: url('delete-white.png');
+}
+.icons-white .g740-icons-join {
+	background-image: url('join-white.png');
+}
+.icons-white .g740-icons-expand {
+	background-image: url('expand-white.png');
+}
+.icons-white .g740-icons-collapse {
+	background-image: url('collapse-white.png');
+}
+.icons-white .g740-icons-marked {
+	background-image: url('marked-white.png');
+}
+.icons-white .g740-icons-mark {
+	background-image: url('mark-white.png');
+}
+.icons-white .g740-icons-markall {
+	background-image: url('markall-white.png');
+}
+.icons-white .g740-icons-unmarkall {
+	background-image: url('unmarkall-white.png');
+}
+.icons-white .g740-icons-move {
+	background-image: url('move-into-white.png');
+}
+.icons-white .g740-icons-copy {
+	background-image: url('copy-white.png');
+}
+.icons-white .g740-icons-link {
+	background-image: url('link-into-white.png');
+}
+.icons-white .g740-icons-httpget {
+	background-image: url('httpget-white.png');
+}
+.icons-white .g740-icons-httpput {
+	background-image: url('httpput-white.png');
+}
+.icons-white .g740-icons-www {
+	background-image: url('www-white.png');
+}
+.icons-white .g740-icons-shift-after {
+	background-image: url('shift-after-white.png');
+}
+.icons-white .g740-icons-shift-before {
+	background-image: url('shift-before-white.png');
+}
+.icons-white .g740-icons-shift-last {
+	background-image: url('shift-last-white.png');
+}
+.icons-white .g740-icons-shift-first {
+	background-image: url('shift-first-white.png');
+}
+.icons-white .g740-icons-find {
+	background-image: url('find-white.png');
+}
+.icons-white .g740-icons-sort {
+	background-image: url('sort-white.png');
+}
+.icons-white .g740-icons-timer {
+	background-image: url('timer-white.png');
+}
+.icons-white .g740-icons-xml {
+	background-image: url('xml-white.png');
+}
+.icons-white .g740-icons-sql {
+	background-image: url('sql-white.png');
+}
+.icons-white .g740-icons-zip {
+	background-image: url('zip-white.png');
+}
+.icons-white .g740-icons-word {
+	background-image: url('word-white.png');
+}
+.icons-white .g740-icons-excel {
+	background-image: url('excel-white.png');
+}
+.icons-white .g740-icons-print {
+	background-image: url('print-white.png');
+}
+.icons-white .g740-icons-disconnect {
+	background-image: url('disconnect-white.png');
+}
+.icons-white .g740-icons-table {
+	background-image: url('table-white.png');
+}
+.icons-white .g740-icons-config {
+	background-image: url('config-white.png');
+}
+.icons-white .g740-icons-computer {
+	background-image: url('computer-white.png');
+}
+.icons-white .g740-icons-database {
+	background-image: url('database-white.png');
+}
+.icons-white .g740-icons-backup {
+	background-image: url('backup-white.png');
+}
+.icons-white .g740-icons-restore {
+	background-image: url('restore-white.png');
+}
+.icons-white .g740-icons-log {
+	background-image: url('log-white.png');
+}
+.icons-white .g740-icons-email {
+	background-image: url('email-white.png');
+}
+.icons-white .g740-icons-folder {
+	background-image: url('folder-white.png');
+}
+.icons-white .g740-icons-perm {
+	background-image: url('perm-white.png');
+}
+.icons-white .g740-icons-user {
+	background-image: url('user-white.png');
+}
+.icons-white .g740-icons-userrole {
+	background-image: url('userrole-white.png');
+}
+.icons-white .g740-icons-usergroup {
+	background-image: url('usergroup-white.png');
+}
+.icons-white .g740-icons-page {
+	background-image: url('page-white.png');
+}
+.icons-white .g740-icons-dbtable {
+	background-image: url('dbtable-white.png');
+}
+.icons-white .g740-icons-dbfield {
+	background-image: url('dbfield-white.png');
+}
+.icons-white .g740-icons-help {
+	background-image: url('help-white.png');
+}
+.icons-white .g740-icons-ok {
+	background-image: url('ok-white.png');
+}
+.icons-white .g740-icons-cancel {
+	background-image: url('cancel-white.png');
+}
+.icons-white .g740-icons-clear {
+	background-image: url('clear-white.png');
+}
+.icons-white .g740-icons-go {
+	background-image: url('go-white.png');
+}
+.icons-white .g740-icons-menu {
+	background-image: url('menu-white.png');
+}
+.icons-white .g740-icons-debug {
+	background-image: url('debug-white.png');
+}
+.icons-white .g740-icons-ref {
+	background-image: url('ref-white.png');
+}
+.icons-white .g740-icons-reffolder {
+	background-image: url('reffolder-white.png');
+}
+.icons-white .g740-icons-tree {
+	background-image: url('tree-white.png');
+}
+.icons-white .g740-icons-region {
+	background-image: url('region-white.png');
+}
+.icons-white .g740-icons-month {
+	background-image: url('month-white.png');
+}
+.icons-white .g740-icons-api {
+	background-image: url('api-white.png');
+}
+.icons-white .g740-icons-admin {
+	background-image: url('admin-white.png');
+}
+.icons-white .g740-icons-root {
+	background-image: url('root-white.png');
+}
+.icons-white .g740-icons-process {
+	background-image: url('process-white.png');
+}
+.icons-white .g740-icons-process1 {
+	background-image: url('process1-white.png');
+}
+.icons-white .g740-icons-execute {
+	background-image: url('execute-white.png');
+}
+.icons-white .g740-icons-export {
+	background-image: url('export-white.png');
+}
+.icons-white .g740-icons-import {
+	background-image: url('import-white.png');
+}
+.icons-white .g740-icons-clipboard-copy {
+	background-image: url('clipboard-copy-white.png');
+}
+.icons-white .g740-icons-clipboard-cut {
+	background-image: url('clipboard-cut-white.png');
+}
+.icons-white .g740-icons-clipboard-paste {
+	background-image: url('clipboard-paste-white.png');
+}
+.icons-white .g740-icons-check-on {
+	background-image: url('check-on-white.png');
+}
+.icons-white .g740-icons-check-off {
+	background-image: url('check-off-white.png');
+}
+
+
+.g740-icons-alert {
+	background-image: url('info-alert.png');
+}
+.g740-icons-warning {
+	background-image: url('info-warning.png');
+}
+.g740-icons-error {
+	background-image: url('info-error.png');
+}
+.g740-icons-deleted {
+	background-image: url('info-deleted.png');
+}
+
+
+.g740-icons-login-128  {
+	background-image: url('dialog/login-128.png');
+	width: 128px;
+	height: 128px;
+}
+.g740-icons-error-128  {
+	background-image: url('dialog/error-128.png');
+	width: 128px;
+	height: 128px;
+}
+.g740-icons-alert-128  {
+	background-image: url('dialog/alert-128.png');
+	width: 128px;
+	height: 128px;
+}
+.g740-icons-question-128  {
+	background-image: url('dialog/question-128.png');
+	width: 128px;
+	height: 128px;
+}

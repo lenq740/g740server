@@ -1,0 +1,47 @@
+<!--
+Сервер G740 Главная экранная форма приложения
+
+copyright 2018-2019 Galinsky Leonid lenq740@yandex.ru
+This project is released under the BSD license
+-->
+<form name="%form%">
+	<rowsets>
+		<rowset name="systreemenu">
+			<param name="mode.testperm" value="1"/>
+		</rowset>
+	</rowsets>
+	<panels>
+		<panel type="html" align="top" style="title"
+			color1="#f7f8f9" 
+			bgcolor1="#101e5a" 
+
+			color2="#cbc6c3" 
+			bgcolor2="white" 
+			
+			caption="%title%" 
+			size="large" 
+			login="%login%"
+		>
+		</panel>
+<!-- Верхний заголовок -->
+		<panel 
+			type="form" 
+
+			background="%background%" 
+			bgopacity="0.4"
+			bgsize="cover"
+			
+			form1="formTreeDataModel"
+			
+			menu="1"
+			tab="1"
+			
+			rowset="systreemenu"
+			menu.showonempty="1"
+			menu.align="left"
+			menu.maxwidth="400px"
+			menu.caption=""
+		>
+		</panel>
+	</panels>
+</form>

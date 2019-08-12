@@ -1,8 +1,0 @@
-<form name="%form%">
-	<panels>
-		<panel>
-$sysmenubar$
-			<panel type="form" tab="1" background="%background%"/>
-		</panel>
-	</panels>
-</form>

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+	<node name="Уголок разработчика" icon="root" permmode="root" permoper="read">
+		<node name="Структура базы" icon="tree" form="formSysTreeDataModel"/>
+		<node name="Главное меню системы" icon="menu" form="formSysTreeMenu"/>
+		<node name="Типы полей базы данных" icon="ref" form="formSysFieldType"/>
+	</node>
+</root>
