@@ -39,7 +39,18 @@ class FormController extends DSConnector {
  * @param	Array	$events
  */
 	public function go($params=Array(), $events=Array()) {
+		$strXml=$this->getResponse($params, $events);
+		if ($strXml) writeXml($strXml);
 		return true;
+	}
+/** Удобный способ обработки запросов к экранной форме или связанными с ней источниками данных
+ *
+ * @param	Array	$params
+ * @param	Array	$events
+ * @return	strXml текст ответа
+ */
+	protected function getResponse($params=Array(), $events=Array()) {
+		$result='';
 	}
 /** Вернуть список макрозамен для описания экранной формы
  *
