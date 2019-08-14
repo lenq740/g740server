@@ -801,7 +801,7 @@ define(
 								var name=prmItem.substr(0,n);
 								if (!name) continue;
 								var value=prmItem.substr(n+1,prmItem.length);
-								G740params[name]=value;
+								G740params[name]=dojo.trim(value);
 							}
 							p.G740params=G740params;
 						}
