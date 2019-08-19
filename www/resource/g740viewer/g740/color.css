@@ -372,7 +372,11 @@ color.romanuke.com/tsvetovaya-palitra-1874
 	color: #101e5a !important;
 }
 
+/* Заголовки */
 .g740.app-color-m .g74-paneltitle {
+	color: #5d80b6;
+}
+.g740.app-color-m .g740html-panel.caption {
 	color: #5d80b6;
 }
 
@@ -528,6 +532,10 @@ color.romanuke.com/tsvetovaya-palitra-1874
 .g740.app-color-m .g740-color-scheme2 .g74-paneltitle {
 	color: #f7f8f9 !important;
 }
+.g740.app-color-m .g740-color-scheme2 .g740html-panel.caption {
+	color: #f7f8f9 !important;
+}
+
 .g740.app-color-m .g740-color-scheme2 .g740-panel-memo .dijitTextBoxReadOnly {
 	background-color: #cbc6c3 !important;
 	color: white !important;
@@ -551,6 +559,10 @@ color.romanuke.com/tsvetovaya-palitra-1874
 .g740.app-color-m .g740-color-scheme3 .g74-paneltitle {
 	color: #f7f8f9 !important;
 }
+.g740.app-color-m .g740-color-scheme3 .g740html-panel.caption {
+	color: #f7f8f9 !important;
+}
+
 .g740.app-color-m .g740-color-scheme3 .dijitButtonText {
     color: black;
 }
@@ -576,6 +588,10 @@ color.romanuke.com/tsvetovaya-palitra-1874
 .g740.app-color-m .g740-color-red .g74-paneltitle {
     color: white !important;
 }
+.g740.app-color-m .g740-color-red .g740html-panel.caption {
+    color: white !important;
+}
+
 .g740.app-color-m .g740-color-red .g740-panel-memo .dijitTextBoxReadOnly {
     background-color: red !important;
     color: white !important;

@@ -1972,12 +1972,15 @@ define(
 							isFull: true
 						});
 						if (objPage.execEventOnShow) objPage.execEventOnShow();
-						
 						if (objPage.layout) {
 							g740.execDelay.go({
 								delay: 50,
 								obj: objPage,
-								func: objPage.layout
+								func: function() {
+									var objPage=this;
+									if (objPage.isObjectDestroed) return false;
+									return objPage.layout();
+								}
 							});
 						}
 					}
@@ -3201,7 +3204,6 @@ define(
 			}
 		);
 
-
 // Класс PanelImg
 		dojo.declare(
 			'g740.PanelImg',
@@ -3492,6 +3494,7 @@ define(
 			}
 		);
 
+// Класс PanelHTML
 		dojo.declare(
 			'g740.PanelHTML',
 			[g740._PanelAbstract, dijit._TemplatedMixin],
@@ -3565,18 +3568,15 @@ define(
 						this.templates=value;
 						return true;
 					}
-					else if (name=='g740style' || name=='g740size') {
-						if (name=='g740style') {
-							if (value=='title') this.g740style=value;
-							else if (value=='mainmenu') this.g740style=value;
-							else this.g740style=value;
-						}
-						if (name=='g740size') {
-							if (value=='large') this.g740size=value;
-							else if (value=='medium') this.g740size=value;
-							else if (value=='small') this.g740size=value;
-							else this.g740size=g740.config.iconSizeDefault;
-						}
+					else if (name=='g740style') {
+						this.g740style=value;
+						return true;
+					}
+					else if (name=='g740size') {
+						if (value=='large') this.g740size=value;
+						else if (value=='medium') this.g740size=value;
+						else if (value=='small') this.g740size=value;
+						else this.g740size=g740.config.iconSizeDefault;
 						return true;
 					}
 					else {
@@ -3589,6 +3589,7 @@ define(
 					if (this.fontColor) this.set('fontColor', this.fontColor);
 					if (this.backgroundImage) this.set('backgroundImage', this.backgroundImage);
 					if (this.g740size) this.set('g740size', this.g740size);
+					if (this.g740caption!='' && !this.g740style) this.g740style='caption';
 					if (this.g740style) this.set('g740style', this.g740style);
 
 					var className='g740html-panel';
@@ -3664,28 +3665,43 @@ define(
 					return result;
 				},
 				getTemplateDefault: function() {
-					var className='g740html-label';
-					if (this.region=='left' || this.region=='right') {
-						className+=' vertical';
+					if (this.g740style=='title' || this.g740style=='formtitle') {
+						var className='g740html-label';
+						if (this.region=='left' || this.region=='right') {
+							className+=' vertical';
+						}
+						var result='<div class="'+className+'">%%CAPTION%%</div>';
+						if (this.g740login) result+='%%LOGIN%%';
+						if (this.g740style=='formtitle') {
+							result='<div class="formicon"></div>'+result+'%%CLOSE%%';
+						}
 					}
-					var result='<div class="'+className+'">%%CAPTION%%</div>';
-					if (this.g740login) result+='%%LOGIN%%';
-					if (this.g740style=='formtitle') {
-						result='<div class="formicon"></div>'+result+'%%CLOSE%%';
+					else {
+						result='%%CAPTION%%';
 					}
 					return result;
 				},
 				getTemplateValue: function(name) {
 					if (name=='CAPTION') {
+						var caption=this.g740caption;
+						var lst=caption.split('%%');
+						for (var i=1; i<lst.length; i+=2) {
+							var name=lst[i];
+							var value='';
+							if (name!='CAPTION') value=this.getTemplateValue(name);
+							lst[i]=value;
+						}
+						caption=lst.join('');
+						
 						var result='';
 						if (this.region=='left' || this.region=='right') {
-							if (this.g740caption)	for(var i=0; i<this.g740caption.length; i++) {
+							if (caption) for(var i=0; i<caption.length; i++) {
 								if (i!=0) result+='<br>';
-								result+=this.g740caption[i].toHtml();
+								result+=caption[i].toHtml();
 							}
 						}
 						else {
-							if (this.g740caption)	result=this.g740caption.toHtml();
+							if (caption) result=caption.toHtml();
 						}
 						return result;
 					}
@@ -3732,6 +3748,7 @@ define(
 			}
 		);
 
+// Класс PanelListHTML
 		dojo.declare(
 			'g740.PanelListHTML',
 			[g740._PanelAbstract, dijit._TemplatedMixin],

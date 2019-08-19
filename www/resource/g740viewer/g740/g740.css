@@ -1208,6 +1208,29 @@ html, body {
 	-webkit-user-select: none;
 }
 
+.g740html-panel.caption {
+	font-size: 16px;
+    font-weight: normal;
+    padding: 2px;
+    margin-top: 3px;
+    margin-left: 0px;
+    margin-bottom: 1px;
+    user-select: none;
+    -moz-user-select: none;
+    -webkit-user-select: none;
+}
+.g740html-panel.caption.g740small{
+	font-size: 16px;
+}
+.g740html-panel.caption.g740medium{
+	font-size: 20px;
+}
+.g740html-panel.caption.g740large{
+    padding: 6px;
+	font-size: 24px;
+}
+
+
 /* g740.PanelMultiTabsForm */
 .g740-panelmultitabsform .g740-panelmultitabsform-margin {
 }
