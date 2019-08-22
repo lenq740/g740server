@@ -199,7 +199,8 @@ define(
 			'icons': true,
 			'radio': true,
 			'reflist': true,
-			'reftree': true
+			'reftree': true,
+			'html': true
 		};
 		
 //	Набор строк

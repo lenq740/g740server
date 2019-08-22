@@ -120,7 +120,7 @@ define(
 
 	    // Вычисление динамически вычисляемых выражений
 		g740.js_eval_obj=null;
-	    g740.js_eval=function (obj, js_expr, defa) {
+	    g740.js_eval=function (obj, js_expr, defa, para) {
 	        if (typeof (defa)=='undefined') defa=null;
 			var t=typeof (js_expr);
 			if (t!='function' && t!='string') return defa;
@@ -131,7 +131,7 @@ define(
 	            try {
 	                g740.js_eval_obj=obj;
 					if (t=='string') result=eval(js_expr);
-					if (t=='function') result=js_expr.call(obj);
+					if (t=='function') result=js_expr.call(obj, para);
 	            }
 	            finally {
 	                g740.js_eval_obj=oldEvalObj;

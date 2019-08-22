@@ -312,6 +312,24 @@ color.romanuke.com/tsvetovaya-palitra-1874
 	color: black;
 }
 
+/* таблица в поле HTML Grid-а */
+.g740.app-color-m .dojoxGridMasterView .dojoxGridCell .table.hover tr:hover{
+	background-color: #acbdd3 !important;
+}
+.g740.app-color-m .g740-grid-focused .dojoxGridMasterView .dojoxGridCell .table.hover tr:hover{
+	background-color: #acbdd3 !important;
+	color: white !important;
+}
+.g740.app-color-m .g740-grid-focused .dojoxGridMasterView .dojoxGridRowSelected .dojoxGridCell .table.hover tr:hover{
+	background-color: #859abe !important;
+	color: white !important;
+}
+.g740.app-color-m .g740-grid-focused  .dojoxGridMasterView .dojoxGridRowSelected .dojoxGridCell.dojoxGridCellFocus .table.hover tr:hover{
+	background-color: #788bab !important;
+	color: white !important;
+}
+
+
 .g740.app-color-m .g740tree-panel.focused .g740tree-item-element:hover {
 	background-color: #dce1e9;
 }

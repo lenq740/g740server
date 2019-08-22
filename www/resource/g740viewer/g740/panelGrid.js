@@ -1056,14 +1056,35 @@ define(
 				}
 				
 				if (fldNew.type=='string' && fldNew.nowrap) {
-					cell['formatter']=function (value) {
+					cell['formatter']=function(value) {
 						var result='<span class="g740-grid-nowrap"';
 						if (!value) value='';
 						value=value.toString();
-						if (value) result+=' title="'+value.toHtml()+'"';
+						if (value) result+=' title="'+value+'"';
 						result+='>';
-						result+=value.toHtml();
+						result+=value;
 						result+='</span>';
+						return result;
+					};
+				}
+				if (fldNew.type=='html') {
+					console.log(fldNew.type);
+					cell['formatter']=function(value, rowIndex) {
+						var result='';
+						try {
+							var objGrid=this.grid;
+							var fldDef=this.fldDef;
+							var id=objGrid._by_idx[rowIndex].idty;
+							var result=objGrid.objRowSet.getFieldProperty({
+								fieldName: fldDef.name,
+								id: id
+							});
+							if (!result) result='';
+							result=result.toString();
+						}
+						catch(eee) {
+							result='';
+						}
 						return result;
 					};
 				}

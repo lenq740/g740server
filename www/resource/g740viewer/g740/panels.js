@@ -4139,8 +4139,8 @@ define(
 					var obj=this.getRowSet();
 					if (!obj) obj=this.objForm;
 					if (this.js_tpvalue) {
-						var result=g740.js_eval(obj, this.js_tpvalue,'');
-						return result;
+						var result=g740.js_eval(obj, this.js_tpvalue, '', name);
+						if (result) return result;
 					}
 					try {
 						var oldEvalObj=g740.js_eval_obj;
