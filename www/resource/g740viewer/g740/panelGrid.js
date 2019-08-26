@@ -1068,7 +1068,6 @@ define(
 					};
 				}
 				if (fldNew.type=='html') {
-					console.log(fldNew.type);
 					cell['formatter']=function(value, rowIndex) {
 						var result='';
 						try {
