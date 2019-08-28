@@ -1328,6 +1328,7 @@ define(
 				}
 			}
 		);
+// Класс PanelButton - кнопка в панели
 		dojo.declare(
 			'g740.PanelButton',
 			g740.ToolbarButton,
@@ -1365,7 +1366,7 @@ define(
 					if (this.objAction.request) {
 						var r=this.objAction.request;
 						if (r.js_icon) {
-							this.set('iconClass',this.objAction.getIconClass(this.g740size));
+							this.set('iconClass',this.objAction.getIconClass('medium'));
 						}
 					}
 					this.set('label',this.objAction.getCaption().toHtml());

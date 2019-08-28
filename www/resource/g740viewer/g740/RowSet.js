@@ -68,19 +68,15 @@ define(
 	            specnofilter: true,
 	            mode: {
 	                after: {
-	                    captionId: 'requestAppendAfter',
 	                    specafter: true
 	                },
 	                before: {
-	                    captionId: 'requestAppendBefore',
 	                    specbefore: true
 	                },
 	                last: {
-	                    captionId: 'requestAppendLast',
 	                    speclast: true
 	                },
 	                first: {
-	                    captionId: 'requestAppendFirst',
 	                    specfirst: true
 	                },
 	                into: {

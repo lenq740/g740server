@@ -605,7 +605,20 @@ XML;
 			foreach($params as $name=>$value) if (substr($name,0,5)=='mode.') $p[$name]=$value;
 			return $this->execRefresh($p);
 		}
-		if ($requestName=='save') return $this->execSave($params);
+		if ($requestName=='save') {
+			try {
+				return $this->execSave($params);
+			}
+			catch(Exception $e) {
+				$message=trim($e->getMessage());
+				if ($message) {
+					$c=mb_substr($message,-1,1);
+					if ($c!='.' && $c!='!' && $c!='?') $message.='.';
+					$message.="\n\n"."Исправьте и сохраните повторно, или отмените изменения кнопкой 'Отменить (Esc)'";
+				}
+				throw new Exception($message);
+			}
+		}
 		if ($requestName=='append') return $this->execAppend($params);
 		if ($requestName=='copy') return $this->execCopy($params);
 		if ($requestName=='delete') return $this->execDelete($params);
@@ -1129,7 +1142,7 @@ SQL;
 					$isEmpty=!$row[$sqlName];
 				}
 				if ($fld['type']=='ref' && $row[$sqlName]=='00000000-0000-0000-0000-000000000000') $isEmpty=true;
-				if ($isEmpty) throw new Exception('Не заполнено значение поля '.$fld['caption']);
+				if ($isEmpty) throw new Exception("Не заполнено поле: '{$fld['caption']}'");
 			}
 		}
 		return $result;

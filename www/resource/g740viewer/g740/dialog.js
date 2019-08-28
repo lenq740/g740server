@@ -969,7 +969,7 @@ define(
 							region: 'right',
 							label: g740.getMessage('messageBtnCancel'),
 							onClick: dojo.hitch(this, this.onBtnCancelClick),
-							iconClass: g740.icons.getIconClassName('cancel')
+							iconClass: g740.icons.getIconClassName('cancel','medium')
 						},
 						null
 					);
@@ -980,7 +980,7 @@ define(
 							region: 'right',
 							label: g740.getMessage('messageBtnOk'),
 							onClick: dojo.hitch(this, this.onBtnOkClick),
-							iconClass: g740.icons.getIconClassName('ok')
+							iconClass: g740.icons.getIconClassName('ok','medium')
 						},
 						null
 					);
@@ -991,7 +991,7 @@ define(
 							region: 'left',
 							label: g740.getMessage('messageBtnClear'),
 							onClick: dojo.hitch(this, this.onBtnClearClick),
-							iconClass: g740.icons.getIconClassName('clear')
+							iconClass: g740.icons.getIconClassName('clear','medium')
 						},
 						null
 					);
@@ -1150,7 +1150,7 @@ define(
 							region: 'right',
 							label: g740.getMessage('messageBtnCancel'),
 							onClick: dojo.hitch(this, this.onBtnCancelClick),
-							iconClass: g740.icons.getIconClassName('cancel')
+							iconClass: g740.icons.getIconClassName('cancel','medium')
 						},
 						null
 					);
@@ -1161,7 +1161,7 @@ define(
 							region: 'right',
 							label: g740.getMessage('messageBtnOk'),
 							onClick: dojo.hitch(this, this.onBtnOkClick),
-							iconClass: g740.icons.getIconClassName('ok')
+							iconClass: g740.icons.getIconClassName('ok','medium')
 						},
 						null
 					);
@@ -1172,7 +1172,7 @@ define(
 							region: 'left',
 							label: g740.getMessage('messageBtnClear'),
 							onClick: dojo.hitch(this, this.onBtnClearClick),
-							iconClass: g740.icons.getIconClassName('clear')
+							iconClass: g740.icons.getIconClassName('clear','medium')
 						},
 						null
 					);
@@ -1318,7 +1318,7 @@ define(
 							region: 'right',
 							label: g740.getMessage('messageDlgMemoCancel'),
 							onClick: this.onBtnCancelClick,
-							iconClass: g740.icons.getIconClassName('cancel')
+							iconClass: g740.icons.getIconClassName('cancel','medium')
 						},
 						null
 					);
@@ -1330,7 +1330,7 @@ define(
 							region: 'right',
 							label: g740.getMessage('messageDlgMemoOk'),
 							onClick: this.onBtnOkClick,
-							iconClass: g740.icons.getIconClassName('ok')
+							iconClass: g740.icons.getIconClassName('ok','medium')
 						},
 						null
 					);
@@ -1569,7 +1569,7 @@ define(
 								label: g740.getMessage(this.btnCancelMessageId),
 								onClick: dojo.hitch(this, this.onBtnCancelClick),
 								onKeyDown: dojo.hitch(this, this.onKeyDown),
-								iconClass: g740.icons.getIconClassName(this.btnCancelIcon)
+								iconClass: g740.icons.getIconClassName(this.btnCancelIcon,'medium')
 							},
 							null
 						);
@@ -1582,7 +1582,7 @@ define(
 							label: g740.getMessage(this.btnOkMessageId),
 							onClick: dojo.hitch(this, this.onBtnOkClick),
 							onKeyDown: dojo.hitch(this, this.onKeyDown),
-							iconClass: g740.icons.getIconClassName(this.btnOkIcon)
+							iconClass: g740.icons.getIconClassName(this.btnOkIcon,'medium')
 						},
 						null
 					);
@@ -1689,7 +1689,7 @@ define(
 							region: 'right',
 							label: g740.getMessage('messageBtnOk'),
 							onClick: this.onBtnOkClick,
-							iconClass: g740.icons.getIconClassName('ok')
+							iconClass: g740.icons.getIconClassName('ok','medium')
 						},
 						null
 					);

@@ -33,7 +33,7 @@ HTML;
 		$sqlFieldSystableName=<<<SQL
 systable.tablename+' ('+systable.name+')' as systable_name
 SQL;
-		if ($this->getDriverName()=='pgsql') {
+		if ($this->getDriverName()=='pgsql' || $this->getDriverName()=='mysql') {
 			$sqlFieldSystableName=<<<SQL
 concat(systable.tablename, ' (', systable.name, ')') as systable_name
 SQL;
