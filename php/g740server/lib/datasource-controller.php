@@ -118,7 +118,7 @@ class DataSource extends DSConnector{
 /** Проверить на ReadOnly анализируя строки родительской таблицы
  *
  * @param	Array	$result массив строк
- * @return	boolean ReadOnly строки
+ * @return	Array результат операции, пополненный row.readonly
  */
 	protected function getOwnerReadOnly($result) {
 		if (!$this->isPermTestRowReadOnly) return $result;
@@ -1841,7 +1841,10 @@ SQL;
 		
 		{
 			$lst=Array($recResult);
-			$lst=$this->getOwnerReadOnly($lst);
+			$field=$this->permTestReadOnlyOwnerLinkFieldName;
+			if ($field && isset($recResult[$field])) {
+				$lst=$this->getOwnerReadOnly($lst);
+			}
 			foreach($lst as &$row) {
 				if ($row['row.readonly']) throw new Exception('У Вас нет прав на добавление такой строки в таблицу '.$this->tableCaption);		
 			}

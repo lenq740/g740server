@@ -1032,6 +1032,10 @@ define(
 				
 				if (g740.xml.isAttr(xmlField,'noscroll')) fldNew.noscroll=(g740.xml.getAttrValue(xmlField, 'noscroll', '')=='1');
 				if (g740.xml.isAttr(xmlField,'clipboard')) fldNew.clipboard=(g740.xml.getAttrValue(xmlField, 'clipboard', '')=='1');
+				if (g740.xml.isAttr(xmlField,'align')) {
+					var align=g740.xml.getAttrValue(xmlField,'align');
+					if (align=='left' || align=='right' || align=='center')	fldNew.align=align;
+				}
 
 				var cell={};
 				cell['field']=fieldName;
@@ -1046,8 +1050,9 @@ define(
 				cell['width']=(len*g740.config.charwidth)+'px';
 
 				cell['fldDef']=fldNew;
-				if (fldNew.type=='num') {
-					cell['styles']+='text-align: right;';
+				if (fldNew.type=='num' && !fldNew.align) fldNew.align='right';
+				if (fldNew.align) {
+					cell['styles']+='text-align: '+fldNew.align+';';
 				}
 				
 				if (fldNew.clipboard) {
@@ -1068,7 +1073,6 @@ define(
 					};
 				}
 				if (fldNew.type=='html') {
-					console.log(fldNew.type);
 					cell['formatter']=function(value, rowIndex) {
 						var result='';
 						try {
