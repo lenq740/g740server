@@ -28,6 +28,8 @@ if ($timeZone) ini_set('date.timezone', $timeZone);
 if (getCfg('project.id')) ini_set('session.name',getCfg('project.id'));
 session_start();
 
+includeLib('perm-controller.php');
+
 try {
 	$htmlProjectName=str2Html(getCfg('project.name'));
 	
@@ -129,6 +131,12 @@ HTML;
 	$htmlConfig.="\n".<<<HTML
 	conf['iconSizeDefault']='{$jsIconSizeDefault}';
 HTML;
+	if (getCfg('csrftoken.enabled') && getPP('csrftoken')) {
+		$jsCsrfToken=str2JavaScript(getPP('csrftoken'));
+		$htmlConfig.="\n".<<<HTML
+	conf['csrfToken']='{$jsCsrfToken}';
+HTML;
+	}
 
 	if (getCfg('project.dialogLogin.loginUrl')) {
 		$jsValue=str2JavaScript(getCfg('project.dialogLogin.loginUrl'));

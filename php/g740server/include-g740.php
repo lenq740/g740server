@@ -54,6 +54,7 @@ try {
 	regPDO($pdoDB,'default');
 	$pdoDB->beginTransaction();
 	try {
+		if (getCfg('csrftoken.enabled')) $requestToken=xmlGetAttr($rootRequest,'csrftoken','');
 		for ($xmlRequest=$rootRequest->firstChild; $xmlRequest!=null; $xmlRequest=$xmlRequest->nextSibling) {
 			if ($xmlRequest->nodeName!='request') continue;
 
@@ -128,21 +129,41 @@ try {
 				// Обработка запроса на авторизацию
 				if ($requestName=='connect') {
 					if (!execConnect($params['login'],$params['password'])) throw new Exception('Неверный логин, пароль ...');
+					if (getCfg('csrftoken.enabled') && getPerm('connected','')) {
+						$value=getPP('csrftoken');
+						if (!$value) {
+							execDisconnect();
+							throw new Exception('Внутренняя ошибка авторизации. Процедура execConnect() не проинициализировала csrftoken!!!');
+						}
+						$objResponseWriter->writeAttribute('csrftoken', $value);
+					}
 					$objResponseWriter->startElement('response');
 					$objResponseWriter->writeAttribute('name', 'ok');
 					$objResponseWriter->endElement();
 					continue;
 				}
 				if ($requestName=='disconnect') {
-					execDisconnect($params);
+					execDisconnect();
 					throw new Exception('');
 				}
 				if ($requestName=='form' && $form=='disconnect') {
-					execDisconnect($params);
+					execDisconnect();
 					throw new Exception('');
 				}
 				// Проверка актуальности авторизации
 				if (!getPerm('connected','')) throw new Exception('');
+				
+				if (getCfg('csrftoken.enabled')) {
+					if (!getPP('csrftoken')) {
+						execDisconnect();
+						throw new Exception('Внутренняя ошибка инициализации csrftoken!!!');
+					}
+					if (getPP('csrftoken')!=$requestToken) {
+						execDisconnect();
+						throw new Exception('Обнаружена попытка хакерской атаки посредством CSRF уязвимости, соединение прервано');
+					}
+				}
+				
 				// Запрос на описание структуры экранной формы
 				if ($requestName=='form') {
 					if (!$form) throw new Exception("В запросе '{$requestName}' не задано имя формы");

@@ -1,4 +1,33 @@
-История изминений G740Viewer
+changelog - G740Server
+
+-----------------------------------
+Версия от 2019-08-29
+-----------------------------------
+Обработчики событий
+	Добавлены новые
+		- onBeforeRefresh, onBeforeAppend, onBeforeSave, onBeforeInsert, onBeforeUpdate, onBeforeDelete
+		- onRowAfterRefresh, onRowAfterAppend, onRowAfterSave, onRowAfterInsert, onRowAfterUpdate, onRowAfterDelete
+		- onRowValid
+	Объявлены устаревшими, но поддерживаются для совместимости
+		- onValid
+		- onAfterSave
+		- onAfterInsert
+		- onRowReadOnly
+	Уничтожены
+		- onGetPerm
+		
+Защита от CSRF уязвимости, включается настройкой csrftoken.enabled
+	- В config-g740server-default настройка csrftoken.enabled=true
+	- Новый параметр getPP('csrftoken') для хранения значения token
+	- Метод execConnect теперь должен инициализировать 'csrftoken', иначе будет диагностирована ошибка
+	- Поддержка csrftoken протоколом G740: 
+		- include-index.php инициализирует у клиента g740.config.csrfToken
+		- include-g740.php передает csrftoken при connect и проверяет в других запросах
+	- Поддержка csrftoken механизмом utils
+		- formUtils передает csrftoken
+		- асинхронный вызов execUtility() передает csrftoken
+		- include-utils.php проверяет csrftoken
+Запуск утилиты rebuild с правами root по HTTP теперь разрешен только с localhost
 
 -----------------------------------
 Версия от 2019-08-28

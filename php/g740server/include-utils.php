@@ -45,6 +45,12 @@ includeLib('perm-controller.php');
 includeLib('datasource-controller.php');
 includeLib('ext-controller.php');
 
+if (getCfg('csrftoken.enabled') && getPP('csrftoken')) {
+	if ($_REQUEST['csrftoken']!=getPP('csrftoken')) {
+		throw new Exception('Обнаружена попытка хакерской атаки посредством CSRF уязвимости, выполнение прервано');
+	}
+}
+
 echo <<<HTML
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
 <html>

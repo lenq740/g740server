@@ -29,6 +29,10 @@ class FormUtils extends FormController {
 			$url.=$delimiter.str2Attr($key).'='.str2Attr($value);
 			$delimiter='&amp;';
 		}
+		if (getCfg('csrftoken.enabled') && getPP('csrftoken')) {
+			$url.=$delimiter.'csrftoken='.str2Attr(getPP('csrftoken'));
+			$delimiter='&amp;';
+		}
 		$result=<<<XML
 <form name="{$form}" caption="Утилиты" modal="1">
 	<panels>

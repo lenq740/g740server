@@ -1,9 +1,12 @@
 <?php
 /**
-Система проверки прав
-@package prj
-@subpackage perm
-*/
+ * @file
+ * контроллер прав
+ */
+
+
+/** Класс контроллер прав
+ */
 class PermControllerPrj extends PermController {
 	public function getPerm($mode, $operation) {
 		$result=parent::getPerm($mode, $operation);

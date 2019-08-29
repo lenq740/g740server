@@ -15,7 +15,9 @@ class UtilityRebuild extends UtilController {
  */
 	public function getParams() {
 		$params=Array();
-		if ($_REQUEST['root']==1) execConnectAsRoot();
+		if ($_REQUEST['root']==1) {
+			if ($_SERVER['REMOTE_ADDR']=='127.0.0.1' || $_SERVER['REMOTE_ADDR']=='::1') execConnectAsRoot();
+		}
 		return $params;
 	}
 /** Формирование результата запроса

@@ -55,7 +55,6 @@ class DataSource extends DSConnector{
 		if ($this->isShowSqlErrorMessages===null) $this->isShowSqlErrorMessages=getCfg('datasource.showSqlError',false)?true:false;
 	}
 
-
 /** Проверка доступности выполнения операции по правам в контексте выполнения запроса
  *
  * @param	string	$permOper опрерация (read, write)
@@ -104,14 +103,9 @@ class DataSource extends DSConnector{
 				foreach($htId as $id=>$value) {
 					if (!$value) return false;
 				}
-				foreach($lst as &$row) {
-					$id=$row['id'];
-					if (!$this->onGetPerm($requestName, $params, $row)) return false;
-				}
 				return $result;
 			}
 		}
-		if (!$this->onGetPerm($requestName, $params)) return false;
 		return $result;
 	}
 	
@@ -634,6 +628,11 @@ XML;
 	public function execRefresh($params=Array()) {
 		$errorMessage='Ошибка при обращении к DataSource::execRefresh';
 		if (!$this->getPerm('read','refresh',$params)) throw new Exception('У Вас нет прав на чтение таблицы '.$this->tableCaption);
+		
+		// предобработка запроса
+		$p=$this->onBeforeRefresh($params);
+		if (is_array($p)) foreach($p as $name=>$value) $params[$name]=$value;
+		
 		$select=$this->getSelect($params);
 		$fields=$this->getFields();
 		foreach($fields as $key=>$fld) {
@@ -682,7 +681,14 @@ XML;
 				if (isset($rec[$sqlName.'_color'])) $row[$name.'.color']=$rec[$sqlName.'_color'];
 				if (isset($rec[$sqlName.'_visible'])) $row[$name.'.visible']=$rec[$sqlName.'_visible'];
 			}
-			if ($rowReadOnly || $this->onRowReadOnly($row)) $row['row.readonly']=1;
+			
+			{ // устаревшие обработчики событий
+				if (method_exists($this, 'onRowReadOnly')) {
+					if ($this->onRowReadOnly($row)) $rowReadOnly=true;
+				}
+			}
+			
+			if ($rowReadOnly) $row['row.readonly']=1;
 			$result[]=&$row;
 			unset($row);
 		}
@@ -700,6 +706,14 @@ XML;
 				unset($row[$vrSessionFieldName]);
 			}
 		}
+		
+		// постобработка запроса
+		foreach($result as $index=>&$row) {
+			$r=$this->onRowAfterRefresh($row, $params);
+			if (is_array($r)) $result[$index]=$r;
+			unset($row);
+		}
+		
 		return $result;
 	}
 /** Выполнить операцию save, ответ вернуть в виде массива
@@ -727,6 +741,13 @@ XML;
 	public function execUpdate($params=Array()) {
 		$errorMessage='Ошибка при обращении к DataSource::execUpdate';
 		if (!$this->getPerm('write','save',$params)) throw new Exception('У Вас нет прав на внесение изменений в строку таблицы '.$this->tableCaption);
+
+		// предобработка запроса
+		$p=$this->onBeforeSave($params);
+		if (is_array($p)) foreach($p as $name=>$value) $params[$name]=$value;
+		$p=$this->onBeforeUpdate($params);
+		if (is_array($p)) foreach($p as $name=>$value) $params[$name]=$value;
+
 		$result=Array();
 		$fields=$this->getFields();
 		$id=$params['id'];
@@ -832,12 +853,29 @@ XML;
 		
 		$result=$this->execRefresh($p);
 		
-		$this->onValid($result);
-		$result=$this->onAfterSave($result, $params);
-		if (is_null($result)) {
-			throw new Exception("Системная ошибка при обращении к onAfterSave в источнике данных '{$this->$tableName}'. Процедура вернула null в качестве результата.");
+		// постобработка запроса
+		foreach($result as $index=>$row) {
+			$r=$this->onRowAfterUpdate($row, $params);
+			if (is_array($r)) $row=$r;
+			$r=$this->onRowAfterSave($row, $params);
+			if (is_array($r)) $row=$r;
+			$r=$this->onRowValid($row);
+			if (is_array($r)) $row=$r;
+			$r=$this->doValidRowAfterSave($row);
+			if (is_array($r)) $row=$r;
+			$result[$index]=$row;
 		}
 		
+		{ // устаревшие обработчики событий
+			if (method_exists($this, 'onValid')) $this->onValid($result);
+			if (method_exists($this, 'onAfterSave')) {
+				$result=$this->onAfterSave($result, $params);
+				if (is_null($result)) {
+					throw new Exception("Системная ошибка при обращении к onAfterSave в источнике данных '{$this->$tableName}'. Процедура вернула null в качестве результата.");
+				}
+			}
+		}
+
 		if ($this->isPermTestRowReadOnly) {
 			$result=$this->getOwnerReadOnly($result);
 			foreach($result as &$row) {
@@ -928,6 +966,13 @@ SQL;
 	public function execInsert($params=Array()) {
 		$errorMessage='Ошибка при обращении к DataSource::execInsert';
 		if (!$this->getPerm('write','save',$params)) throw new Exception('У Вас нет прав на внесение изменений в строку таблицы '.$this->tableCaption);
+
+		// предобработка запроса
+		$p=$this->onBeforeSave($params);
+		if (is_array($p)) foreach($p as $name=>$value) $params[$name]=$value;
+		$p=$this->onBeforeInsert($params);
+		if (is_array($p)) foreach($p as $name=>$value) $params[$name]=$value;
+
 		$result=Array();
 		$fields=$this->getFields();
 		$sqlFields='';
@@ -1043,15 +1088,39 @@ SQL;
 			$lastId=$this->getPDO()->lastInsertId();
 		}
 		if (!$lastId) $lastId='0';
-		$this->onAfterInsert($lastId);
+		
+		{ // устаревшие обработчики событий
+			if (method_exists($this, 'onAfterInsert')) $this->onAfterInsert($lastId);
+		}
 
 		$p=Array();
 		$p['filter.id']=$lastId;
 		foreach($params as $name=>$value) if (substr($name,0,5)=='mode.') $p[$name]=$value;
 		$result=$this->execRefresh($p);
 
-		$this->onValid($result);
-		$result=$this->onAfterSave($result, $params);
+		// постобработка запроса
+		foreach($result as $index=>$row) {
+			$r=$this->onRowAfterInsert($row, $params);
+			if (is_array($r)) $row=$r;
+			$r=$this->onRowAfterSave($row, $params);
+			if (is_array($r)) $row=$r;
+			$r=$this->onRowValid($row);
+			if (is_array($r)) $row=$r;
+			$r=$this->doValidRowAfterSave($row);
+			if (is_array($r)) $row=$r;
+			$result[$index]=$row;
+		}
+
+		{ // устаревшие обработчики событий
+			if (method_exists($this, 'onValid')) $this->onValid($result);
+			if (method_exists($this, 'onAfterSave')) {
+				$result=$this->onAfterSave($result, $params);
+				if (is_null($result)) {
+					throw new Exception("Системная ошибка при обращении к onAfterSave в источнике данных '{$this->$tableName}'. Процедура вернула null в качестве результата.");
+				}
+			}
+		}
+		
 		if ($this->isPermTestRowReadOnly) {
 			$result=$this->getOwnerReadOnly($result);
 			foreach($result as &$row) {
@@ -1098,6 +1167,32 @@ SQL;
 		$result[]=$recResult;
 		return $result;
 	}
+/** Проверить допустимость значений полей строки после save
+ *
+ * @param	Array	$row
+ */
+	protected function doValidRowAfterSave($row) {
+		$fields=$this->getFields();
+		foreach($fields as $fld) {
+			if ($fld['notnull']!=1) continue;
+
+			$alias=$this->tableName;
+			if ($fld['table']) $alias=$fld['table'];
+			if ($fld['alias']) $alias=$fld['alias'];
+			if ($alias!=$this->tableName) continue;
+			
+			$name=$fld['name'];
+			$sqlName=strtolower($name);
+			if ($fld['type']=='num') {
+				$isEmpty=($row[$sqlName]==0) || (!$row[$sqlName]);
+			}
+			else {
+				$isEmpty=!$row[$sqlName];
+			}
+			if ($fld['type']=='ref' && $row[$sqlName]=='00000000-0000-0000-0000-000000000000') $isEmpty=true;
+			if ($isEmpty) throw new Exception("Не заполнено поле: '{$fld['caption']}'");
+		}
+	}
 /** Выполнить операцию change, ответ вернуть в виде массива
  *
  * @param	Array	$params контекст выполнения
@@ -1118,70 +1213,7 @@ SQL;
 		if (count($lst)==1) $result=$lst[0];
 		return $result;
 	}
-/** Проверка результата операции save на корректность заполнения данных
- *
- * @param	Array	$result результат выполнения операции save
- * @return	Array результат выполнения операции save
- */
-	protected function onValid($result=Array()) {
-		$fields=$this->getFields();
-		foreach($result as &$row) {
-			foreach($fields as $fld) {
-				$alias=$this->tableName;
-				if ($fld['table']) $alias=$fld['table'];
-				if ($fld['alias']) $alias=$fld['alias'];
-				if ($alias!=$this->tableName) continue;
-				
-				if ($fld['notnull']!=1) continue;
-				$name=$fld['name'];
-				$sqlName=strtolower($name);
-				if ($fld['type']=='num') {
-					$isEmpty=($row[$sqlName]==0) || (!$row[$sqlName]);
-				}
-				else {
-					$isEmpty=!$row[$sqlName];
-				}
-				if ($fld['type']=='ref' && $row[$sqlName]=='00000000-0000-0000-0000-000000000000') $isEmpty=true;
-				if ($isEmpty) throw new Exception("Не заполнено поле: '{$fld['caption']}'");
-			}
-		}
-		return $result;
-	}
-/** Постобработка результатов операции save
- *
- * @param	Array	$result результат выполнения операции save
- * @param	Array	$params контекст выполнения
- * @return	Array результат выполнения операции save
- */
-	protected function onAfterSave($result=Array(), $params=Array()) {
-		return $result;
-	}
-/** Постобработка insert
- *
- * @param	string	$id
- */
-	protected function onAfterInsert($id) {
-	}
-/** Проверка строки на ReadOnly по значениям полей и правам
- *
- * @param	Array	$row значения полей
- * @return	boolean ReadOnly строки
- */
-	protected function onRowReadOnly($row=Array()) {
-		return false;
-	}
-	
-/** Проверка доступности операции по правам
- *
- * @param	string	$requestName
- * @param	Array	$params
- * @param	Array	$row
- * @return	boolean доступность операции по правам
- */
-	protected function onGetPerm($requestName, $params=Array(), $row=Array()) {
-		return true;
-	}
-	
+
 /** Выполнить операцию delete игнорируя контроля прав
  *
  * @param	Array	$params контекст выполнения
@@ -1191,7 +1223,6 @@ SQL;
 		if (!$params['#recursLevel']) $params['#recursLevel']=1;
 		return $this->execDelete($params);
 	}
-	
 /** Выполнить операцию delete, ответ вернуть в виде массива
  *
  * @param	Array	$params контекст выполнения
@@ -1206,6 +1237,10 @@ SQL;
 		if (!isset($params['id'])) return Array();
 		$idlist=$this->php2SqlIn($params['id']);
 		if (!$idlist) return Array();
+		
+		// предобработка запроса
+		$p=$this->onBeforeDelete($params);
+		if (is_array($p)) foreach($p as $name=>$value) $params[$name]=$value;
 		
 		$refs=$this->getReferences();
 		$driverName=$this->getDriverName();
@@ -1339,9 +1374,11 @@ SQL;
 		}
 		// Удаляем из основной таблицы
 		$q=$this->pdo($sqlSelect);
-		while($rec=$this->pdoFetch($q)) {
-			$rec['row.delete']=1;
-			$result[]=$rec;
+		while($row=$this->pdoFetch($q)) {
+			$r=$this->onRowAfterDelete($row, $params);
+			if (is_array($r)) $row=$r;
+			$row['row.delete']=1;
+			$result[]=$row;
 		}
 		$this->pdo($sqlDelete);
 		return $result;
@@ -1802,6 +1839,10 @@ SQL;
 			if (isset($params["filter.{$name}"]) && !isset($params[$name])) $params[$name]=$params["filter.{$name}"];
 		}
 		if (!$this->getPerm('write','append',$params)) throw new Exception('У Вас нет прав на добавление в таблицу '.$this->tableCaption);
+
+		// предобработка запроса
+		$p=$this->onBeforeAppend($params);
+		if (is_array($p)) foreach($p as $name=>$value) $params[$name]=$value;
 		
 		$mode=$params['#request.mode'];
 		if ($mode!='first' && $mode!='after' && $mode!='before') $mode='last';
@@ -1859,7 +1900,12 @@ SQL;
 		}
 		$recResult['row.destmode']=$mode;
 		if ($mode=='after' || $mode=='before') $recResult['row.destid']=$id;
+
+		// постобработка запроса
+		$r=$this->onRowAfterAppend($recResult, $params);
+		if (is_array($r)) $recResult=$r;
 		$result[]=$recResult;
+
 		return $result;
 	}
 /** Получить поле ord, помещающее строку первой, в контексте выполнения операции
@@ -2209,6 +2255,96 @@ SQL;
 		}
 		return true;
 	}
+
+// Обработчики событий
+
+/** предобработка в запросе refresh
+ *
+ * @param	Array $params
+ */
+	protected function onBeforeRefresh(&$params) {
+	}
+/** предобработка в запросе append
+ *
+ * @param	Array $params
+ */
+	protected function onBeforeAppend(&$params) {
+	}
+/** предобработка в запросе save
+ *
+ * @param	Array $params
+ */
+	protected function onBeforeSave(&$params) {
+	}
+/** предобработка в запросе insert
+ *
+ * @param	Array $params
+ */
+	protected function onBeforeInsert(&$params) {
+	}
+/** предобработка в запросе update
+ *
+ * @param	Array $params
+ */
+	protected function onBeforeUpdate(&$params) {
+	}
+/** предобработка в запросе delete
+ *
+ * @param	Array $params
+ */
+	protected function onBeforeDelete(&$params) {
+	}
+
+/** постобработка строки в запросе refresh
+ *
+ * @param	Array $row
+ * @param	Array $params
+ */
+	protected function onRowAfterRefresh(&$row, $params=Array()) {
+	}
+/** постобработка строки в запросе append
+ *
+ * @param	Array $row
+ * @param	Array $params
+ */
+	protected function onRowAfterAppend(&$row, $params=Array()) {
+	}
+/** постобработка строки в запросе save
+ *
+ * @param	Array $row
+ * @param	Array $params
+ */
+	protected function onRowAfterSave(&$row, $params=Array()) {
+	}
+/** постобработка строки в запросе insert
+ *
+ * @param	Array $row
+ * @param	Array $params
+ */
+	protected function onRowAfterInsert(&$row, $params=Array()) {
+	}
+/** постобработка строки в запросе update
+ *
+ * @param	Array $row
+ * @param	Array $params
+ */
+	protected function onRowAfterUpdate(&$row, $params=Array()) {
+	}
+/** постобработка строки в запросе delete
+ *
+ * @param	Array $row
+ * @param	Array $params
+ */
+	protected function onRowAfterDelete(&$row, $params=Array()) {
+	}
+
+/** проверка строки в запросах update и insert
+ *
+ * @param	Array $row
+ */
+	protected function onRowValid(&$row) {
+	}
+
 	
 /** Вычислить кол-во строк в результате запроса для заданного контекста
  *

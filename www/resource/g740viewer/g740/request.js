@@ -10,7 +10,6 @@ define(
 		if (typeof(g740)=='undefined') g740={};
 		
 		g740.request={
-			session: '',
 			_isError: false,
 			_indexExecuted: 0,
 			_fifo: [],
@@ -52,7 +51,8 @@ define(
 				}
 				para.arrayOfRequest=null;
 				para.message='<?xml version="1.0" encoding="UTF-8" ?>'+"\n"+'<root type="g740" version="1.0" ';
-				if (this.session) para.message+='session="'+this.session+'" ';
+				if (g740.config.session) para.message+='session="'+g740.config.session+'" ';
+				if (g740.config.csrfToken) para.message+='csrftoken="'+g740.config.csrfToken+'" ';
 				para.message+='>'+message+"\n"+'</root>';
 				if (!para.url) para.url=g740.config.urlServer;
 				para.phpInfoMode=false;
@@ -221,7 +221,8 @@ define(
 					var xmlResponse=para.xmlResponse;
 					if (!g740.xml.isXmlNode(xmlResponse)) g740.responseError('errorNotXml', 'para.xmlResponse');
 					if (xmlResponse.nodeName!='root' || g740.xml.getAttrValue(xmlResponse,'type','')!='g740') g740.responseError('errorXmlNodeNotFound', 'root type="g740"');
-					if (g740.xml.isAttr(xmlResponse,'session')) this.session=g740.xml.getAttrValue(xmlResponse,'session','');
+					if (g740.xml.isAttr(xmlResponse,'session')) g740.config.session=g740.xml.getAttrValue(xmlResponse,'session','');
+					if (g740.xml.isAttr(xmlResponse,'csrftoken')) g740.config.csrfToken=g740.xml.getAttrValue(xmlResponse,'csrftoken','');
 					
 					var lst=g740.xml.findArrayOfChild(xmlResponse, {nodeName:'response'});
 					

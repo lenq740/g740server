@@ -128,6 +128,7 @@ class PermController extends DSConnector{
 			}
 		}
 		finally {
+			if (getCfg('csrftoken.enabled')) $_SESSION['connect_csrftoken']=getGUID();
 			session_write_close();
 		}
 		return false;

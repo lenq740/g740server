@@ -152,9 +152,9 @@ define(
 	    };
 	    function get(name, defa) {
 	        var result=false;
-			if (name=='IE') {
-				return dojo.hasClass(document.documentElement,'IE')?1:0;
-			}
+			if (name=='IE') return dojo.hasClass(document.documentElement,'IE')?1:0;
+			else if (name=='CSRFTOKEN') return config.csrfToken;
+			else if (name=='SESSION') return config.session;
 	        try {
 	            if (g740.js_eval_obj && g740.js_eval_obj.doG740Get) result=g740.js_eval_obj.doG740Get(name);
 	        }

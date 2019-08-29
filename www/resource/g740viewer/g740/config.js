@@ -23,6 +23,8 @@ define(
 			charheight: 14,						// высота символа в пикселях
 			iconSizeDefault: 'small',			// размер иконок по умолчанию - small, medium, large
 			appColorScheme: 'black',			// цветовая схема приложения - black, red, cti
+			session: '',						// параметр session запроса
+			csrfToken: '',						// параметр csrftoken запроса
 
 			mainFormLoginUrl: '',				// Путь до HTML страницы аутетификации, если не задана, то стандартная аутетификации
 			dialogLogin: {

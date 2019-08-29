@@ -1486,7 +1486,12 @@ function execService($serviceName, $params=Array(), $isWaiting=false) {
 		'services.php'
 	);
 	$href.='?name='.escape($serviceName);
-	if (session_id()) $href.='&sessionid='.escape(session_id());
+	if (session_id()) {
+		$href.='&sessionid='.escape(session_id());
+		if (getCfg('csrftoken.enabled') && getPP('csrftoken')) {
+			$href.='&csrftoken='.escape(getPP('csrftoken'));
+		}
+	}
 	foreach($params as $name=>$value) {
 		$href.='&'.escape($name).'='.escape($value);
 	}
@@ -1526,7 +1531,12 @@ function execUtility($utilityName, $params=Array(), $isWaiting=false) {
 		'utils.php'
 	);
 	$href.='?name='.escape($utilityName);
-	if (session_id()) $href.='&sessionid='.escape(session_id());
+	if (session_id()) {
+		$href.='&sessionid='.escape(session_id());
+		if (getCfg('csrftoken.enabled') && getPP('csrftoken')) {
+			$href.='&csrftoken='.escape(getPP('csrftoken'));
+		}
+	}
 	foreach($params as $name=>$value) {
 		$href.='&'.escape($name).'='.escape($value);
 	}
