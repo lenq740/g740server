@@ -378,7 +378,7 @@ function unescape($str){
  * 
  * @param	string	$str исходная строка
  * @return	string преобразованная строка
-*/
+ */
 function str2FileName($str) {
 	$lstFrom=Array('"', "'", '`', '/', "\\", '*', '?', '+', '=', '[', ']', ':', '«', ',', '<', '>', '|');
 	$lstTo=Array('_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_');
@@ -647,7 +647,7 @@ function getCfg($name, $default='') {
  * @param	string	$item14 параметр 14
  * @param	string	$item15 параметр 15
  * @return	String путь
-*/
+ */
 function pathConcat($item01='',$item02='',$item03='',$item04='',
 	$item05='',$item06='',$item07='',$item08='',$item09='',
 	$item10='',$item11='',$item12='',$item13='',$item14='',$item15='') {
@@ -693,10 +693,25 @@ function pathConcat($item01='',$item02='',$item03='',$item04='',
 	return $result;
 }
 
+/** Убрать слэш с начала и конца пути
+ *
+ * @param	string	$path путь
+ * @return	String путь без начального и завершающего слэша
+ */
+function pathClearSlash($path) {
+	$result=trim(str_replace('\\', '/', $path));
+	while(mb_substr($result, 0, 1, 'utf-8')=='/') {
+		$result=mb_substr($result, 1, mb_strlen($result,'utf-8')-1, 'utf-8');
+	}
+	while(mb_substr($result, -1, 1, 'utf-8')=='/') {
+		$result=mb_substr($result, 0, mb_strlen($result,'utf-8')-1, 'utf-8');
+	}
+	return $result;
+}
 /** Удалить папку с содержимым
  *
  * @param	string	$dir путь до папки
-*/
+ */
 function rmdirFull($dir) {  
     $d=opendir($dir);  
     while(($entry=readdir($d))!==false) {
@@ -716,7 +731,7 @@ function rmdirFull($dir) {
  *
  * @param	string	$source исходная папка
  * @param	string	$destination результирующая папка
-*/
+ */
 function copydirFull($source, $destination) {
 	if (is_file($destination)) unlink($destination);
 	if (is_dir($destination)) rmdirFull($destination);

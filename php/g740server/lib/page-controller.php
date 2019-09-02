@@ -15,62 +15,50 @@ require_once('datasource-controller.php');
 /** Класс PageViewer - предок визуализаторов страниц сайта
  */
 class PageViewer {
-/// имя визуализатора страницы
-	public $mode='abstract';
-
-/// Конструктор, регистрация экземпляра класса
-	function __construct() {
-		global $_registerObjPage;
-		if (!$_registerObjPage[$this->mode]) $_registerObjPage[$this->mode]=$this;
-	}
-/** Разбор параметров для запроса к странице
- *
- * @param	Array	$lstUrl	массив адресов запроса
- * @return	Array	начитанные параметры
- */
-	public function getInputParams($lstUrl=Array()) {
-		return Array();
-	}
-/** Получить адрес ссылки по параметрам
+/** href страницы в зависимости от параметров
  *
  * @param	Array	$params
- * @return	String	адрес ссылки по параметрам
+ * @return	String	href страницы
  */
 	public function getHref($params=Array()) {
-		$errorMessage='Ошибка при обращении к PageViewer::getHref';
-		throw new Exception($errorMessage.', обращение к абстрактному методу');
+		return '';
+	}
+/** Отобразить страницу
+ *
+ * @param	Array	$params
+ */
+	public function go($params=Array()) {
+		$p=$this->getPageParams($params);
+		foreach($p as $name=>$value) $params[$name]=$value;
+		$html=$this->getPage($params);
+		$this->sendHttpHeaders($params);
+		echo $html;
 	}
 /** Получить дополнительные параметры страницы
  *
  * @param	Array	$params
  * @return	Array	дополнительные параметры страницы
  */
-	public function getPageParams($params=Array()) {
+	protected function getPageParams($params=Array()) {
 		$result=Array();
 		$result['head.h1']='Абстрактный предок PageViewer';
-		$result['href.root']=getCfg('href.root','/');
-		$result['href.resource']=pathConcat(
-			getCfg('href.root','/'),
-			getCfg('path.root.resource')
-		);
 		return $result;
 	}
-/** Отослать HTTP заголовки ответа
+/** HTTP заголовки ответа
  *
  * @param	Array	$params
  */
-	public function sendHttpHeaders($params=Array()) {
+	protected function sendHttpHeaders($params=Array()) {
 		header('Content-type: text/html; charset=utf-8');
 		header("Cache-Control: no-store, no-cache, must-revalidate");
 		header("Cache-Control: post-check=0, pre-check=0", false);
 	}
-
 /** Содержимое страницы
  *
  * @param	Array	$params
  * @return	String	Содержимое страницы
  */
-	public function getPage($params=Array()) {
+	protected function getPage($params=Array()) {
 		$info=Array();
 		$info['html-head']=$this->getPageHead($params);
 		$info['html-h1']=str2Html($params['head.h1']);
@@ -93,7 +81,7 @@ class PageViewer {
  * - $info['attr-href-root']
  * - $info['attr-href-resource']
  */
-	protected function templatePage($info, $params) {
+	protected function templatePage($info=Array(), $params=Array()) {
 		return '';
 	}
 /** Заголовок страницы
@@ -117,15 +105,12 @@ class PageViewer {
 /** Класс PageViewerBootStrap - предок визуализаторов страниц сайта на BootStrap
  */
 class PageViewerBootStrap extends PageViewer {
-/// имя визуализатора страницы
-	public $mode='abstract.bootstrap';
-
 /** Содержимое страницы
  *
  * @param	Array	$params
  * @return	String	Содержимое страницы
  */
-	public function getPage($params=Array()) {
+	protected function getPage($params=Array()) {
 		$info=Array();
 		$info['html-head']=$this->getPageHead($params);
 		$info['html-h1']=str2Html($params['head.h1']);
@@ -149,7 +134,7 @@ class PageViewerBootStrap extends PageViewer {
  * - $info['attr-href-root']
  * - $info['attr-href-resource']
  */
-	protected function templatePage($info, $params) {
+	protected function templatePage($info=Array(), $params=Array()) {
 		$result=<<<HTML
 <!DOCTYPE html>
 <html lang="ru">
@@ -227,7 +212,8 @@ HTML;
 	protected function getBreadCrumb($params) {
 		$htmlBreadCrumb='';
 		$lst=$this->getBreadCrumbList($params);
-		if (count($lst)>0) $lst[count($lst)-1]['current']=1;
+		if (count($lst)==0) return '';
+		$lst[count($lst)-1]['current']=1;
 		foreach($lst as $p) {
 			$info=Array();
 			$info['href']=str2Attr($p['href']);
@@ -321,18 +307,80 @@ class Widget {
 	}
 }
 
+/** Класс контроллера адресов страниц PageUrlController
+ *
+ * если используется контроллер адресов страниц, то необходимо
+ * в файле php/pages/.controller.php разместить потомка PageUrlController, 
+ * в котором переопределить метод разбора входных параметров getParams().
+ * Простейший пример можно посмотреть в php/g740server/pages/.controller.php
+ */
+class PageUrlController {
+/** Разбор входных параметров страницы
+ *
+ * @return	Array	параметры PageViewer
+ */
+	public function getParams() {
+		throw new Exception('Обращение к абстрактному методу PageUrlController.getParams()');
+	}
+/** Перевести адрес страницы в массив url по уровням вложенности
+ *
+ * @return	Array	массив url по уровням вложенности
+ */
+	public function getLstUrl() {
+		//trace($_SERVER["REQUEST_URI"]);
+		$scriptUrl=$_SERVER["SCRIPT_NAME"];
+		$pos=mb_strripos($scriptUrl, '/index.php');
+		if ($pos===false) throw new Exception('Не удалось обработать адрес входного запроса, _SERVER[SCRIPT_NAME] не содержит /index.php');
+		$url=trim(mb_strtolower(mb_substr($_SERVER["REQUEST_URI"],$pos+1,999)));
+		$pos=mb_strpos($url,'#');
+		if ($pos!==false) $url=mb_substr($url, 0, $pos);
+		$pos=mb_strpos($url,'?');
+		if ($pos!==false) $url=mb_substr($url, 0, $pos);
+		$result=explode('/',$url);
+		while(count($result)>0 && trim($result[count($result)-1])=='') unset($result[count($result)-1]);
+		return $result;
+	}
+}
+
+/** Получить адрес страницы по параметрам
+ *
+ * @param	Array	$params
+ * @return	string	адрес страницы
+ */
+function getPageHref($params) {
+	$objPageViewer=getPageViewer($params['page']);
+	return $objPageViewer->getHref($params);
+}
+
 /** Получить PageViewer по имени
  *
- * @param	string	$mode
+ * @param	string	$page
  * @return	PageViewer
  */
-function getObjPage($mode) {
-	global $_registerObjPage;
-	$result=$_registerObjPage[$mode];
-	if (!$result) $result=$_registerObjPage['default'];
-	if (!$result) throw new Exception("Не найдена страница '{$mode}'");
-	if (!$result instanceof PageViewer) throw new Exception("Не найдена страница '{$mode}'");
-	return $result;
+function getPageViewer($page) {
+	global $_registerPageViewer;
+	if ($page!=str2FileName($page)) throw new Exception("Недопустимое имя PageViewer: {$page}");
+	if ($_registerPageViewer[$page]) return $_registerPageViewer[$page];
+
+	$fileName=pathConcat(
+		getCfg('path.root'),
+		getCfg('path.root.pages', pathConcat(getCfg('path.root.php'),'pages')),
+		"{$page}.php"
+	);
+	if (!file_exists($fileName)) {
+		$fileName=pathConcat(
+			getCfg('path.root'),
+			getCfg('path.root.g740server', pathConcat(getCfg('path.root.php'),'g740server')),
+			'pages',
+			"{$page}.php"
+		);
+	}
+	if (file_exists($fileName)) {
+		$obj=include_once($fileName);
+		if ($obj instanceof PageViewer) $_registerPageViewer[$page]=$obj;
+	}
+	if (!$_registerPageViewer[$page]) throw new Exception("Не найден PageViewer: {$page}");
+	return $_registerPageViewer[$page];
 }
 /** Получить Widget по имени
  *
@@ -341,143 +389,63 @@ function getObjPage($mode) {
  */
 function getWidget($name) {
 	global $_registerWidget;
-	if ($name!=str2FileName($name)) throw new Exception("Недопустимое имя виджета '{$name}'");
+	if ($name!=str2FileName($name)) throw new Exception("Недопустимое имя виджета: {$name}");
 	if (!$_registerWidget[$name]) {
 		$fileName=pathConcat(
 			getCfg('path.root'),
-			getCfg('path.root.widgets'),
+			getCfg('path.root.widgets',pathConcat(getCfg('path.root.php'),'widgets')),
 			"{$name}.php"
 		);
+		if (!file_exists($fileName)) {
+			$fileName=pathConcat(
+				getCfg('path.root'),
+				getCfg('path.root.g740server', pathConcat(getCfg('path.root.php'),'g740server')),
+				'widgets',
+				"{$name}.php"
+			);
+		}
 		if (file_exists($fileName)) {
 			$obj=include_once($fileName);
 			if ($obj instanceof Widget) $_registerWidget[$name]=$obj;
 		}
 	}
-	if (!$_registerWidget[$name]) {
-		$fileName=pathConcat(
-			getCfg('path.root'),
-			getCfg('path.root.g740server', pathConcat(getCfg('path.root.php'),'g740server')),
-			'widgets',
-			"{$name}.php"
-		);
-		if (file_exists($fileName)) {
-			$obj=include_once($fileName);
-			if ($obj instanceof Widget) $_registerWidget[$name]=$obj;
-		}
-	}
-	if (!$_registerWidget[$name]) throw new Exception("Виджет не зарегистрирован '{$name}'");
+	if (!$_registerWidget[$name]) throw new Exception("Не найден виджет: {$name}");
 	
 	$widgetClassName=get_class($_registerWidget[$name]);
 	$objWidget=new $widgetClassName();
 	$objWidget->name=$name;
 	return $objWidget;
 }
-
-/** Разобрать входные параметры URL
+/** Получить актуальный для проекта контроллер адресов страниц PageUrlController
  *
- * Разбираем URL из $_SERVER["REQUEST_URI"] URL может быть либо одноуровневым,
- * исходя из принудительных имен страниц либо многоуровневым исходя из структуры сайта
-
- * @return	Array	начитанные параметры
+ * @return	PageUrlController
  */
-function getInputParams() {
-	global $_registerObjPage;
-	$result=Array();
-	// Вытаскиваем из запроса URL
-	$scriptUrl=$_SERVER["SCRIPT_NAME"];
-	//trace($_SERVER["REQUEST_URI"]);
-
-	$pos=mb_strripos($scriptUrl, '/index.php');
-	if ($pos===false) throw new Exception('Не удалось обработать адрес входного запроса, _SERVER[SCRIPT_NAME] не содержит /index.php');
-	$url=trim(mb_strtolower(mb_substr($_SERVER["REQUEST_URI"],$pos+1,999)));
-	$pos=mb_strpos($url,'#');
-	if ($pos!==false) $url=mb_substr($url, 0, $pos);
-	$pos=mb_strpos($url,'?');
-	if ($pos!==false) $url=mb_substr($url, 0, $pos);
-	if ($url!=str2MySql($url)) throw new Exception("Некорректный параметр, url={$url}");
-
-	$lstUrl=explode('/',$url);
-	while(count($lstUrl)>0 && trim($lstUrl[count($lstUrl)-1])=='') unset($lstUrl[count($lstUrl)-1]);
-
-	foreach($_registerObjPage as $objPage) {
-		if (!$objPage) continue;
-		$result=$objPage->getInputParams($lstUrl);
-		if ($result['mode']) break;
+function getPageUrlController() {
+	global $_objPageUrlController;
+	if ($_objPageUrlController) return $_objPageUrlController;
+	$fileName=pathConcat(
+		getCfg('path.root'),
+		getCfg('path.root.pages', pathConcat(getCfg('path.root.php'),'pages')),
+		'.controller.php'
+	);
+	if (!file_exists($fileName)) {
+		$fileName=pathConcat(
+			getCfg('path.root'),
+			getCfg('path.root.g740server', pathConcat(getCfg('path.root.php'),'g740server')),
+			'pages',
+			'.controller.php'
+		);
 	}
-	if (!$result['mode']) $result['mode']='404';
-	$objPage=getObjPage($result['mode']);
-	if ($objPage) {
-		$p=$objPage->getPageParams($result);
-		foreach($p as $key=>$value) $result[$key]=$value;
+	if (file_exists($fileName)) {
+		$obj=include_once($fileName);
+		if ($obj instanceof PageUrlController) $_objPageUrlController=$obj;
 	}
-	return $result;
+	if (!$_objPageUrlController) throw new Exception('Не найден PageUrlController');
+	return $_objPageUrlController;
 }
-/** Получить адрес ссылки по параметрам
- *
- * @param	Array	$params
- * @return	String	адрес ссылки по параметрам
- */
-function getHref($params=Array()) {
-	$objPage=getObjPage($params['mode']);
-	$href='';
-	if ($objPage) $href=$objPage->getHref($params);
-	return pathConcat(getCfg('href.root','/'), $href);
-}
-
-/** Точка входа контроллера страниц
- *
- * @param	boolean	$isTrace
- */
-function goPageController($isTrace=false) {
-	try {
-		$pdoDB=newPDODataConnector(
-			getCfg('sqlDriverName'),
-			getCfg('sqlDbName'),
-			getCfg('sqlLogin'),
-			getCfg('sqlPassword'),
-			getCfg('sqlCharSet'),
-			getCfg('sqlHost'),
-			getCfg('sqlPort')
-		); // Устанавливаем соединение с базой данных
-		regPDO($pdoDB,'default');
-		$pdoDB->beginTransaction();
-		try {
-			$filePages=pathConcat(
-				getCfg('path.root'),
-				getCfg('path.root.php'),
-				'pages',
-				'pages.php'
-			);
-			if (file_exists($filePages)) include_once($filePages);
-
-			$params=getInputParams();	// Ищем страницу и начитываем для нее параметры
-
-			if ($isTrace) trace($params);
-
-			$objPage=getObjPage($params['mode']);
-			$html=$objPage->getPage($params);
-			$objPage->sendHttpHeaders($params);
-			if ($pdoDB->inTransaction()) $pdoDB->commit();
-		}
-		catch (Exception $e) {
-			if ($pdoDB->inTransaction()) $pdoDB->rollBack();
-			throw new Exception($e->getMessage());
-		}
-	}
-	catch (Exception $e) {
-		errorLog($e);
-		$objPage=getObjPage('error');
-		if ($objPage) {
-			$p=$objPage->getPageParams($params);
-			foreach($p as $name=>$value) $params[$name]=$value;
-			$html=$objPage->getPage($params);
-			$objPage->sendHttpHeaders($params);
-		}
-	}
-	if ($html) echo $html;
-}
-
-/// Список зарегистрированных страниц
-$_registerObjPage=Array();
 /// Список зарегистрированных виджетов
 $_registerWidget=Array();
+/// Список зарегистрированных страниц PageViewer
+$_registerPageViewer=Array();
+/// Объект PageUrlController
+$_objPageUrlController=null;

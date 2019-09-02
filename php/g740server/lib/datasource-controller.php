@@ -859,9 +859,9 @@ XML;
 			if (is_array($r)) $row=$r;
 			$r=$this->onRowAfterSave($row, $params);
 			if (is_array($r)) $row=$r;
-			$r=$this->onRowValid($row);
-			if (is_array($r)) $row=$r;
 			$r=$this->doValidRowAfterSave($row);
+			if (is_array($r)) $row=$r;
+			$r=$this->onRowValid($row);
 			if (is_array($r)) $row=$r;
 			$result[$index]=$row;
 		}
@@ -1104,9 +1104,11 @@ SQL;
 			if (is_array($r)) $row=$r;
 			$r=$this->onRowAfterSave($row, $params);
 			if (is_array($r)) $row=$r;
-			$r=$this->onRowValid($row);
-			if (is_array($r)) $row=$r;
+
 			$r=$this->doValidRowAfterSave($row);
+			if (is_array($r)) $row=$r;
+
+			$r=$this->onRowValid($row);
 			if (is_array($r)) $row=$r;
 			$result[$index]=$row;
 		}
@@ -2345,6 +2347,14 @@ SQL;
 	protected function onRowValid(&$row) {
 	}
 
+// Устаревшие обработчики событий, оставлены для совместимости
+
+/** Устаревший обработчик проверки строки, оставлен для совместимости
+ *
+ * @param	Array $lst
+ */
+	protected function onValid($lst=Array()) {
+	}
 	
 /** Вычислить кол-во строк в результате запроса для заданного контекста
  *
