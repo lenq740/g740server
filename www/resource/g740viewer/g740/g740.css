@@ -287,7 +287,7 @@ html, body {
 	width: 23px;
 	height: 19px;
 	background-color: #F6F6F6;
-	background-image: url('icons/widget/btnfieldclear.png');
+	background-image: url('icons/widget/btnfieldclear11.png');
 	background-repeat: no-repeat;
 	cursor: pointer;
 }
@@ -309,11 +309,11 @@ html, body {
 	display: none;
 }
 .g740-fieldcontainer:hover .g740-widget-text .g740-widget-td-input .btnfieldclear {
-	width: 23px;
+	width: 11px;
 	display: block;
 }
 .g740-widget-text:hover  .g740-widget-td-input .btnfieldclear {
-	width: 23px;
+	width: 11px;
 	display: block;
 }
 .g740-widget-text .g740-widget-td-input .btnfieldclear:hover {

@@ -787,6 +787,7 @@ define(
 							}
 						});
 						
+
 						var G740params={};
 						var fieldName='params';
 						if (nt.treemenuParams) fieldName=nt.treemenuParams;
@@ -805,7 +806,17 @@ define(
 							}
 							p.G740params=G740params;
 						}
-						g740.application.doG740ShowForm(p);
+
+						var objForm=this.objForm;
+						if (objForm && objForm.requests && objForm.requests[p.formName]) {
+							objForm.exec({
+								requestName: p.formName,
+								G740params: p.G740params
+							});
+						}
+						else {
+							g740.application.doG740ShowForm(p);
+						}
 						if (objParentExpander) objParentExpander.panelCollapse(true);
 					}
 					else {
