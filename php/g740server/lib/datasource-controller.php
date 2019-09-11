@@ -599,6 +599,7 @@ XML;
 			foreach($params as $name=>$value) if (substr($name,0,5)=='mode.') $p[$name]=$value;
 			return $this->execRefresh($p);
 		}
+/*
 		if ($requestName=='save') {
 			try {
 				return $this->execSave($params);
@@ -613,6 +614,8 @@ XML;
 				throw new Exception($message);
 			}
 		}
+*/
+		if ($requestName=='save') return $this->execSave($params);
 		if ($requestName=='append') return $this->execAppend($params);
 		if ($requestName=='copy') return $this->execCopy($params);
 		if ($requestName=='delete') return $this->execDelete($params);
