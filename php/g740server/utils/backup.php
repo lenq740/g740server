@@ -9,6 +9,9 @@
 
 /// Класс контроллера утилиты резервного копирования данных
 class UtilityBackup extends UtilController {
+/// Наименование утилиты
+	public $caption='Экспорт таблиц';
+
 /** Разбор входных параметров
  *
  * @return	Array	параметры
@@ -38,7 +41,6 @@ class UtilityBackup extends UtilController {
 	public function go($params=Array()) {
 		$isSQL=$params['issql'];
 		if (!getPerm(getCfg('perm.utils.backup','root'),'write')) throw new Exception('У Вас нет прав на выполнение резервного копирования');
-		echo '<h2>Выполнение резервного копирования</h2>'; flush();
 		
 		$dbUtility = new DBUtility();
 		$path=pathConcat(getCfg('path.root'),getCfg('path.root.export-import'),'backup');
@@ -49,17 +51,18 @@ class UtilityBackup extends UtilController {
 			$dbUtility->xmlFileName=str_replace("\\","/",realpath($path)).'/datamodel.xml';
 			echo <<<HTML
 <div class="section">
-<h3>Экспорт структуры базы в виде XML описания</h3>
+<h2>Экспорт структуры базы в виде XML описания</h2>
 HTML;
-			flush();
+			echo '<div class="message">Экспорт ... ';flush();
 			$dbUtility->exportDataStruToXml();
+			echo 'Ok!</div>';
 			echo '</div>'; flush();
 		}
 		else if ($params['ismxlmenu']) {
 			$dbUtility->xmlFileName=str_replace("\\","/",realpath($path)).'/menu.xml';
 			echo <<<HTML
 <div class="section">
-<h3>Экспорт главного меню системы в виде XML описания</h3>
+<h2>Экспорт главного меню системы в виде XML описания</h2>
 HTML;
 			flush();
 			$dbUtility->exportSysAppMenuToXml();
@@ -83,7 +86,7 @@ HTML;
 			if ($params['isdatastru']) {
 				echo <<<HTML
 <div class="section">
-<h3>Резервное копирование описателей структуры базы</h3>
+<h2>Резервное копирование описателей структуры базы</h2>
 HTML;
 				flush();
 				foreach($lstDataStru as $index=>$tableName) {
@@ -106,7 +109,7 @@ HTML;
 			if ($params['issystem']) {
 				echo <<<HTML
 <div class="section">
-<h3>Резервное копирование системных справочников</h3>
+<h2>Резервное копирование системных справочников</h2>
 HTML;
 				flush();
 				
@@ -154,7 +157,7 @@ SQL;
 			if ($params['isstatic']) {
 				echo <<<HTML
 <div class="section">
-<h3>Резервное копирование статических таблиц</h3>
+<h2>Резервное копирование статических таблиц</h2>
 HTML;
 				flush();
 			
@@ -194,7 +197,7 @@ SQL;
 			if ($params['isdynamic']) {
 				echo <<<HTML
 <div class="section">
-<h3>Резервное копирование динамических таблиц</h3>
+<h2>Резервное копирование динамических таблиц</h2>
 HTML;
 				flush();
 				

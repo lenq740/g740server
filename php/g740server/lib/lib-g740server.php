@@ -1313,7 +1313,16 @@ SQL;
 				echo '<script>document.body.scrollIntoView(false)</script>'; flush();
 			}
 		}
+
 		$driverName=$this->getDriverName();
+		if ($driverName=='pgsql') {
+			$sql='SET CONSTRAINTS ALL DEFERRED;';
+			$this->pdo($sql);
+			$sql="SET session_replication_role = replica;";
+			$this->pdo($sql);
+		}
+
+
 		{ // systablecategory
 			if ($isEcho) {
 				echo '<div class="message">systablecategory ... '; flush();

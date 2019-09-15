@@ -9,15 +9,17 @@
  
 /// Класс контроллера утилиты пересчета и обслуживания базы
 class UtilityRebuild extends UtilController {
+/// Возможность запускать с правами root - но только из localhost
+	public $isCanExecutedAsRoot=true;
+/// Наименование утилиты
+	public $caption='Пересчет';
+
 /** Разбор входных параметров
  *
  * @return	Array	параметры
  */
 	public function getParams() {
 		$params=Array();
-		if ($_REQUEST['root']==1) {
-			if ($_SERVER['REMOTE_ADDR']=='127.0.0.1' || $_SERVER['REMOTE_ADDR']=='::1') execConnectAsRoot();
-		}
 		return $params;
 	}
 /** Формирование результата запроса
@@ -26,12 +28,10 @@ class UtilityRebuild extends UtilController {
  * @return	String	результат
  */
 	public function go($params=Array()) {
-		echo '<h2>Пересчет и обслуживание базы</h2>';
-		flush();
 		{
 			echo <<<HTML
 <div class="section">
-<h3>Очистка старых log файлов</h3>
+<h2>Очистка старых log файлов</h2>
 HTML;
 			flush();
 			echo '<div class="message">Очищаем старые log файлы . . . '; flush();

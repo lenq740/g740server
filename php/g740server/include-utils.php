@@ -45,12 +45,6 @@ includeLib('perm-controller.php');
 includeLib('datasource-controller.php');
 includeLib('ext-controller.php');
 
-if (getCfg('csrftoken.enabled') && getPP('csrftoken')) {
-	if ($_REQUEST['csrftoken']!=getPP('csrftoken')) {
-		throw new Exception('Обнаружена попытка хакерской атаки посредством CSRF уязвимости, выполнение прервано');
-	}
-}
-
 echo <<<HTML
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
 <html>
@@ -65,8 +59,14 @@ HTML;
 flush();
 try {
 	$dStart=new DateTime();
+
+	$name=$_REQUEST['name'];
+	if (!$name) throw new Exception('Не задан обязательный параметр name');
+	$obj=getUtilController($name);
+	$isSysExtLog=$obj->isSysExtLog;
+	echo "\n".'<h1>'.str2Html($obj->caption).'</h1>'; flush();
 	
-	echo '<div class="message">Устанавливаем соединение с базой данных ... '; flush();
+	echo "\n".'<div class="message">Устанавливаем соединение с базой данных ... '; flush();
 	$pdoDB=newPDODataConnector(
 		getCfg('sqlDriverName'),
 		getCfg('sqlDbName'),
@@ -79,19 +79,29 @@ try {
 	regPDO($pdoDB,'default');
 	echo 'Ok!</div>';
 	try {
-		echo '<div class="message">Начинаем транзакцию ... '; flush();
+		echo "\n".'<div class="message">Начинаем транзакцию ... '; flush();
 		$pdoDB->beginTransaction();
 		echo 'Ok!</div>';
 		
-		echo '<div class="message">Устанавливаем лимиты среды выполнения ... '; flush();
+		echo "\n".'<div class="message">Устанавливаем лимиты среды выполнения ... '; flush();
 		if (!ini_set('max_execution_time', getCfg('util.max_execution_time','99999'))) throw new Exception('Не удалось задать увеличенное время для выполнения скрипта');
 		if (!ini_set('memory_limit', getCfg('util.memory_limit','256M'))) throw new Exception('Не удалось задать увеличенный объем памяти для выполнения сервиса');
 		echo 'Ok!</div>';
 		
-		$name=$_REQUEST['name'];
-		if (!$name) throw new Exception('Не задан обязательный параметр name');
-		$obj=getUtilController($name);
-		$isSysExtLog=$obj->isSysExtLog;
+
+		$isWithoutCSRFTest=false;
+		if ($obj->isCanExecutedAsRoot && $_REQUEST['root']==1) {
+			if ($_SERVER['REMOTE_ADDR']=='127.0.0.1' || $_SERVER['REMOTE_ADDR']=='::1') {
+				execConnectAsRoot();
+				$isWithoutCSRFTest=true;
+			}
+		}
+		if (getCfg('csrftoken.enabled') && getPP('csrftoken') && !$isWithoutCSRFTest) {
+			if ($_REQUEST['csrftoken']!=getPP('csrftoken')) {
+				throw new Exception('Обнаружена попытка хакерской атаки посредством CSRF уязвимости, выполнение прервано');
+			}
+		}
+
 		if ($isSysExtLog) {
 			$sqlD=$dStart->format('Y-m-d');
 			$sqlT=$dStart->format('H:i');
@@ -119,14 +129,14 @@ SQL;
 			$pdoDB->pdo($sql);
 		}
 
-		echo '<br><br><div class="message">Подтверждаем транзакцию ... '; flush();
+		echo "\n".'<br><br><div class="message">Подтверждаем транзакцию ... '; flush();
 		if ($pdoDB->inTransaction()) $pdoDB->commit();
 		echo 'Ok!</div>'; flush();
-		echo '<div class="ok">Операция завершена успешно!!!</div>'; flush();
+		echo "\n".'<div class="ok">Операция завершена успешно!!!</div>'; flush();
 	}
 	catch (Exception $e) {
 		if ($pdoDB->inTransaction()) {
-			echo '<div class="error">Откатываем транзакцию ...'; flush();
+			echo "\n".'<div class="error">Откатываем транзакцию ...'; flush();
 			$pdoDB->rollBack();
 			echo '</div>'; flush();
 		}
@@ -171,7 +181,7 @@ catch (Exception $e) {
 HTML;
 	flush();
 }
-echo '<script>document.body.scrollIntoView(false)</script>'; flush();
+echo "\n".'<script>document.body.scrollIntoView(false)</script>'; flush();
 echo "\n".<<<HTML
 </body>
 </html>

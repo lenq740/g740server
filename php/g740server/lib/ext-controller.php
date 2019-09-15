@@ -18,6 +18,7 @@ require_once('dsconnector.php');
 class ExtController extends DSConnector {
 /// Логировать работу в таблицу sysextlog
 	public $isSysExtLog=false;
+
 /** Разбор входных параметров
  *
  * @return	Array	параметры
@@ -39,6 +40,10 @@ class ExtController extends DSConnector {
 /** Класс предок контроллеров утилит
  */
 class UtilController extends ExtController {
+/// Возможность запускать с правами root - но только из localhost
+	public $isCanExecutedAsRoot=false;
+/// Наименование утилиты
+	public $caption='Утилита';
 }
 /** Класс предок контроллеров сервисов
  */

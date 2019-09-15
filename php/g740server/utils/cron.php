@@ -9,6 +9,11 @@
 
 /// Класс контроллера утилиты плановых работ, выполняется по расписанию
 class UtilityCron extends UtilController {
+/// Возможность запускать с правами root - но только из localhost
+	public $isCanExecutedAsRoot=true;
+/// Наименование утилиты
+	public $caption='Плановые работы';
+
 /** Разбор входных параметров
  *
  * @return	Array	параметры
@@ -23,23 +28,7 @@ class UtilityCron extends UtilController {
  * @return	String	результат
  */
 	public function go($params=Array()) {
-		echo '<h2>Плановые работы</h2>';
-		flush();
-		{
-			echo <<<HTML
-<div class="section">
-<h3>Запуск пересчета и обслуживания базы</h3>
-HTML;
-			flush();
-			
-			echo '<div class="message">Запускаем пересчет и ждем его завершения ... '; flush();
-			execUtility('rebuild',Array('root'=>1),true);
-			echo 'Ok!</div>'; flush();
-			echo '<script>document.body.scrollIntoView(false)</script>'; flush();
-			
-			echo '</div>'; flush();
-			echo '<script>document.body.scrollIntoView(false)</script>'; flush();
-		}
+		echo getUtilityResult('rebuild');
 	}
 }
 return new UtilityCron();

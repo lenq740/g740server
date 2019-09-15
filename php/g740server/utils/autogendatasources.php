@@ -11,6 +11,9 @@ includeLib('dsautogenerator.php');
 
 /// Класс контроллера утилиты AutogenDataSources
 class UtilityAutogenDataSources extends UtilController {
+/// Наименование утилиты
+	public $caption='Генератор классов DataSource';
+	
 /** Формирование результата запроса
  *
  * @param	Array	$params параметры
@@ -18,8 +21,8 @@ class UtilityAutogenDataSources extends UtilController {
  */
 	public function go($params=Array()) {
 		if (!getPerm(getCfg('perm.utils.autogendatasources','root'),'write')) throw new Exception('У Вас нет прав на генерацию классов DataSource');
-		echo '<h2>автоматическая генерация классов DataSource</h2>'; flush();
 		echo '<div class="section">'; flush();
+		echo '<h2>Генерация классов DataSource</h2>'; flush();
 		$params['echo']=true;
 		$objAutoGenerator=new DSAutoGenerator($params);
 		$objAutoGenerator->goDataSources($params);
