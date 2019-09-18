@@ -1380,10 +1380,14 @@ SQL;
 		// Удаляем из основной таблицы
 		$q=$this->pdo($sqlSelect);
 		while($row=$this->pdoFetch($q)) {
+			$result[]=$row;
+		}
+		$this->onAfterDelete($result, $params);
+		foreach($result as &$row) {
 			$r=$this->onRowAfterDelete($row, $params);
 			if (is_array($r)) $row=$r;
 			$row['row.delete']=1;
-			$result[]=$row;
+			unset($row;)
 		}
 		$this->pdo($sqlDelete);
 		return $result;
@@ -2342,7 +2346,13 @@ SQL;
  */
 	protected function onRowAfterDelete(&$row, $params=Array()) {
 	}
-
+/** постобработка множества строк в запросе delete
+ *
+ * @param	Array $result
+ * @param	Array $params
+ */
+	protected function onAfterDelete(&$result, $params=Array()) {
+	}
 /** проверка строки в запросах update и insert
  *
  * @param	Array $row
