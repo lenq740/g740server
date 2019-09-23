@@ -488,6 +488,7 @@ SQL;
  */
 	protected function beforeExportTableSqlSrv($tableName) {
 		$result=<<<SQL
+set dateformat ymd;
 truncate table [dbo].[{$tableName}];
 SQL;
 		$sql=<<<SQL
@@ -869,7 +870,6 @@ delete from "{$tableName}"
 SQL;
 		$this->pdo($sql);
 	}
-	
 	
 /** Обработка таблицы после загрузки в нее данных
  *

@@ -1387,7 +1387,7 @@ SQL;
 			$r=$this->onRowAfterDelete($row, $params);
 			if (is_array($r)) $row=$r;
 			$row['row.delete']=1;
-			unset($row;)
+			unset($row);
 		}
 		$this->pdo($sqlDelete);
 		return $result;

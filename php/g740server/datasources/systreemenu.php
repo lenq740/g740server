@@ -59,6 +59,7 @@ class DataSource_SysTreeMenu extends DataSource {
 		<field name="params" type="memo" caption="Параметры запуска"/>
 		<field name="permmode" type="string"/>
 		<field name="permoper" type="string"/>
+		<field name="ord" type="num"/>
 	</fields>
 </section>
 XML;
@@ -113,11 +114,31 @@ SQL;
 			$sqlChilds=$this->php2SqlIn($lstChilds);
 			if ($sqlChilds) {
 				$sql=<<<SQL
+select max(sysappmenu.ord) as ord
+from
+	sysappmenu
+where
+	sysappmenu.parentid='{$id}'
+SQL;
+				$rec=$this->pdoFetch($sql);
+				$ord=$rec['ord'];
+				if (!$ord) $ord=0;
+				
+				$sql=<<<SQL
 update sysappmenu set parentid='{$id}'
 where
 	id in ({$sqlChilds})
 SQL;
 				$this->pdo($sql);
+				
+				$sql="select id from sysappmenu where id in ({$sqlChilds})";
+				$q=$this->pdo($sql);
+				while($rec=$this->pdoFetch($q)) {
+					$sysappmenuid=$rec['id'];
+					$ord+=10;
+					$sql="update sysappmenu set ord='{$ord}' where id='{$sysappmenuid}'";
+					$this->pdo($sql);
+				}
 			}
 		}
 		else {

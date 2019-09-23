@@ -134,6 +134,36 @@ class DataSource_Sysappmenu_System extends DataSource {
 		}
 		return $result;
 	}
+
+/** Выполнить операцию append, вычисляем ord
+ *
+ * @param	Array	$params контекст выполнения
+ * @return	Array результат выполнения операции
+ */
+	public function execAppend($params=Array()) {
+		$params['#request.mode']='last';
+		$parentid=$params['parentid'];
+		if (!$parentid) $parentid=$params['filter.parentid'];
+		if ($parentid) {
+			$parentid=$this->str2Sql($parentid);
+			$sql=<<<SQL
+select 
+	max(sysappmenu.ord) as ord
+from
+	sysappmenu
+where
+	sysappmenu.parentid='{$parentid}'
+SQL;
+			$rec=$this->pdoFetch($sql);
+			$ord=$rec['ord'];
+			if (!$ord) $ord=0;
+			$params['ord']=$ord+10;
+		}
+		$result=parent::execAppend($params);
+		return $result;
+	}
+
+
 /** Переопределяем секцию fields SQL запроса select
  *
  * @param	Array	$params контекст выполнения
