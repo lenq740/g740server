@@ -45,9 +45,6 @@ class DataSource extends DSConnector{
 /// Проверка на ReadOnly строки родительской таблицы - имя поля, по которому осуществляется связь с родительской таблицей
 	public $permTestReadOnlyOwnerLinkFieldName='';
 	
-/// Реализована поддержка источником данных механизма vrsession
-	public $vrSessionEnabled=false;
-
 /// Конструктор - инициализирует константы из конфигурационных настроек
 	function __construct() {
 		if ($this->formatId===null) $this->formatId=getCfg('datasource.formatId','autoincrement');
@@ -580,9 +577,6 @@ XML;
 	public function exec($params=Array()) {
 		$requestName=$params['#request.name'];
 		$requestMode=$params['#request.mode'];
-		
-		if ($params['mode.vrsession']) setVrSession($params['mode.vrsession']);
-		
 		if ($requestName=='refresh') {
 			$result=$this->execRefresh($params);
 			$id=$params['row.focus.id'];
@@ -696,20 +690,6 @@ XML;
 			unset($row);
 		}
 		
-		// Выполняем подмену для vrsession
-		if ($this->vrSessionEnabled && getVrSession()) {
-			$vrSessionFieldName=getCfg('datasource.vrsession.reftosession','vrsessionid');
-			$vrIdFieldName=getCfg('datasource.vrsession.reftoid','vrid');
-			
-			foreach($result as &$row) {
-				if ($row[$vrSessionFieldName] && $row[$vrIdFieldName]) {
-					$row['id']=$row[$vrIdFieldName];
-				}
-				unset($row[$vrIdFieldName]);
-				unset($row[$vrSessionFieldName]);
-			}
-		}
-		
 		// постобработка запроса
 		foreach($result as $index=>&$row) {
 			$r=$this->onRowAfterRefresh($row, $params);
@@ -755,13 +735,6 @@ XML;
 		$fields=$this->getFields();
 		$id=$params['id'];
 		$sqlId=($this->formatId=='guid')?$this->guid2Sql($id):$this->str2Sql($id);
-		
-		if ($this->vrSessionEnabled) {
-			$vrSessionFieldName=getCfg('datasource.vrsession.reftosession','vrsessionid');
-			$vrIdFieldName=getCfg('datasource.vrsession.reftoid','vrid');
-			unset($params[$vrSessionFieldName]);
-			unset($params[$vrIdFieldName]);
-		}
 
 		foreach($fields as $key=>$fld) {
 			$name=$fld['name'];
@@ -812,11 +785,6 @@ XML;
 				$sqlFields=$sqlFields.$sqlDelim.'"'.$sqlName.'"'.' = '.((gettype($value)=='NULL')?"null":("'".$this->php2Sql($value)."'"));
 				$sqlDelim=',';
 			}
-		}
-		
-		// Обработка vrsession
-		if ($this->vrSessionEnabled && getVrSession()) {
-			$sqlId=$this->str2Sql($this->_getVrIdForUpdate($id));
 		}
 		
 		if ($sqlFields!='') {
@@ -887,80 +855,6 @@ XML;
 		}
 		return $result;
 	}
-/** Вспомогательная функция для поддержки vrsession при update, возвращает id строки для update, при необходимости создает копию строки
- *
- * @param	string	$id
- * @return	string id строки для update
- */
-	protected function _getVrIdForUpdate($id) {
-		if (!$this->vrSessionEnabled) return $id;
-		$vrsession=getVrSession();
-		if (!$vrsession) return $id;
-
-		$vrSessionFieldName=getCfg('datasource.vrsession.reftosession','vrsessionid');
-		$vrIdFieldName=getCfg('datasource.vrsession.reftoid','vrid');
-
-		$driverName=$this->getDriverName();
-		$B='';
-		$E='';
-		if ($driverName=='mysql') {
-			$B='`';
-			$E='`';
-		}
-		else if ($driverName=='sqlsrv') {
-			$B='[';
-			$E=']';
-		}
-		else if ($driverName=='pgsql') {
-			$B='"';
-			$E='"';
-		}
-		else {
-			throw new Exception("Неизвестный драйвер базы данных '{$driverName}'");
-		}
-
-		$sqlVrSession=$this->str2Sql($vrsession);
-		$sqlId=$this->str2Sql($id);
-
-		$sql=<<<SQL
-select id from {$B}{$this->tableName}{$E}
-where
-	{$B}{$vrSessionFieldName}{$E}='{$sqlVrSession}' and
-	({$B}{$vrIdFieldName}{$E}='{$sqlId}' or id='{$sqlId}')
-SQL;
-		$rec=$this->pdoFetch($sql);
-		$result=$rec['id'];
-		if ($result) return $result;
-		
-		$fields=$this->getFields();
-		$sqlFields="{$B}{$vrIdFieldName}{$E}, {$B}{$vrSessionFieldName}{$E}";
-		$sqlValues="'{$sqlId}', '{$sqlVrSession}'";
-		foreach($fields as &$fld) {
-			if ($fld['virtual']) continue;
-			$alias=$this->tableName;
-			if ($fld['table']) $alias=$fld['table'];
-			if ($fld['alias']) $alias=$fld['alias'];
-			if ($alias!=$this->tableName) continue;
-			$name=$fld['name'];
-			$sqlName=strtolower($name);
-			if ($sqlName==$vrIdFieldName) continue;
-			if ($sqlName==$vrSessionFieldName) continue;
-			$sqlFields.=", {$B}{$sqlName}{$E}";
-			$sqlValues.=", {$B}{$sqlName}{$E}";
-		}
-		$sql=<<<SQL
-insert into {$B}{$this->tableName}{$E} ({$sqlFields})
-select {$sqlValues}
-from
-	{$B}{$this->tableName}{$E}
-where
-	id='{$sqlId}'
-SQL;
-		$this->pdo($sql);
-		$result=$this->getPDO()->lastInsertId();
-		if (!$result) $result=$id;
-		return $result;
-	}
 /** Ветка insert опрерации save
  *
  * @param	Array	$params контекст выполнения
@@ -992,15 +886,6 @@ SQL;
 			$insertIdValue=$params['id'];
 		}
 		
-		// Обработка vrsession
-		if ($this->vrSessionEnabled && getVrSession()) {
-			$vrSessionFieldName=getCfg('datasource.vrsession.reftosession','vrsessionid');
-			$vrIdFieldName=getCfg('datasource.vrsession.reftoid','vrid');
-			unset($params[$vrSessionFieldName]);
-			unset($params[$vrIdFieldName]);
-
-			$params[$vrSessionFieldName]=getVrSession();
-		}
 		if ($insertIdValue) {
 			$name='id';
 			$sqlId=$this->str2Sql($insertIdValue);
@@ -1255,98 +1140,12 @@ SQL;
 		$sqlDelete='';
 		
 		$result=Array();
-		// Случай vrsession разбиваем на 2 - строки с заданным vrsessionid удаляем сразу, а остальные помечаем на удаление
-		if ($this->vrSessionEnabled && getVrSession()) {
-			$sqlVrSession=$this->str2Sql(getVrSession());
-			
-			$vrDeleteTable=getCfg('datasource.vrsession.deletetable','vrdelete');
-			$vrSessionFieldName=getCfg('datasource.vrsession.reftosession','vrsessionid');
-			$vrIdFieldName=getCfg('datasource.vrsession.reftoid','vrid');
-
-			$driverName=$this->getDriverName();
-			$B='';
-			$E='';
-			if ($driverName=='mysql') {
-				$B='`';
-				$E='`';
-			}
-			else if ($driverName=='sqlsrv') {
-				$B='[';
-				$E=']';
-			}
-			else if ($driverName=='pgsql') {
-				$B='"';
-				$E='"';
-			}
-			else {
-				throw new Exception("Неизвестный драйвер базы данных '{$driverName}'");
-			}
-		
-			$lstId1=Array();
-			$lstId2=Array();
-			$sql=<<<SQL
-select id,{$B}{$vrSessionFieldName}{$E}
-from
-	{$B}{$this->tableName}{$E}
-where
-	id in ({$idlist})
-SQL;
-			$q=$this->pdo($sql);
-			while($rec=$this->pdoFetch($q)) {
-				if ($rec[$vrSessionFieldName]==getVrSession()) $lstId1[]=$rec['id'];
-				else $lstId2[]=$rec['id'];
-			}
-			
-			if (count($lstId2)>0) {
-				$p['id']=$lstId2;
-				if ($driverName=='mysql') $this->_execDeleteRestrictMySql($p);
-				else if ($driverName=='sqlsrv') $this->_execDeleteRestrictSqlSrv($p);
-				else if ($driverName=='pgsql') $this->_execDeleteRestrictPgSql($p);
-				else {
-					throw new Exception("Неизвестный драйвер базы данных '{$driverName}'");
-				}
-				$idlist=$this->php2SqlIn($lstId2);
-				$sql=<<<SQL
-insert into {$B}{$vrDeleteTable}{$E} ({$B}{$vrSessionFieldName}{$E}, {$B}tablename{$E}, {$B}tableid{$E})
-select
-	'{$sqlVrSession}',
-	'{$this->tableName}',
-	{$B}{$this->tableName}{$E}.id
-from
-	{$B}{$this->tableName}{$E}
-where
-	{$B}{$this->tableName}{$E}.id in ({$idlist}) and
-	{$B}{$this->tableName}{$E}.id not in (
-		select {$B}{$vrDeleteTable}{$E}.{$B}tableid{$E}
-		from
-			{$B}{$vrDeleteTable}{$E}
-		where
-			{$B}{$vrDeleteTable}{$E}.{$B}{$vrSessionFieldName}{$E}='{$sqlVrSession}' and
-			{$B}{$vrDeleteTable}{$E}.{$B}tablename{$E}='{$this->tableName}'
-	)
-SQL;
-				$this->pdo($sql);
-				foreach($lstId2 as $id) {
-					$row=Array();
-					$row['id']=$id;
-					$row['row.delete']=1;
-					$result[]=$row;
-				}
-			}
-			
-			$idlist=$this->php2SqlIn($lstId1);
-			if ($idlist=='') return $result;
-			$p=Array();
-			$p['refs']=$refs;
-			$p['id']=$lstId1;
-		}
-		
 		if ($driverName=='mysql') {
 			$this->_execDeleteRestrictMySql($p);
 			$this->_execDeleteCascadeMySql($p);
 			$this->_execDeleteClearMySql($p);
 			$sqlSelect=<<<SQL
-select id from `{$this->tableName}` where id in ({$idlist})
+select * from `{$this->tableName}` where id in ({$idlist})
 SQL;
 			$sqlDelete=<<<SQL
 delete from `{$this->tableName}` where id in ({$idlist})
@@ -1357,7 +1156,7 @@ SQL;
 			$this->_execDeleteCascadeSqlSrv($p);
 			$this->_execDeleteClearSqlSrv($p);
 			$sqlSelect=<<<SQL
-select id from [{$this->tableName}] where id in ({$idlist})
+select * from [{$this->tableName}] where id in ({$idlist})
 SQL;
 			$sqlDelete=<<<SQL
 delete from [{$this->tableName}] where id in ({$idlist})
@@ -1368,7 +1167,7 @@ SQL;
 			$this->_execDeleteCascadePgSql($p);
 			$this->_execDeleteClearPgSql($p);
 			$sqlSelect=<<<SQL
-select id from "{$this->tableName}" where id in ({$idlist})
+select * from "{$this->tableName}" where id in ({$idlist})
 SQL;
 			$sqlDelete=<<<SQL
 delete from "{$this->tableName}" where id in ({$idlist})
@@ -1386,8 +1185,12 @@ SQL;
 		foreach($result as &$row) {
 			$r=$this->onRowAfterDelete($row, $params);
 			if (is_array($r)) $row=$r;
-			$row['row.delete']=1;
-			unset($row);
+		}
+		foreach($result as &$row) {
+			$r=Array();
+			$r['id']=$row['id'];
+			$r['row.delete']=1;
+			$row=$r;
 		}
 		$this->pdo($sqlDelete);
 		return $result;
@@ -2102,169 +1905,6 @@ SQL;
 		return true;
 	}
 
-/** Подтверждение vrsession
- *
- * @return	boolean успешность
- */
-	public function commitVrSession() {
-		if (!$this->vrSessionEnabled) return false;
-		$vrsession=getVrSession();
-		if (!$vrsession) return false;
-
-		$driverName=$this->getDriverName();
-		$B='';
-		$E='';
-		if ($driverName=='mysql') {
-			$B='`';
-			$E='`';
-		}
-		else if ($driverName=='sqlsrv') {
-			$B='[';
-			$E=']';
-		}
-		else if ($driverName=='pgsql') {
-			$B='"';
-			$E='"';
-		}
-		else {
-			throw new Exception("Неизвестный драйвер базы данных '{$driverName}'");
-		}
-		
-		$sqlVrSession=$this->str2Sql($vrsession);
-		$vrDeleteTable=getCfg('datasource.vrsession.deletetable','vrdelete');
-		$vrSessionFieldName=getCfg('datasource.vrsession.reftosession','vrsessionid');
-		$vrIdFieldName=getCfg('datasource.vrsession.reftoid','vrid');
-
-		
-		{ // Разбираемся с удаляемыми строками
-			$sql=<<<SQL
-select {$B}{$vrDeleteTable}{$E}.{$B}tableid{$E} as id
-from
-	{$B}{$vrDeleteTable}{$E}
-where
-	{$B}{$vrDeleteTable}{$E}.{$B}{$vrSessionFieldName}{$E}='{$sqlVrSession}' and
-	{$B}{$vrDeleteTable}{$E}.{$B}tablename{$E}='{$this->tableName}'
-SQL;
-			$lst=Array();
-			$q=$this->pdo($sql);
-			while($rec=$this->pdoFetch($q)) {
-				if (!$rec['id']) continue;
-				$lst[]=$rec['id'];
-			}
-			if (count($lst)>0) $this->execDelete(Array('id'=>$lst));
-
-			$sql=<<<SQL
-delete from	{$B}{$vrDeleteTable}{$E}
-where
-	{$B}{$vrDeleteTable}{$E}.{$B}{$vrSessionFieldName}{$E}='{$sqlVrSession}' and
-	{$B}{$vrDeleteTable}{$E}.{$B}tablename{$E}='{$this->tableName}'
-SQL;
-			$this->pdo($sql);
-		}
-		
-		
-		{ // Разбираемся со вставляемыми строками
-			if ($this->formatEmptyRef==='null') {
-				$sql=<<<SQL
-update {$B}{$this->tableName}{$E} set {$B}{$vrSessionFieldName}{$E}=null
-where
-	{$B}{$vrSessionFieldName}{$E}='{$sqlVrSession}' and
-	{$B}{$vrIdFieldName}{$E} is null
-SQL;
-			}
-			else if ($this->formatEmptyRef==='0') {
-				$sql=<<<SQL
-update {$B}{$this->tableName}{$E} set {$B}{$vrSessionFieldName}{$E}=0
-where
-	{$B}{$vrSessionFieldName}{$E}='{$sqlVrSession}' and
-	{$B}{$vrIdFieldName}{$E}=0
-SQL;
-			}
-			else {
-				$sql=<<<SQL
-update {$B}{$this->tableName}{$E} set {$B}{$vrSessionFieldName}{$E}=''
-where
-	{$B}{$vrSessionFieldName}{$E}='{$sqlVrSession}' and
-	{$B}{$vrIdFieldName}{$E}=''
-SQL;
-			}
-			$this->pdo($sql);
-		}
-
-		{ // Разбираемся с обновляемыми строками
-			$fields=$this->getFields();
-			$sqlFields='';
-			foreach($fields as &$fld) {
-				if ($fld['virtual']) continue;
-				$alias=$this->tableName;
-				if ($fld['table']) $alias=$fld['table'];
-				if ($fld['alias']) $alias=$fld['alias'];
-				if ($alias!=$this->tableName) continue;
-				$name=$fld['name'];
-				$sqlName=strtolower($name);
-				if ($sqlName==$vrIdFieldName) continue;
-				if ($sqlName==$vrSessionFieldName) continue;
-				if ($sqlFields) $sqlFields.=', ';
-				if ($driverName=='mysql') {
-					$sqlFields.="`{$this->tableName}`.`{$sqlName}`=`{$this->tableName}from`.`{$sqlName}`";
-				}
-				else if ($driverName=='sqlsrv') {
-					$sqlFields.='['.$sqlName.']=['.$this->tableName.'from].['.$sqlName.']';
-				}
-				else if ($driverName=='pgsql') {
-					$sqlFields.='"'.$sqlName.'"="'.$this->tableName.'from"."'.$sqlName.'"';
-				}
-			}
-			if ($sqlFields) {
-				$sql='';
-				if ($driverName=='mysql') {
-					$sql=<<<SQL
-update `{$this->tableName}`, `{$this->tableName}` `{$this->tableName}from`
-set 
-	{$sqlFields}
-where
-	`{$this->tableName}from`.`{$vrSessionFieldName}`='{$sqlVrSession}' and
-	`{$this->tableName}from`.`{$vrIdFieldName}`=`{$this->tableName}`.id
-SQL;
-				}
-				else if ($driverName=='sqlsrv') {
-					$sql=<<<SQL
-update [{$this->tableName}]
-set 
-	{$sqlFields}
-from
-	[{$this->tableName}] [{$this->tableName}from]
-where
-	[{$this->tableName}from].[{$vrSessionFieldName}]='{$sqlVrSession}' and
-	[{$this->tableName}from].[{$vrIdFieldName}]=[{$this->tableName}].id
-SQL;
-				}
-				else if ($driverName=='pgsql') {
-					$sql=<<<SQL
-update "{$this->tableName}"
-set 
-	{$sqlFields}
-from
-	"{$this->tableName}" "{$this->tableName}from"
-where
-	"{$this->tableName}from"."{$vrSessionFieldName}"='{$sqlVrSession}' and
-	"{$this->tableName}from"."{$vrIdFieldName}"="{$this->tableName}".id
-SQL;
-				}
-				$this->pdo($sql);
-			}
-		}
-		{ // Чищем остатки
-			$sql=<<<SQL
-delete from {$B}{$this->tableName}{$E}
-where
-	{$B}{$vrSessionFieldName}{$E}='{$sqlVrSession}'
-SQL;
-			$this->pdo($sql);
-		}
-		return true;
-	}
-
 // Обработчики событий
 
 /** предобработка в запросе refresh
@@ -2793,7 +2433,7 @@ SQL;
 		}
 		return $result;
 	}
-/** Вернуть кусок секции where SQL запроса select, обработка filter.id и vrsession
+/** Вернуть кусок секции where SQL запроса select, обработка filter.id
  *
  * @param	Array	$params контекст выполнения
  * @return 	string текст секции where SQL запроса select
@@ -2820,64 +2460,15 @@ SQL;
 		else {
 			throw new Exception("Неизвестный драйвер базы данных '{$driverName}'");
 		}
-
-		if ($this->vrSessionEnabled) {
-			$vrSessionFieldName=getCfg('datasource.vrsession.reftosession','vrsessionid');
-			$vrIdFieldName=getCfg('datasource.vrsession.reftoid','vrid');
-			$vrDeleteTable=getCfg('datasource.vrsession.deletetable','vrdelete');
-			
-			$whereEmpty="{$B}{$tableName}{$E}.{$B}{$vrSessionFieldName}{$E}=''";
-			$whereVrIdNotEmpty="{$B}{$tableName}{$E}.{$B}{$vrIdFieldName}{$E}<>''";
-			if ($this->formatEmptyRef==='0') {
-				$whereEmpty="{$B}{$tableName}{$E}.{$B}{$vrSessionFieldName}{$E}=0";
-				$whereVrIdNotEmpty="{$B}{$tableName}{$E}.{$B}{$vrIdFieldName}{$E}<>0";
-			}
-			if ($this->formatEmptyRef==='null') {
-				$whereEmpty="{$B}{$tableName}{$E}.{$B}{$vrSessionFieldName}{$E} is null";
-				$whereVrIdNotEmpty="{$B}{$tableName}{$E}.{$B}{$vrIdFieldName}{$E} is not null";
-			}
-			if (getVrSession()) {
-				$sqlVrSession=$this->str2Sql(getVrSession());
-				$result.="\n".<<<SQL
-and ({$whereEmpty} or {$B}{$tableName}{$E}.{$B}{$vrSessionFieldName}{$E}='{$sqlVrSession}')
-and {$B}{$tableName}{$E}.id not in (
-	select {$B}{$vrDeleteTable}{$E}.{$B}tableid{$E}
-	from
-		{$B}{$vrDeleteTable}{$E}
-	where
-		{$B}{$vrDeleteTable}{$E}.{$B}{$vrSessionFieldName}{$E}='{$sqlVrSession}' and
-		{$B}{$vrDeleteTable}{$E}.{$B}tablename{$E}='{$this->tableName}'
-)
-and {$B}{$tableName}{$E}.id not in (
-	select {$B}{$vrIdFieldName}{$E}
-	from
-		{$B}{$tableName}{$E}
-	where
-		{$whereVrIdNotEmpty} and
-		{$B}{$tableName}{$E}.{$B}{$vrSessionFieldName}{$E}='{$sqlVrSession}'
-)
-SQL;
-			}
-			else {
-				$result.="\n"."and {$whereEmpty}";
-			}
-		}
 		if (isset($params['filter.id'])) {
 			$value=$this->php2SqlIn($params['filter.id']);
 			if ($value!='') {
-				if ($this->vrSessionEnabled && getVrSession()) {
-					$result.="\n".<<<SQL
-and ({$B}{$tableName}{$E}.id in ({$value}) or {$B}{$tableName}{$E}.{$B}{$vrIdFieldName}{$E} in ({$value}))
-SQL;
-				}
-				else {
-					$result.="\n".<<<SQL
+				$result.="\n".<<<SQL
 and {$B}{$tableName}{$E}.id in ({$value})
 SQL;
-				}
 			}
 			else {
-					$result.="\n".<<<SQL
+				$result.="\n".<<<SQL
 and 1=0
 SQL;
 			}
@@ -3715,20 +3306,3 @@ function getDataStorage($tableName) {
 }
 /// Кэш загруженных объектов DataStorage
 $_registerDataStorage=Array();
-
-/// Вернуть vrSession
-function getVrSession() {
-	global $_vrSession;
-	return $_vrSession;
-}
-/** Задать vrSession
- *
- * @param	string	$vrSession
- */
-function setVrSession($vrSession) {
-	global $_vrSession;
-	if ($vrSession=='0') $vrSession=0;
-	$_vrSession=$vrSession;
-}
-/// Глобальная переменная для хранения vrSession
-$_vrSession='';

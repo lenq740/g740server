@@ -29,6 +29,7 @@ class DataSource_SysTreeDataModel extends DataSource {
 		$this->tableCaption='Модель данных';
 		$this->permMode='rootref';
 	}
+	
 /** Переопределяем XML описание древовидного источника данных
  *
  * @param	Array	$params контекст выполнения
@@ -113,7 +114,6 @@ XML
 		$result=Array();
 		
 		$p=$params;
-		$p['#request.notord']=1;
 		$lstRequests=Array('refresh', 'refreshrow', 'expand', 'append', 'save', 'delete', 'shift');
 		if (array_search($requestName, $lstRequests)!==false) {
 			if ($requestName=='expand') $p['#request.name']='refresh';
@@ -141,7 +141,6 @@ SQL;
 			throw new Exception('Операция '.$requestName.' не поддерживается источником данных '.$this->tableName);
 		}
 		foreach($result as $index=>$rec) {
-			if ($rec['ord']) unset($rec['ord']);
 			$rec['row.type']='systablecategory';
 			$rec['row.icon']='folder';
 			$result[$index]=$rec;
