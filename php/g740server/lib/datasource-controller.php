@@ -1027,34 +1027,57 @@ XML;
 	public function execCopy($params=Array()) {
 		$errorMessage='Ошибка при обращении к DataSource::execCopy';
 		if (!$this->getPerm('write','copy',$params)) throw new Exception('У Вас нет прав на правку таблицы '.$this->tableCaption);
-
-		$p=$params;
-		$p['filter.id']=$params['id'];
-		$p['#request.name']='refresh';
-		$select=$this->getSelect($p);
-		$rec=$this->pdoFetch($select);
+		$id=$params['id'];
+		if (!$id) throw new Exception('Не задан id!!!');
+		if (is_array($id)) throw new Exception('Груповая операция копирования не поддерживается!!!');
+		$mode=$params['#request.mode'];
+		if ($mode!='first' && $mode!='last' && $mode!='after' && $mode!='before') $mode='';
 		
+		$row=$this->getRow($id);
+		if ($row['id']!=$id) throw new Exception('Не найдена строка таблицы '.$this->tableCaption);
+
 		$p=Array();
 		foreach($this->getFields() as $fldIndex=>$fld) {
 			$field=$fld['name'];
-			if (!isset($rec[$field])) continue;
-			$p[$field]=$rec[$field];
-			if ($field=='name') $p[$field]=$rec[$field].' <копия>';
+			if (!isset($row[$field])) continue;
+			$p[$field]=$row[$field];
+			if (isset($params[$field])) {
+				$p[$field]=$params[$field];
+			}
+			else if ($params["{$field}.rename"]) {
+				$value=$row[$field];
+				$newvalue=$value.' <копия>';
+
+				$pos=strpos($value, '<копия');
+				if ($pos!==false) {
+					$endpos=strpos($value,'>',$pos);
+					if ($endpos!==false) {
+						$nnn=intval(substr($value, $pos+1+strlen('копия'), $endpos-$pos-1));
+						$newvalue=substr($value, 0, $pos).'<копия'.($nnn+1).'>'.substr($value,$endpos+1,999);
+					}
+					else {
+						$newvalue=substr($value, 0, $pos).'<копия1>';
+					}
+				}
+
+				$p[$field]=$newvalue;
+			}
+			else if ($field=='ord') {
+				if ($mode=='first') $p['ord']=$this->getOrdAppendFirst($params);
+				if ($mode=='last') $p['ord']=$this->getOrdAppendLast($params);
+				if ($mode=='after') $p['ord']=$this->getOrdAppendAfter($params);
+				if ($mode=='before') $p['ord']=$this->getOrdAppendBefore($params);
+			}
 		}
 		
-		$p['id']=-1;
-		if ($this->formatId=='guid') $p['id']=getGUID();
-		$p['row.new']=1;
-		if ($this->getField('ord')) $p['ord']=$this->getOrdAppendAfter($params);
-		$lst=$this->execSave($p);
-		if (count($lst)!=1) throw new Exception('Ошибка при копировании - не удалось вставить строку!!!');
-		$recResult=$lst[0];
-		
-		$recResult['row.destmode']='after';
-		$recResult['row.destid']=$params['id'];
-		$recResult['row.focus']=1;
-		$result=Array();
-		$result[]=$recResult;
+		$result=$this->execInsert($p);
+		if (count($result)!=1) throw new Exception('Ошибка при копировании - не удалось вставить строку в таблицу '.$this->tableCaption);
+		if ($mode) {
+			$recResult=&$result[0];
+			$recResult['row.destmode']=$mode;
+			$recResult['row.destid']=$params['id'];
+			$recResult['row.focus']=1;
+		}
 		return $result;
 	}
 /** Проверить допустимость значений полей строки после save
