@@ -693,7 +693,9 @@ XML;
 		// постобработка запроса
 		foreach($result as $index=>&$row) {
 			$r=$this->onRowAfterRefresh($row, $params);
-			if (is_array($r)) $result[$index]=$r;
+			if (is_array($r)) $row=$r;
+			$r=$this->onRowAfter($row, $params);
+			if (is_array($r)) $row=$r;
 			unset($row);
 		}
 		
@@ -730,6 +732,8 @@ XML;
 		if (is_array($p)) foreach($p as $name=>$value) $params[$name]=$value;
 		$p=$this->onBeforeUpdate($params);
 		if (is_array($p)) foreach($p as $name=>$value) $params[$name]=$value;
+		// проверка допустимости значений полей
+		$this->doBeforeSave($params);
 
 		$result=Array();
 		$fields=$this->getFields();
@@ -869,6 +873,8 @@ XML;
 		if (is_array($p)) foreach($p as $name=>$value) $params[$name]=$value;
 		$p=$this->onBeforeInsert($params);
 		if (is_array($p)) foreach($p as $name=>$value) $params[$name]=$value;
+		// проверка допустимости значений полей
+		$this->doBeforeSave($params);
 
 		$result=Array();
 		$fields=$this->getFields();
@@ -1079,6 +1085,29 @@ XML;
 			$recResult['row.focus']=1;
 		}
 		return $result;
+	}
+/** Проверить допустимость значений полей до save
+ *
+ * @param	Array	$params
+ */
+	protected function doBeforeSave($params) {
+		$fields=$this->getFields();
+		foreach($fields as $fld) {
+			$name=$fld['name'];
+			if (!isset($params[$name])) continue;
+			if ($fld['type']=='num') {
+				if ($fld['len']) {
+					$len=$fld['len'];
+					$dec=$fld['dec'];
+					if ($dec>0) $len=$len-$dec-1;
+					if ($len>0) {
+						$value=abs(floatval($params[$name]));
+						$max=floatval('1e'.($len+1));
+						if ($value>=$max) throw new Exception("Слишком большое значение поля: '{$fld['caption']}'");
+					}
+				}
+			}
+		}
 	}
 /** Проверить допустимость значений полей строки после save
  *
@@ -1739,6 +1768,8 @@ SQL;
 		// постобработка запроса
 		$r=$this->onRowAfterAppend($recResult, $params);
 		if (is_array($r)) $recResult=$r;
+		$r=$this->onRowAfter($recResult, $params);
+		if (is_array($r)) $recResult=$r;
 		$result[]=$recResult;
 
 		return $result;
@@ -1967,6 +1998,13 @@ SQL;
 	protected function onBeforeDelete(&$params) {
 	}
 
+/** постобработка строки во всех запросах
+ *
+ * @param	Array $row
+ * @param	Array $params
+ */
+	protected function onRowAfter(&$row, $params=Array()) {
+	}
 /** постобработка строки в запросе refresh
  *
  * @param	Array $row
