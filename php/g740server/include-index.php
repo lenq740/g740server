@@ -66,17 +66,58 @@ HTML;
 		getCfg('path.root.resource.g740viewer')
 	));
 	
-	$attrIconSet=str2Attr(getCfg('project.iconset','m'));
-
-	$attrPathIconsCSS=str2Attr(pathConcat(
-		getCfg('href.root','/'),
-		getCfg('path.root.resource'),
-		getCfg('path.root.resource.icons'),
-		'icons.css'
-	));
-	
 	$htmlIcons='';
-	foreach(getCfg('project.icons',Array()) as $iconName=>$iconClass) {
+	foreach(getCfg('project.icons.file',Array()) as $iconName=>$iconInfo) {
+		if (is_array($iconInfo)) {
+			$iconFile=$iconInfo[0];
+			$iconFileWhite=$iconInfo[1];
+			$width=$iconInfo[2];
+			$height=$iconInfo[3];
+		}
+		else {
+			$iconFile=$iconInfo;
+		}
+		if (!$iconFile) continue;
+		$info=pathinfo($iconFile);
+		$ext=strtolower($info['extension']);
+		if ($ext=='svg') {
+			$iconFileFullName=pathConcat(
+				getCfg('path.root'),
+				getCfg('path.root.resource'),
+				getCfg('path.root.resource.icons'),
+				$iconFile
+			);
+			if (!is_file($iconFileFullName)) continue;
+			$iconSVG=str2JavaScript(file_get_contents($iconFileFullName));
+			$iconName=str2JavaScript($iconName);
+			$htmlIcons.="\n".<<<HTML
+	g740.icons.registerIconSvg('{$iconName}','{$iconSVG}');
+HTML;
+		}
+		else if ($ext=='png' || $ext=='gif') {
+			$pathImg=pathConcat(
+				getCfg('href.root','/'),
+				getCfg('path.root.resource'),
+				getCfg('path.root.resource.icons'),
+				$iconFile
+			);
+			$pathImgWhite='';
+			if ($iconFileWhite) {
+				$pathImgWhite=pathConcat(
+					getCfg('href.root','/'),
+					getCfg('path.root.resource'),
+					getCfg('path.root.resource.icons'),
+					$iconFileWhite
+				);
+			}
+			if (!$width) $width=0;
+			if (!$height) $height=0;
+			$htmlIcons.="\n".<<<HTML
+	g740.icons.registerIconImg('{$iconName}','{$pathImg}','{$pathImgWhite}',{$width},{$height});
+HTML;
+		}
+	}
+	foreach(getCfg('project.icons.css',Array()) as $iconName=>$iconClass) {
 		$jsName=str2JavaScript($iconName);
 		$jsClass=str2JavaScript($iconClass);
 		if ($htmlIcons) $htmlIcons.="\n";
@@ -93,12 +134,25 @@ HTML;
 	<script type="text/javascript" src="{$attrScript}"></script>
 HTML;
 	}
+
 	$htmlCSS='';
+	if (getCfg('project.icons.css')) {
+		$attrPathIconsCSS=str2Attr(pathConcat(
+			getCfg('href.root','/'),
+			getCfg('path.root.resource'),
+			getCfg('path.root.resource.icons'),
+			'icons.css'
+		));
+		if ($htmlCSS) $htmlCSS.="\n";
+		$htmlCSS.=<<<HTML
+	<link rel="stylesheet" type="text/css" href="{$attrPathIconsCSS}"/>
+HTML;
+	}
 	foreach(getCfg('project.css',Array()) as $css) {
 		if (!$css) continue;
 		$attrCSS=str2Attr($css);
 		if ($htmlCSS) $htmlCSS.="\n";
-			$htmlCSS.=<<<HTML
+		$htmlCSS.=<<<HTML
 	<link rel="stylesheet" type="text/css" href="{$attrCSS}"/>
 HTML;
 	}
@@ -196,8 +250,6 @@ HTML;
 
 	<link rel="stylesheet" type="text/css" href="{$attrPathG740Viewer}/g740/cssdojo/main.css"/>
 	<link rel="stylesheet" type="text/css" href="{$attrPathG740Viewer}/g740/main.css"/>
-	<link rel="stylesheet" type="text/css" href="{$attrPathG740Viewer}/g740/icons/iconset-{$attrIconSet}/icons.css"/>
-	<link rel="stylesheet" type="text/css" href="{$attrPathIconsCSS}"/>
 {$htmlCSS}
 
 <!-- подключаем сжатую версию Dojo -->

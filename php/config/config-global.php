@@ -13,11 +13,20 @@ $config['project.id']='';
 /// html страница логотипа, на фоне которой открывается диалог логина
 $config['project.dialogLogin.loginUrl']='/resource/logoscreen/';
 
+/// список дополнительных подключаемых иконкок
+/*
+$config['project.icons.css']=Array(
+	'anketa'=>'project-icons-anketa',
+	'calendar'=>'project-icons-calendar',
+);
+*/
 
 /// список дополнительных подключаемых иконкок
-$config['project.icons']=Array(
-	'disabled'=>'starter-icons-disabled'
+$config['project.icons.file']=Array(
+	'anketa'=>Array('anketa.png','anketa-white.png'),
+	'calendar'=>Array('calendar.png','calendar-white.png')
 );
+
 
 ///@cond
 // Ключ шифрования md5
