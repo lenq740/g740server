@@ -68,6 +68,11 @@ HTML;
 	
 	$htmlIcons='';
 	foreach(getCfg('project.icons.file',Array()) as $iconName=>$iconInfo) {
+		$iconFile='';
+		$iconFileWhite='';
+		$width='';
+		$height='';
+
 		if (is_array($iconInfo)) {
 			$iconFile=$iconInfo[0];
 			$iconFileWhite=$iconInfo[1];
