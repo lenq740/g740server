@@ -283,11 +283,7 @@ HTML;
 <body>
 <!-- Выделяем место под размещение главной формы приложения -->
 	<div id="FormPanelMain"></div>
-<!--[if IE]>
-<script>
-	document.documentElement.className+=' IE';
-</script>
-<![endif]-->
+
 	<script>
 		require(
 			[

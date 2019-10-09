@@ -31,13 +31,13 @@ This project is released under the BSD license
 				<request name="shift" mode="after"/>
 				<request name="shift" mode="last"/>
 				<separator/>
-				<request caption="Экспорт таблиц" icon="backup" style="icontext">
+				<request caption="Экспорт" icon="backup" style="icontext">
 					<request name="form" form="formUtils" caption="Экспорт в XML" icon="xml">
 						<param name="name" value="backup"></param>
 						<param name="ismxlmenu" value="1"></param>
 					</request>
 				</request>
-				<request caption="Импорт таблиц" icon="restore" style="icontext">
+				<request caption="Импорт" icon="restore" style="icontext">
 					<request name="form" form="formUtils" caption="Импорт из XML" icon="xml">
 						<param name="name" value="restore"></param>
 						<param name="ismxlmenu" value="1"></param>

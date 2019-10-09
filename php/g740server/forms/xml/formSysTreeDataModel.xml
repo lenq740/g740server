@@ -43,7 +43,7 @@ This project is released under the BSD license
 				<request name="shift" mode="after"/>
 				<request name="shift" mode="last"/>
 				<separator/>
-				<request caption="Экспорт таблиц" icon="backup" style="icontext" enabled="%permEnabledRootWrite%">
+				<request caption="Экспорт" icon="backup" style="icontext" enabled="%permEnabledRootWrite%">
 					<request name="form" form="formUtils" caption="Экспорт структуры базы в виде XML описания" icon="xml" enabled="%permEnabledRootWrite%">
 						<param name="name" value="backup"></param>
 						<param name="ismxldatastru" value="1"></param>
@@ -82,7 +82,7 @@ This project is released under the BSD license
 						<param name="issql" value="1"></param>
 					</request>
 				</request>
-				<request caption="Импорт таблиц" icon="restore" style="icontext" enabled="%permEnabledRootWrite%">
+				<request caption="Импорт" icon="restore" style="icontext" enabled="%permEnabledRootWrite%">
 					<request name="form" form="formUtils" caption="Импорт структуры базы из XML описания" icon="xml" enabled="%permEnabledRootWrite%">
 						<param name="name" value="restore"></param>
 						<param name="ismxldatastru" value="1"></param>
@@ -111,14 +111,16 @@ This project is released under the BSD license
 					</request>
 				</request>
 				<separator/>
-				<request caption="Генератор объектов" icon="process" style="icontext" enabled="%permEnabledRootWrite%">
+				<request caption="Пересчет" icon="process" style="icontext" enabled="%permEnabledRootWrite%">
 					<request name="form" form="formUtils" caption="Генератор классов DataSource" icon="process" enabled="%permEnabledRootWrite%">
 						<param name="name" value="autogendatasources"></param>
 					</request>
 				</request>
 				<separator/>
-				<request name="form" form="formReport" caption="Печать" style="icontext" icon="print" enabled="%permEnabledRootWrite%">
-					<param name="name" value="datamodel"></param>
+				<request name="Печать" icon="print" style="icontext" enabled="%permEnabledRootWrite%">
+					<request name="form" form="formReport" caption="Печать модели данных" icon="print">
+						<param name="name" value="datamodel"></param>
+					</request>
 				</request>
 			</toolbar>
 			<panel type="tree" rowset="systreedatamodel" caption="Структура базы данных" align="left" width="20%" splitter="1" focus="1" border="0"/>
