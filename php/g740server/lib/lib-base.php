@@ -1048,7 +1048,9 @@ class PDODataConnector extends PDO {
 			$errorMessage.=' Неверный параметр sql';
 			throw new Exception($errorMessage);
 		}
-		return $q->fetch(PDO::FETCH_ASSOC);
+		$result=$q->fetch(PDO::FETCH_ASSOC);
+		if ($t=='string') $q->closeCursor();
+		return $result;
 	}
 /** Вернуть кол-во строк в результате последнего запроса
  *

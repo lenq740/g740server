@@ -978,7 +978,8 @@ XML;
 
 		if ($insertIdValue) {
 			$lastId=$insertIdValue;
-		} else {
+		}
+		else {
 			$lastId=$this->getPDO()->lastInsertId();
 		}
 		if (!$lastId) $lastId='0';
@@ -991,7 +992,7 @@ XML;
 		$p['filter.id']=$lastId;
 		foreach($params as $name=>$value) if (substr($name,0,5)=='mode.') $p[$name]=$value;
 		$result=$this->execRefresh($p);
-
+		
 		// постобработка запроса
 		foreach($result as $index=>$row) {
 			$r=$this->onRowAfterInsert($row, $params);
@@ -1006,7 +1007,6 @@ XML;
 			if (is_array($r)) $row=$r;
 			$result[$index]=$row;
 		}
-
 		{ // устаревшие обработчики событий
 			if (method_exists($this, 'onValid')) $this->onValid($result);
 			if (method_exists($this, 'onAfterSave')) {
@@ -1016,7 +1016,6 @@ XML;
 				}
 			}
 		}
-		
 		if ($this->isPermTestRowReadOnly) {
 			$result=$this->getOwnerReadOnly($result);
 			foreach($result as &$row) {
@@ -1075,7 +1074,6 @@ XML;
 				if ($mode=='before') $p['ord']=$this->getOrdAppendBefore($params);
 			}
 		}
-		
 		$result=$this->execInsert($p);
 		if (count($result)!=1) throw new Exception('Ошибка при копировании - не удалось вставить строку в таблицу '.$this->tableCaption);
 		if ($mode) {
@@ -1788,6 +1786,7 @@ SQL;
 			$ord=$rec['ord'];
 			break;
 		}
+		$q->closeCursor();
 		return $ord-100;
 	}
 /** Получить поле ord, помещающее строку последней, в контексте выполнения операции
@@ -1808,6 +1807,7 @@ SQL;
 			}
 			if ($rec['ord']>$ord) $ord=$rec['ord'];
 		}
+		$q->closeCursor();
 		return $ord+100;
 	}
 /** Получить поле ord, помещающее строку после указанной, в контексте выполнения операции
@@ -1836,10 +1836,13 @@ SQL;
 				break;
 			}
 		}
+		$q->closeCursor();
+		
 		if (!$isFound) return 0;
 		if ($ordNext>=$ordPrev) {
 			$ord=round($ordPrev+($ordNext-$ordPrev)/3.0);
-		} else {
+		} 
+		else {
 			$ord=$ordPrev+200;
 		}
 		if (!$isNoReorder && ($ord==$ordPrev || $ord==$ordNext)) {
@@ -1872,10 +1875,12 @@ SQL;
 			}
 			$ordPrev=$rec['ord'];
 		}
+		$q->closeCursor();
 		if (!$isFound) return 0;
 		if ($ordNext>=$ordPrev) {
 			$ord=round($ordPrev+($ordNext-$ordPrev)/3.0);
-		} else {
+		}
+		else {
 			$ord=$ordNext-200;
 		}
 		if (!$isNoReorder && ($ord==$ordPrev || $ord==$ordNext)) {
