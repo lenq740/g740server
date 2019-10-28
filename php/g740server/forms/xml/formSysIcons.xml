@@ -1,0 +1,6 @@
+<form name="%form%" caption="Иконки">
+	<panels>
+		<panel type="allicons">
+		</panel>
+	</panels>
+</form>
