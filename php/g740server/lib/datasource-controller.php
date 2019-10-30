@@ -1031,25 +1031,27 @@ XML;
  */
 	public function execCopy($params=Array()) {
 		$errorMessage='Ошибка при обращении к DataSource::execCopy';
-		if (!$this->getPerm('write','copy',$params)) throw new Exception('У Вас нет прав на правку таблицы '.$this->tableCaption);
-		$id=$params['id'];
-		if (!$id) throw new Exception('Не задан id!!!');
-		if (is_array($id)) throw new Exception('Груповая операция копирования не поддерживается!!!');
-		$mode=$params['#request.mode'];
-		if ($mode!='first' && $mode!='last' && $mode!='after' && $mode!='before') $mode='';
+		if ($params['id']) {
+			if (!$this->getPerm('write','copy',$params)) throw new Exception('У Вас нет прав на правку таблицы '.$this->tableCaption);
+		}
 		
-		$row=$this->getRow($id);
-		if ($row['id']!=$id) throw new Exception('Не найдена строка таблицы '.$this->tableCaption);
-
+		$fldTmpId=$this->getField('tmpid');
+		if (!$fldTmpId) throw new Exception('Стандартная реализация копирования строк таблицы '.$this->tableCaption.' требует наличия поля tmpid');
+		
+		$lstCopy=Array();
+		$driverName=$this->getDriverName();
 		$p=Array();
-		foreach($this->getFields() as $fldIndex=>$fld) {
-			$field=$fld['name'];
-			if (!isset($row[$field])) continue;
-			$p[$field]=$row[$field];
-			if (isset($params[$field])) {
-				$p[$field]=$params[$field];
-			}
-			else if ($params["{$field}.rename"]) {
+		foreach($params as $name=>$value) {
+			if ($name=='id') $p['filter.id']=$value;
+			else if ($name=='mode') $p[$name]=$value;
+			else if (substr($name,0,strlen('filter.'))=='filter.') $p[$name]=$value;
+			else if (substr($name,0,strlen('mode.'))=='mode.') $p[$name]=$value;
+			else if ($value=='~/~') $lstCopy[$name]=$name;
+		}
+		
+		if ($params['id'] && count($lstCopy)>0) {
+			$row=$this->getRow($params['id']);
+			if ($row['id']) foreach($lstCopy as $field) {
 				$value=$row[$field];
 				$newvalue=$value.' <копия>';
 
@@ -1064,24 +1066,163 @@ XML;
 						$newvalue=substr($value, 0, $pos).'<копия1>';
 					}
 				}
-
-				$p[$field]=$newvalue;
-			}
-			else if ($field=='ord') {
-				if ($mode=='first') $p['ord']=$this->getOrdAppendFirst($params);
-				if ($mode=='last') $p['ord']=$this->getOrdAppendLast($params);
-				if ($mode=='after') $p['ord']=$this->getOrdAppendAfter($params);
-				if ($mode=='before') $p['ord']=$this->getOrdAppendBefore($params);
+				$params[$field]=$newvalue;
 			}
 		}
-		$result=$this->execInsert($p);
-		if (count($result)!=1) throw new Exception('Ошибка при копировании - не удалось вставить строку в таблицу '.$this->tableCaption);
-		if ($mode) {
+		
+		$sqlFrom=$this->getSelectFrom($p);
+		$sqlWhere=$this->getSelectWhere($p);
+
+		$D0='';
+		$D1='';
+		if ($driverName=='mysql') {
+			$D0='`';
+			$D1='`';
+		}
+		else if ($driverName=='sqlsrv') {
+			$D0='[';
+			$D1=']';
+		}
+		else if ($driverName=='pgsql') {
+			$D0='"';
+			$D1='"';
+		}
+		else {
+			throw new Exception("Неизвестный драйвер базы данных '{$driverName}'");
+		}
+		
+		$sqlInsertFields='';
+		$sqlSelectFields='';
+
+		$guid=getGUID();
+		$fields=$this->getFields();
+		foreach($fields as $key=>$fld) {
+			if ($fld['virtual']) continue;
+			$alias=$this->tableName;
+			if ($fld['table']) $alias=$fld['table'];
+			if ($fld['alias']) $alias=$fld['alias'];
+			if ($alias!=$this->tableName) continue;
+			$name=$fld['name'];
+			$sqlName=strtolower($name);
+
+			if ($sqlInsertFields) $sqlInsertFields.=', ';
+			$sqlInsertFields.="{$D0}{$sqlName}{$D1}";
+
+			$selectFieldName="{$D0}{$this->tableName}{$D1}.{$D0}{$sqlName}{$D1}";
+			if (isset($params[$name]) && !is_array($params[$name])) {
+				$selectFieldName="'{$this->str2Sql($params[$name])}'";
+			}
+			else {
+				if ($name=='tmpid') $selectFieldName="{$D0}{$this->tableName}{$D1}.id";
+				if ($name=='ord' && $params['id']) {
+					$ord='-';
+					if ($mode=='first') $ord=$this->getOrdAppendFirst($params);
+					if ($mode=='last') $ord=$this->getOrdAppendLast($params);
+					if ($mode=='after') $ord=$this->getOrdAppendAfter($params);
+					if ($mode=='before') $ord=$this->getOrdAppendBefore($params);
+					if ($ord!='-') {
+						$selectFieldName="'".$this->str2Sql($ord)."'";
+					}
+				}
+			}
+
+			if ($sqlSelectFields) $sqlSelectFields.=', ';
+			$sqlSelectFields.=$selectFieldName;
+		}
+		if (!sqlInsertFields) throw new Exception('Ошибка при копировании таблицы '.$this->tableCaption.', список полей пуст');
+
+		if ($driverName=='mysql') {
+			$sql=<<<SQL
+insert into `{$this->tableName}` ({$sqlInsertFields})
+select
+{$sqlSelectFields}
+from
+{$sqlFrom}
+where
+	1=1
+{$sqlWhere}
+SQL;
+			$this->pdo($sql);
+			$lastId=$this->getPDO()->lastInsertId();
+			$rowCount=$this->getPDO()->rowCount();
+			$sql=<<<SQL
+select id
+from
+	`{$this->tableName}`
+where
+	id>='{$lastId}'
+limit '{$rowCount}'
+SQL;
+		}
+		else if ($driverName=='sqlsrv') {
+			$sql=<<<SQL
+insert into [{$this->tableName}] ({$sqlInsertFields})
+output inserted.id
+select
+{$sqlSelectFields}
+from
+{$sqlFrom}
+where
+	1=1
+{$sqlWhere}
+SQL;
+		}
+		else if ($driverName=='pgsql') {
+			$sql=<<<SQL
+insert into "{$this->tableName}" ({$sqlInsertFields})
+output inserted.id
+select
+{$sqlSelectFields}
+from
+{$sqlFrom}
+where
+	1=1
+{$sqlWhere}
+returning id
+SQL;
+		}
+		else {
+			throw new Exception("Неизвестный драйвер базы данных '{$driverName}'");
+		}
+		$lst=Array();
+		$q=$this->pdo($sql);
+		while($rec=$this->pdoFetch($q)) {
+			$id=$rec['id'];
+			$lst[$id]=$id;
+		}
+
+
+		$result=Array();
+		$sqlLst=$this->php2SqlIn($lst);
+		if ($sqlLst) {
+			$p=Array();
+			foreach($params as $name=>$value) {
+				if ($name=='mode') $p[$name]=$value;
+				if (substr($name,0,strlen('mode.'))=='mode.') $p[$name]=$value;
+			}
+			$p['filter.id']=$lst;
+			$result=$this->execRefresh($p);
+			
+			$sqlUpdate="tmpid=0";
+			if ($this->formatEmptyRef=='null') $sqlUpdate="tmpid=null";
+			if ($this->formatEmptyRef=='') $sqlUpdate="tmpid=''";
+			
+			$sql=<<<SQL
+update {$D0}{$this->tableName}{$D1} set {$sqlUpdate}
+where
+	id in ({$sqlLst})
+SQL;
+			$this->pdo($sql);
+		}
+
+
+		if ($params['id'] && count($result)==1) {
 			$recResult=&$result[0];
-			$recResult['row.destmode']=$mode;
+			$recResult['row.destmode']='after';
 			$recResult['row.destid']=$params['id'];
 			$recResult['row.focus']=1;
 		}
+
 		return $result;
 	}
 /** Проверить допустимость значений полей до save
