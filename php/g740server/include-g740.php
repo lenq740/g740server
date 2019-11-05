@@ -199,7 +199,7 @@ try {
 			throw new Exception("Неизвестный запрос {$requestName}");
 		}
 		if ($pdoDB->inTransaction()) {
-			if (!$pdoDB->commit()) throw new Exception('Не удалось...');
+			if (!$pdoDB->commit()) throw new Exception('Не удалось подтвердить транзакцию...');
 		}
 	}
 	catch (Exception $e) {

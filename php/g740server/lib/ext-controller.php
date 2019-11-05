@@ -16,9 +16,6 @@ require_once('dsconnector.php');
 /** Класс предок внешних контроллеров
  */
 class ExtController extends DSConnector {
-/// Логировать работу в таблицу sysextlog
-	public $isSysExtLog=false;
-
 /** Разбор входных параметров
  *
  * @return	Array	параметры
@@ -44,6 +41,100 @@ class UtilController extends ExtController {
 	public $isCanExecutedAsRoot=false;
 /// Наименование утилиты
 	public $caption='Утилита';
+
+/// Необходимо логировать работу в таблицу sysextlog
+	public $isSysExtLog=false;
+	
+/// Логирование начала выполнения утилиты
+	public function doSysExtLogStart($dStart) {
+		$sqlD=$dStart->format('Y-m-d');
+		$sqlT=$dStart->format('H:i');
+		$sqlCaption=$this->str2Sql($this->caption);
+		$sql=<<<SQL
+insert into sysextlog (d, tstart, name, message) values ('{$sqlD}', '{$sqlT}', '{$sqlCaption}', 'Выполняется ...');
+SQL;
+		$this->pdo($sql);
+		$this->_sysextlogid=$this->getPDO()->lastInsertId();
+	}
+/// Логирование завершения выполнения утилиты
+	public function doSysExtLogEnd($dStart) {
+		$sqlD=$dStart->format('Y-m-d');
+		$sqlT=$dStart->format('H:i');
+		$sqlTEnd=(new DateTime())->format('H:i');
+		$sqlCaption=$this->str2Sql($this->caption);
+		$sysextlogid=$this->str2Sql($this->_sysextlogid);
+		
+		$isUpdate=false;
+		if ($sysextlogid) {
+			$sql=<<<SQL
+select count(*) as count
+from
+	sysextlog
+where
+	id='{$sysextlogid}'
+SQL;
+			$rec=$this->pdoFetch($sql);
+			if ($rec['count']>0) $isUpdate=true;
+		}
+		if ($isUpdate) {
+			$sql=<<<SQL
+update sysextlog set 
+	tend='{$sqlTEnd}',
+	message='Завершено успешно'
+where
+	sysextlog.id='{$sysextlogid}'
+SQL;
+			$this->pdo($sql);
+		}
+		else {
+			$sql=<<<SQL
+insert into sysextlog (d, tstart, tend, name, message) values ('{$sqlD}', '{$sqlT}', '{$sqlTEnd}', '{$sqlCaption}', 'Завершено успешно');
+SQL;
+			$this->pdo($sql);
+			$this->_sysextlogid=$this->getPDO()->lastInsertId();
+		}
+	}
+/// Логирование ошибки при выполнении утилиты
+	public function doSysExtLogError($dStart, $e) {
+		$sqlD=$dStart->format('Y-m-d');
+		$sqlT=$dStart->format('H:i');
+		$sqlTEnd=(new DateTime())->format('H:i');
+		$sqlCaption=$this->str2Sql($this->caption);
+		$sqlMessage=$this->str2Sql($e->getMessage());
+		$sysextlogid=$this->str2Sql($this->_sysextlogid);
+		
+		$isUpdate=false;
+		if ($sysextlogid) {
+			$sql=<<<SQL
+select count(*) as count
+from
+	sysextlog
+where
+	id='{$sysextlogid}'
+SQL;
+			$rec=$this->pdoFetch($sql);
+			if ($rec['count']>0) $isUpdate=true;
+		}
+		if ($isUpdate) {
+			$sql=<<<SQL
+update sysextlog set 
+	tend='{$sqlTEnd}',
+	message='{$sqlMessage}',
+	iserror='1'
+where
+	sysextlog.id='{$sysextlogid}'
+SQL;
+			$this->pdo($sql);
+		}
+		else {
+			$sql=<<<SQL
+insert into sysextlog (d, tstart, tend, name, message, iserror) values ('{$sqlD}', '{$sqlT}', '{$sqlTEnd}', '{$sqlCaption}', '{$sqlMessage}', '1');
+SQL;
+			$this->pdo($sql);
+			$this->_sysextlogid=$this->getPDO()->lastInsertId();
+		}
+	}
+	protected $_sysextlogid=0;
 }
 /** Класс предок контроллеров сервисов
  */

@@ -103,34 +103,23 @@ try {
 		}
 
 		if ($isSysExtLog) {
-			$sqlD=$dStart->format('Y-m-d');
-			$sqlT=$dStart->format('H:i');
-			$sqlName=$pdoDB->str2Sql($name);
-			$sql=<<<SQL
-insert into sysextlog (d, tstart, name, message) values ('{$sqlD}', '{$sqlT}', '{$sqlName}', 'Выполняется ...');
-SQL;
-			$pdoDB->pdo($sql);
-			$sysextlogid=$pdoDB->lastInsertId();
+			$obj->doSysExtLogStart($dStart);
+			if ($pdoDB->inTransaction()) {
+				if (!$pdoDB->commit()) throw new Exception('Не удалось подтвердить транзакцию...');
+				$pdoDB->beginTransaction();
+			}
 		}
 
 		$params=$obj->getParams();
 		$params['echo']=true;
 		$obj->go($params);
 
-		if ($isSysExtLog) {
-			$sqlTEnd=(new DateTime())->format('H:i');
-			$sql=<<<SQL
-update sysextlog set 
-	tend='{$sqlTEnd}',
-	message='Завершено успешно'
-where
-	sysextlog.id='{$sysextlogid}'
-SQL;
-			$pdoDB->pdo($sql);
-		}
+		if ($isSysExtLog) $obj->doSysExtLogEnd($dStart);
 
 		echo "\n".'<br><br><div class="message">Подтверждаем транзакцию ... '; flush();
-		if ($pdoDB->inTransaction()) $pdoDB->commit();
+		if ($pdoDB->inTransaction()) {
+			if (!$pdoDB->commit()) throw new Exception('Не удалось подтвердить транзакцию...');
+		}
 		echo 'Ok!</div>'; flush();
 		echo "\n".'<div class="ok">Операция завершена успешно!!!</div>'; flush();
 	}
@@ -138,36 +127,15 @@ SQL;
 		if ($pdoDB->inTransaction()) {
 			echo "\n".'<div class="error">Откатываем транзакцию ...'; flush();
 			$pdoDB->rollBack();
+			$pdoDB->beginTransaction();
 			echo '</div>'; flush();
 		}
 		
 		if ($isSysExtLog) {
-			$pdoDB->beginTransaction();
-			$sql=<<<SQL
-delete from sysextlog where id='{$sysextlogid}'
-SQL;
-			$pdoDB->pdo($sql);
-			$sqlTEnd=(new DateTime())->format('H:i');
-			$sqlMessage=$pdoDB->str2Sql($e->getMessage());
-			$sql=<<<SQL
-insert into sysextlog (
-	d,
-	tstart,
-	tend,
-	name,
-	message,
-	iserror
-) values (
-	'{$sqlD}',
-	'{$sqlT}',
-	'{$sqlTEnd}',
-	'{$sqlName}',
-	'{$sqlMessage}',
-	1
-)
-SQL;
-			$pdoDB->pdo($sql);
-			if ($pdoDB->inTransaction()) $pdoDB->commit();
+			$obj->doSysExtLogError($dStart, $e);
+			if ($pdoDB->inTransaction()) {
+				if (!$pdoDB->commit()) throw new Exception('Не удалось подтвердить транзакцию...');
+			}
 		}
 		throw new Exception($e->getMessage());
 	}

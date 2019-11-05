@@ -58,7 +58,9 @@ try {
 		$params=$obj->getParams();
 		$result=$obj->go($params);
 		echo $result;
-		if ($pdoDB->inTransaction()) $pdoDB->commit();
+		if ($pdoDB->inTransaction()) {
+			if (!$pdoDB->commit()) throw new Exception('Не удалось подтвердить транзакцию...');
+		}
 	}
 	catch (Exception $e) {
 		if ($pdoDB->inTransaction()) $pdoDB->rollBack();

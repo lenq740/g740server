@@ -57,7 +57,9 @@ try {
 		ignore_user_abort(true);
 		$params=$objService->getParams();
 		$objService->go($params);
-		if ($pdoDB->inTransaction()) $pdoDB->commit();
+		if ($pdoDB->inTransaction()) {
+			if (!$pdoDB->commit()) throw new Exception('Не удалось подтвердить транзакцию...');
+		}
 	}
 	catch (Exception $e) {
 		if ($pdoDB->inTransaction()) $pdoDB->rollBack();

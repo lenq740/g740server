@@ -1115,7 +1115,7 @@ XML;
 			else {
 				if ($name=='tmpid') $selectFieldName="{$D0}{$this->tableName}{$D1}.id";
 				if ($name=='ord' && $params['id']) {
-					$ord=$this->getOrdAppendAfter($params);
+					$ord=$ord=$this->getOrdAppendAfter($params);
 					$selectFieldName="'".$this->str2Sql($ord)."'";
 				}
 			}
@@ -1185,7 +1185,6 @@ SQL;
 			$lst[$id]=$id;
 		}
 
-
 		$result=Array();
 		$sqlLst=$this->php2SqlIn($lst);
 		if ($sqlLst) {
@@ -1208,7 +1207,6 @@ where
 SQL;
 			$this->pdo($sql);
 		}
-
 
 		if ($params['id'] && count($result)==1) {
 			$recResult=&$result[0];
