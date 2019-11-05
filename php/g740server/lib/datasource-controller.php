@@ -1115,14 +1115,8 @@ XML;
 			else {
 				if ($name=='tmpid') $selectFieldName="{$D0}{$this->tableName}{$D1}.id";
 				if ($name=='ord' && $params['id']) {
-					$ord='-';
-					if ($mode=='first') $ord=$this->getOrdAppendFirst($params);
-					if ($mode=='last') $ord=$this->getOrdAppendLast($params);
-					if ($mode=='after') $ord=$this->getOrdAppendAfter($params);
-					if ($mode=='before') $ord=$this->getOrdAppendBefore($params);
-					if ($ord!='-') {
-						$selectFieldName="'".$this->str2Sql($ord)."'";
-					}
+					$ord=$this->getOrdAppendAfter($params);
+					$selectFieldName="'".$this->str2Sql($ord)."'";
 				}
 			}
 
