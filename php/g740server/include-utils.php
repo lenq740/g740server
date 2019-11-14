@@ -45,6 +45,18 @@ includeLib('perm-controller.php');
 includeLib('datasource-controller.php');
 includeLib('ext-controller.php');
 
+if (isset($_SERVER['argc'])) {
+	for($i=1; $i<$_SERVER['argc']; $i++) {
+		$param=$_SERVER['argv'][$i];
+		$n=strpos($param,'=');
+		if ($n===false) continue;
+		$name=substr($param, 0, $n);
+		$value=substr($param, $n+1, 999);
+		$_REQUEST[$name]=$value;
+	}
+	$_REQUEST['root']=1;
+}
+
 echo <<<HTML
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
 <html>
@@ -91,7 +103,7 @@ try {
 
 		$isWithoutCSRFTest=false;
 		if ($obj->isCanExecutedAsRoot && $_REQUEST['root']==1) {
-			if ($_SERVER['REMOTE_ADDR']=='127.0.0.1' || $_SERVER['REMOTE_ADDR']=='::1') {
+			if ($_SERVER['REMOTE_ADDR']=='127.0.0.1' || $_SERVER['REMOTE_ADDR']=='::1' || $_SERVER['REMOTE_ADDR']==$_SERVER['SERVER_ADDR']) {
 				execConnectAsRoot();
 				$isWithoutCSRFTest=true;
 			}
