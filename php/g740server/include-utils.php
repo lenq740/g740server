@@ -36,16 +36,8 @@ ini_set('error_log',$logFileName);
 $timeZone=getCfg('timezone');
 if ($timeZone) ini_set('date.timezone', $timeZone);
 
-if (getCfg('project.id')) ini_set('session.name',getCfg('project.id'));
-if (isset($_REQUEST['sessionid'])) session_id($_REQUEST['sessionid']);
-session_start();
-session_write_close();
-
-includeLib('perm-controller.php');
-includeLib('datasource-controller.php');
-includeLib('ext-controller.php');
-
-if (isset($_SERVER['argc'])) {
+$isCLI=isset($_SERVER['argc'])?true:false;
+if ($isCLI) {
 	for($i=1; $i<$_SERVER['argc']; $i++) {
 		$param=$_SERVER['argv'][$i];
 		$n=strpos($param,'=');
@@ -54,8 +46,16 @@ if (isset($_SERVER['argc'])) {
 		$value=substr($param, $n+1, 999);
 		$_REQUEST[$name]=$value;
 	}
-	$_REQUEST['root']=1;
 }
+
+if (getCfg('project.id')) ini_set('session.name',getCfg('project.id'));
+if (isset($_REQUEST['sessionid'])) session_id($_REQUEST['sessionid']);
+session_start();
+session_write_close();
+
+includeLib('perm-controller.php');
+includeLib('datasource-controller.php');
+includeLib('ext-controller.php');
 
 echo <<<HTML
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
@@ -96,14 +96,15 @@ try {
 		echo 'Ok!</div>';
 		
 		echo "\n".'<div class="message">Устанавливаем лимиты среды выполнения ... '; flush();
-		if (!ini_set('max_execution_time', getCfg('util.max_execution_time','99999'))) throw new Exception('Не удалось задать увеличенное время для выполнения скрипта');
+		if (!$isCLI) {
+			if (!ini_set('max_execution_time', getCfg('util.max_execution_time','99999'))) throw new Exception('Не удалось задать увеличенное время для выполнения скрипта');
+		}
 		if (!ini_set('memory_limit', getCfg('util.memory_limit','256M'))) throw new Exception('Не удалось задать увеличенный объем памяти для выполнения сервиса');
 		echo 'Ok!</div>';
-		
 
 		$isWithoutCSRFTest=false;
 		if ($obj->isCanExecutedAsRoot && $_REQUEST['root']==1) {
-			if ($_SERVER['REMOTE_ADDR']=='127.0.0.1' || $_SERVER['REMOTE_ADDR']=='::1' || $_SERVER['REMOTE_ADDR']==$_SERVER['SERVER_ADDR']) {
+			if ($isCLI || $_SERVER['REMOTE_ADDR']=='127.0.0.1' || $_SERVER['REMOTE_ADDR']=='::1' || $_SERVER['REMOTE_ADDR']==$_SERVER['SERVER_ADDR']) {
 				execConnectAsRoot();
 				$isWithoutCSRFTest=true;
 			}

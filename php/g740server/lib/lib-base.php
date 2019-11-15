@@ -1590,7 +1590,7 @@ function getServiceResult($serviceName, $params=Array()) {
 	return $result;
 }
 
-/** Выполнить сервис синхронно, внутри потока
+/** Выполнить утилиту синхронно, внутри потока
  *
  * @param	string	$utilityName
  * @param	Array	$params разобранные параметры для метода getResult сервиса
@@ -1606,6 +1606,54 @@ function getUtilityResult($utilityName, $params=Array()) {
 	finally {
 		$result=ob_get_contents();
 		ob_end_clean();
+	}
+	return $result;
+}
+/** Запустить утилиту через CLI
+ *
+ * @param	string	$utilityName
+ * @param	Array	$params
+ * @param	Boolean	$isWaiting
+ * @return	string результат работы
+ *
+ * Путь до интерпретатора php берется из настройки path.cli.php
+ */
+function execUtilityCli($utilityName, $params=Array(), $isWaiting=false) {
+	$pathPHP=getCfg('path.cli.php');
+	$cmd="{$pathPHP} utils.php name=".escapeshellcmd($utilityName);
+	if (session_id()) {
+		$cmd.=' sessionid='.escapeshellcmd(session_id());
+		if (getCfg('csrftoken.enabled') && getPP('csrftoken')) {
+			$cmd.=' csrftoken='.escapeshellcmd(getPP('csrftoken'));
+		}
+	}
+	foreach($params as $name=>$value) {
+		$cmd.=' '.escapeshellcmd($name).'='.escapeshellcmd($value);
+	}
+
+	$result='';
+	$dir=getcwd();
+	try {
+		$path=getCfg('path.root');
+		if ($path) chdir($path);
+		
+		if (!$isWaiting) {
+			if (strtoupper(substr(PHP_OS, 0, 3))=='WIN') {
+				$cmd='start /b '. $cmd;
+				$handle=popen('start /b '.$cmd.' > nul', 'r');
+				if ($handle!==false) pclose($handle);
+			}
+			else {
+				exec($cmd." > /dev/null &");
+			}
+		}
+		else {
+			exec($cmd, $output);
+			$result=implode("\n", $output);
+		}
+	}
+	finally {
+		chdir($dir);
 	}
 	return $result;
 }
@@ -1648,6 +1696,7 @@ function includeModule($libFileName) {
 	);
 	include_once($fileName);
 }
+
 /** Преобразовать файл к HTML (требует LibreOffice!!!)
  *
  * @param	string	$sourceFileName имя исходного файла
@@ -1689,7 +1738,6 @@ function convertFileToHtml($sourceFileName, $resultPath, $maxTime=10) {
 	if (!is_file($fileNameWaiting)) throw new Exception('Преобразование выполнить не удалось!!!');
 	return true;
 }
-
 /** Преобразовать PDF к JPG 
  *
  * @param	string	$sourceFileName имя исходного файла
