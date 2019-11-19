@@ -52,6 +52,8 @@ $config['path.root.extlib']='../php/extlib';
 $config['path.root.export-import']='../export-import';
 /// Путь от корня проекта до папки логов
 $config['path.root.log']='../log';
+/// Путь до интерпретатора PHP для запуска скриптов в режиме CLI
+$config['path.cli.php']='php';
 
 /// время Московское
 $config['timezone']='Etc/GMT-3';

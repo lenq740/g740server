@@ -986,6 +986,17 @@ class PDODataConnector extends PDO {
  */
 	public function php2SqlIn($value) {
 		$result='';
+		if (is_string($value)) {
+			if (strpos($value,',')!==false) {
+				$lst=explode(',', $value);
+				$value=Array();
+				foreach($lst as $index=>$val) {
+					if ($val=='') continue;
+					if ($val=='0') continue;
+					$value[]=$val;
+				}
+			}
+		}
 		if (is_array($value)) {
 			foreach($value as $val) {
 				if ($val=='') continue;
@@ -1254,6 +1265,17 @@ SQL;
  */
 	public function php2SqlIn($value) {
 		$result='';
+		if (is_string($value)) {
+			if (strpos($value,',')!==false) {
+				$lst=explode(',', $value);
+				$value=Array();
+				foreach($lst as $index=>$val) {
+					if ($val=='') continue;
+					if ($val=='0') continue;
+					$value[$val]=$val;
+				}
+			}
+		}
 		if (is_array($value)) {
 			foreach($value as $val) {
 				if ($val=='') continue;
@@ -1639,7 +1661,6 @@ function execUtilityCli($utilityName, $params=Array(), $isWaiting=false) {
 		
 		if (!$isWaiting) {
 			if (strtoupper(substr(PHP_OS, 0, 3))=='WIN') {
-				$cmd='start /b '. $cmd;
 				$handle=popen('start /b '.$cmd.' > nul', 'r');
 				if ($handle!==false) pclose($handle);
 			}
