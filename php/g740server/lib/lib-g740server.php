@@ -128,6 +128,7 @@ function getParams($xmlRequest) {
 		if ($xmlParam->nodeName!='param') continue;
 		$name=xmlGetAttr($xmlParam, 'name', '');
 		if (!$name) continue;
+		if (substr($name,0,1)=='#') continue;
 		$t=xmlGetAttr($xmlParam,'type','');
 		$value='';
 		for ($xmlParamChild=$xmlParam->firstChild; $xmlParamChild!=null; $xmlParamChild=$xmlParamChild->nextSibling) {

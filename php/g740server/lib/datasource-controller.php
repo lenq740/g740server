@@ -38,7 +38,7 @@ class DataSource extends DSConnector{
 /// Ограничение на максимальное кол-во возвращаемых строк
 	public $selectLimit=0;
 
-/// Необходимость дополнительной проверки операций write - строка не ReadOnly
+/// Необходимость дополнительной проверки запросов write - строка не ReadOnly
 	public $isPermTestRowReadOnly=false;
 /// Проверка на ReadOnly строки родительской таблицы - имя таблицы
 	public $permTestReadOnlyOwnerTableName='';
@@ -52,12 +52,12 @@ class DataSource extends DSConnector{
 		if ($this->isShowSqlErrorMessages===null) $this->isShowSqlErrorMessages=getCfg('datasource.showSqlError',false)?true:false;
 	}
 
-/** Проверка доступности выполнения операции по правам в контексте выполнения запроса
+/** Проверка доступности выполнения запроса по правам в контексте выполнения запроса
  *
  * @param	string	$permOper опрерация (read, write)
  * @param	string	$requestName запрос
  * @param	Array	$params контекст выполнения запроса
- * @return	boolean доступность выполнения операции
+ * @return	boolean доступность выполнения запроса
  */
 	public function getPerm($permOper='read', $requestName='', $params=Array()) {
 		$permMode=$this->permMode;
@@ -67,11 +67,11 @@ class DataSource extends DSConnector{
 		// Стандартные проверки для write
 		if ($this->isPermTestRowReadOnly && $permOper=='write') {
 			if ($requestName=='append') {
-				// для append проверка встроена в операцию
+				// для append проверка встроена в обработку запроса
 				$result=true;
 			}
 			else if ($requestName=='save' || $params['row.new']) {
-				// для insert проверка встроена в операцию после вставки
+				// для insert проверка встроена в обработку запроса после вставки
 				$result=true;
 			}
 			else {
@@ -109,7 +109,7 @@ class DataSource extends DSConnector{
 /** Проверить на ReadOnly анализируя строки родительской таблицы
  *
  * @param	Array	$result массив строк
- * @return	Array результат операции, пополненный row.readonly
+ * @return	Array результат запроса, пополненный row.readonly
  */
 	protected function getOwnerReadOnly($result) {
 		if (!$this->isPermTestRowReadOnly) return $result;
@@ -503,11 +503,11 @@ XML;
 		return $result;
 	}
 	
-/// Описание выполняемых источником данных операций
+/// Описание выполняемых источником данных запросов
 	protected $_requests=null;
-/** Первоначально проинициализировать описание выполняемых источником данных операций
+/** Первоначально проинициализировать описание выполняемых источником данных запросов
  *
- * @return	Array описание выполняемых источником данных операций
+ * @return	Array описание выполняемых источником данных запросов
  */
 	protected function initRequests() {
 		$result=Array();
@@ -543,9 +543,9 @@ XML;
 		}
 		return $result;
 	}
-/** Вернуть описание выполняемых источником данных операций
+/** Вернуть описание выполняемых источником данных запросов
  *
- * @return	Array описание выполняемых источником данных операций
+ * @return	Array описание выполняемых источником данных запросов
  */
 	public function getRequests() {
 		if (!$this->_requests) {
@@ -559,20 +559,20 @@ XML;
 		}
 		return $this->_requests;
 	}
-/** Вернуть описание выполняемой операции по ее имени
+/** Вернуть описание выполняемого запроса по его имени
  *
- * @param	string	$request имя операции
- * @return	Array описание выполняемой операции по ее имени
+ * @param	string	$request имя запроса
+ * @return	Array описание выполняемого запроса по его имени
  */
 	protected function getRequest($request) {
 		$r=$this->getRequests();
 		return $r[$request];
 	}
 
-/** Выполнить операцию, ответ вернуть в виде массива
+/** Выполнить запрос, ответ вернуть в виде массива
  *
  * @param	Array	$params контекст выполнения
- * @return	Array результат выполнения операции
+ * @return	Array результат выполнения запроса
  */
 	public function exec($params=Array()) {
 		$requestName=$params['#request.name'];
@@ -593,38 +593,34 @@ XML;
 			foreach($params as $name=>$value) if (substr($name,0,5)=='mode.') $p[$name]=$value;
 			return $this->execRefresh($p);
 		}
-/*
-		if ($requestName=='save') {
-			try {
-				return $this->execSave($params);
-			}
-			catch(Exception $e) {
-				$message=trim($e->getMessage());
-				if ($message) {
-					$c=mb_substr($message,-1,1);
-					if ($c!='.' && $c!='!' && $c!='?') $message.='.';
-					$message.="\n\n"."Исправьте и сохраните повторно, или отмените изменения кнопкой 'Отменить (Esc)'";
-				}
-				throw new Exception($message);
-			}
-		}
-*/
 		if ($requestName=='save') return $this->execSave($params);
 		if ($requestName=='append') return $this->execAppend($params);
 		if ($requestName=='copy') return $this->execCopy($params);
 		if ($requestName=='delete') return $this->execDelete($params);
 		if ($requestName=='shift') return $this->execShift($params);
 		if ($requestName=='change') return $this->execChange($params);
-		throw new Exception('Операция '.$requestName.' не поддерживается источником данных '.$this->tableName);
+		throw new Exception('Запрос '.$requestName.' не поддерживается источником данных '.$this->tableName);
 	}
-/** Выполнить операцию refresh, ответ вернуть в виде массива
+
+/** Выполнить запрос refresh, игнорируя контроль прав
  *
  * @param	Array	$params контекст выполнения
- * @return	Array результат выполнения операции
+ * @return	Array результат выполнения запроса
+ */
+	public function execRefreshForce($params=Array()) {
+		$params['#force']=1;
+		return $this->execRefresh($params);
+	}
+/** Выполнить запрос refresh, ответ вернуть в виде массива
+ *
+ * @param	Array	$params контекст выполнения
+ * @return	Array результат выполнения запроса
  */
 	public function execRefresh($params=Array()) {
 		$errorMessage='Ошибка при обращении к DataSource::execRefresh';
-		if (!$this->getPerm('read','refresh',$params)) throw new Exception('У Вас нет прав на чтение таблицы '.$this->tableCaption);
+		if (!$params['#force']) {
+			if (!$this->getPerm('read','refresh',$params)) throw new Exception('У Вас нет прав на чтение таблицы '.$this->tableCaption);
+		}
 		
 		// предобработка запроса
 		$p=$this->onBeforeRefresh($params);
@@ -701,10 +697,10 @@ XML;
 		
 		return $result;
 	}
-/** Выполнить операцию save, ответ вернуть в виде массива
+/** Выполнить запрос save, ответ вернуть в виде массива
  *
  * @param	Array	$params контекст выполнения
- * @return	Array результат выполнения операции
+ * @return	Array результат выполнения запроса
  */
 	public function execSave($params=Array()) {
 		$errorMessage='Ошибка при обращении к DataSource::execSave';
@@ -718,10 +714,10 @@ XML;
 		}
 		return $result;
 	}
-/** Ветка update опрерации save
+/** Ветка update запроса save
  *
  * @param	Array	$params контекст выполнения
- * @return	Array результат выполнения операции
+ * @return	Array результат выполнения запроса
  */
 	public function execUpdate($params=Array()) {
 		$errorMessage='Ошибка при обращении к DataSource::execUpdate';
@@ -859,10 +855,10 @@ XML;
 		}
 		return $result;
 	}
-/** Ветка insert опрерации save
+/** Ветка insert запроса save
  *
  * @param	Array	$params контекст выполнения
- * @return	Array результат выполнения операции
+ * @return	Array результат выполнения запроса
  */
 	public function execInsert($params=Array()) {
 		$errorMessage='Ошибка при обращении к DataSource::execInsert';
@@ -1024,19 +1020,30 @@ XML;
 		}
 		return $result;
 	}
-/** Выполнить операцию copy, ответ вернуть в виде массива
+
+/** Выполнить запрос copy, игнорируя контроль прав
  *
  * @param	Array	$params контекст выполнения
- * @return	Array результат выполнения операции
+ * @return	Array результат выполнения запроса
+ */
+	public function execCopyForce($params=Array()) {
+		$params['#force']=1;
+		return $this->execCopy($params);
+	}
+/** Выполнить запрос copy, ответ вернуть в виде массива
+ *
+ * @param	Array	$params контекст выполнения
+ * @return	Array результат выполнения запроса
+ *
+ * Для выполнения запроса желательно наличие в таблице поля tmpid. 
+ * Если поле tmpid есть, оно используется для возврата id исходной (копируемой) строки.
+ * Это особенно полезно, если одним запросом копируется сразу несколько строк.
  */
 	public function execCopy($params=Array()) {
 		$errorMessage='Ошибка при обращении к DataSource::execCopy';
-		if ($params['id']) {
+		if (!$params['#force']) {
 			if (!$this->getPerm('write','copy',$params)) throw new Exception('У Вас нет прав на правку таблицы '.$this->tableCaption);
 		}
-		
-		$fldTmpId=$this->getField('tmpid');
-		if (!$fldTmpId) throw new Exception('Стандартная реализация копирования строк таблицы '.$this->tableCaption.' требует наличия поля tmpid');
 		
 		$lstCopy=Array();
 		$driverName=$this->getDriverName();
@@ -1164,7 +1171,6 @@ SQL;
 		else if ($driverName=='pgsql') {
 			$sql=<<<SQL
 insert into "{$this->tableName}" ({$sqlInsertFields})
-output inserted.id
 select
 {$sqlSelectFields}
 from
@@ -1194,18 +1200,21 @@ SQL;
 				if (substr($name,0,strlen('mode.'))=='mode.') $p[$name]=$value;
 			}
 			$p['filter.id']=$lst;
-			$result=$this->execRefresh($p);
+			$result=$this->execRefreshForce($p);
 			
-			$sqlUpdate="tmpid=0";
-			if ($this->formatEmptyRef=='null') $sqlUpdate="tmpid=null";
-			if ($this->formatEmptyRef=='') $sqlUpdate="tmpid=''";
-			
-			$sql=<<<SQL
+			$fldTmpId=$this->getField('tmpid');
+			if ($fldTmpId) {
+				$sqlUpdate="tmpid=0";
+				if ($this->formatEmptyRef=='null') $sqlUpdate="tmpid=null";
+				if ($this->formatEmptyRef=='') $sqlUpdate="tmpid=''";
+				
+				$sql=<<<SQL
 update {$D0}{$this->tableName}{$D1} set {$sqlUpdate}
 where
 	id in ({$sqlLst})
 SQL;
-			$this->pdo($sql);
+				$this->pdo($sql);
+			}
 		}
 
 		if ($params['id'] && count($result)==1) {
@@ -1266,10 +1275,10 @@ SQL;
 			if ($isEmpty) throw new Exception("Не заполнено поле: '{$fld['caption']}'");
 		}
 	}
-/** Выполнить операцию change, ответ вернуть в виде массива
+/** Выполнить запрос change, ответ вернуть в виде массива
  *
  * @param	Array	$params контекст выполнения
- * @return	Array результат выполнения операции
+ * @return	Array результат выполнения запроса
  */
 	public function execChange($params=Array()) {
 		$result=Array();
@@ -1287,19 +1296,19 @@ SQL;
 		return $result;
 	}
 
-/** Выполнить операцию delete игнорируя контроля прав
+/** Выполнить запрос delete игнорируя контроля прав
  *
  * @param	Array	$params контекст выполнения
- * @return	Array результат выполнения операции
+ * @return	Array результат выполнения запроса
  */
 	public function execDeleteForce($params=Array()) {
 		if (!$params['#recursLevel']) $params['#recursLevel']=1;
 		return $this->execDelete($params);
 	}
-/** Выполнить операцию delete, ответ вернуть в виде массива
+/** Выполнить запрос delete, ответ вернуть в виде массива
  *
  * @param	Array	$params контекст выполнения
- * @return	Array результат выполнения операции
+ * @return	Array результат выполнения запроса
  */
 	public function execDelete($params=Array()) {
 		$errorMessage='Ошибка при обращении к DataSource::execDelete';
@@ -1691,16 +1700,16 @@ SQL;
 		}
 	}
 	
-/** Выполнить операцию shift, ответ вернуть в виде массива
+/** Выполнить запрос shift, ответ вернуть в виде массива
  *
  * @param	Array	$params контекст выполнения
- * @return	Array результат выполнения операции
+ * @return	Array результат выполнения запроса
  */
 	public function execShift($params=Array()) {
 		$errorMessage='Ошибка при обращении к DataSource::execShift';
 		if (!$this->getPerm('write','shift',$params)) throw new Exception('У Вас нет прав на перемещение строки в таблице '.$this->tableCaption);
 		$mode=$params['#request.mode'];
-		if ($mode!='after' && $mode!='before' && $mode!='last' && $mode!='first') throw new Exception("Недопустимый параметр '{$mode}' операции перемещения строки");
+		if ($mode!='after' && $mode!='before' && $mode!='last' && $mode!='first') throw new Exception("Недопустимый параметр '{$mode}' запроса перемещения строки");
 		if (!$this->getField('ord')) throw new Exception('Нет поля ord, перемещение строки невозможно');
 		$id=$params['id'];
 		if (!$id) throw new Exception('Не задан параметр id, перемещение строки невозможно');
@@ -1822,10 +1831,10 @@ SQL;
 		$result[]=$recResult;
 		return $result;
 	}
-/** Выполнить операцию append, ответ вернуть в виде массива
+/** Выполнить запрос append, ответ вернуть в виде массива
  *
  * @param	Array	$params контекст выполнения
- * @return	Array результат выполнения операции
+ * @return	Array результат выполнения запроса
  */
 	public function execAppend($params=Array()) {
 		$errorMessage='Ошибка при обращении к DataSource::execAppend';
@@ -1905,7 +1914,7 @@ SQL;
 
 		return $result;
 	}
-/** Получить поле ord, помещающее строку первой, в контексте выполнения операции
+/** Получить поле ord, помещающее строку первой, в контексте выполнения запроса
  *
  * @param	Array	$params контекст выполнения
  * @return	num значение поля ord
@@ -1922,7 +1931,7 @@ SQL;
 		$q->closeCursor();
 		return $ord-100;
 	}
-/** Получить поле ord, помещающее строку последней, в контексте выполнения операции
+/** Получить поле ord, помещающее строку последней, в контексте выполнения запроса
  *
  * @param	Array	$params контекст выполнения
  * @return	num значение поля ord
@@ -1943,7 +1952,7 @@ SQL;
 		$q->closeCursor();
 		return $ord+100;
 	}
-/** Получить поле ord, помещающее строку после указанной, в контексте выполнения операции
+/** Получить поле ord, помещающее строку после указанной, в контексте выполнения запроса
  *
  * @param	Array	$params контекст выполнения
  * @param 	boolean $isNoReorder запрет пересортировки строк при необходимости
@@ -1985,7 +1994,7 @@ SQL;
 		}
 		return $ord;
 	}
-/** Получить поле ord, помещающее строку перед указанной, в контексте выполнения операции
+/** Получить поле ord, помещающее строку перед указанной, в контексте выполнения запроса
  *
  * @param	Array	$params контекст выполнения
  * @param 	boolean $isNoReorder запрет пересортировки строк при необходимости
