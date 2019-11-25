@@ -26,7 +26,7 @@
  *
  *		$field['tgroup']			- 0|1 группировать, заголовки и итоги по изменению
  *		$field['tgroup.title']		- 1|0 формировать заголовок
- *		$field['tgroup.itog']		- 1|0 формировать подитог
+ *		$field['tgroup.itog']		- 1|0|Текст подитога - формировать подитог
  *		$field['tgroup.column']		- 0|1 отображать колонку в таблице
  *		$field['tgroup.field']		- поле, изменение которого отслеживается
  *
@@ -458,11 +458,17 @@ HTML;
 
 		$fld=&$fields[$level];
 		$itog=&$fld['itog'];
-		if (!isset($fld['tgroup.itog']) || $fld['tgroup.itog']) {
+		//if (!isset($fld['tgroup.itog']) || $fld['tgroup.itog']) {
+		if ($fld['tgroup.itog']) {
 			$result.="\n".<<<HTML
 	<tr class="itog">
 HTML;
-			$htmlValue=str2Html('Итого по '.$itog['value'], $this->format);
+			if ($fld['tgroup.itog']==1) {
+				$htmlValue=str2Html('Итого по '.$itog['value'], $this->format);
+			}
+			else {
+				$htmlValue=str2Html($fld['tgroup.itog'], $this->format);
+			}
 			
 			$colSpan=0;
 			for($i=0; $i<$count; $i++) {
