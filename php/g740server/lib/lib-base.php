@@ -726,8 +726,7 @@ function rmdirFull($dir) {
     closedir($d);  
     rmdir ($dir);  
 } 
-
-/** Скопмровать содержимое папки
+/** Скопировать содержимое папки
  *
  * @param	string	$source исходная папка
  * @param	string	$destination результирующая папка
@@ -753,7 +752,20 @@ function copydirFull($source, $destination) {
 		copy($source, $destination);
     }
 }
-
+/** Проверить файл на наличие и незанятость другим процессом
+ *
+ * @param	string	$fileName файл
+ * @param	boolean	файл есть и никем не занят
+ */
+function testFileFree($fileName) {
+	if (!is_file($fileName)) return false;
+	$f=fopen($fileName,'r+');
+	if ($f) {
+		fclose($f);
+		return true;
+	}
+	return false;
+}
 
 //------------------------------------------------------------------------------
 // Работа с XML
