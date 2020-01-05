@@ -391,6 +391,15 @@ HTML;
  *
  * @param	Array	$params параметры
  * @return	String	результат
+ *
+ * Бумага A4, размеры:  210 x 297mm, внутренний размер с учетом полей странцы: 190 x 285mm
+ *
+ * CSS подходит для MS-Word и HTML, все размеры задавать в mm
+ *
+ * Особенности HTML для MS-Word
+ * - не понимает SVG
+ * - не понимает несколько классов в одном HTML элементе (можно пытаться делать вложенные div, каждому задавая класс)
+ * - похоже не понимает явного указания не разбивать страницу (page-break-inside: avoid), однако старается не разбивать tr в таблице, этим можно пользоваться
  */
 	protected function getHeadWord($params=Array()) {
 		header('Content-Type: application/msword; charset=utf-8');
@@ -400,11 +409,85 @@ HTML;
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"></meta>
 	<meta http-equiv="Content-Language" content="ru">
+	
+	<style type="text/css">
+@media print {
+	.print_no_display {
+		display:none;
+	}
+} 
+.print_no_page_break {
+	page-break-inside: avoid;
+}
+.print_page_break_after {
+	page-break-after: always;
+}
+.print_page_break_before {
+	page-break-before: always;
+}
+	
+@page page_a4_landscape	{
+	size: 297mm 210mm;
+	margin:6mm;
+	padding: 0mm;
+	mso-page-orientation:landscape;
+	mso-header-margin:0px;
+	mso-footer-margin:0px;
+	mso-paper-source:0;
+}
+div.page_a4_landscape {
+	page:page_a4_landscape;
+}
+
+body {
+	font-family: Arial;
+	font-size: 11px;
+  	cursor: default;
+	background-color: white;
+	padding: 0px;
+	margin: 0px;
+}
+h1 {
+	padding-left: 0px;
+	font-size: 18px;
+	color: black;
+	text-align: left;
+}
+h2 {
+	padding-left: 0px;
+	font-size: 16px;
+	color: black;
+	text-align: left;
+}
+h3 {
+	padding-left: 0px;
+	font-size: 14px;
+	color: black;
+	text-align: left;
+}
+table.bordered{
+	border-collapse: collapse;
+}
+table.bordered td {
+	border-collapse: collapse;
+	border-style: solid;
+	border-color: black;
+	border-width: 1px
+}
+	</style>
 </head>
 <body>
 HTML;
 		return $result;
 	}
+	
+	protected function getPageBreakWord() {
+		$result=<<<HTML
+<br clear="all" style="mso-special-character:line-break;page-break-before:always"/>
+HTML;
+		return $result;
+	}
+	
 /** Формирование окончания отчета для HTML формата
  *
  * @param	Array	$params параметры
