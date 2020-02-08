@@ -1,7 +1,7 @@
 <!--
 Сервер G740 Описание структуры базы данных
 
-copyright 2018-2019 Galinsky Leonid lenq740@yandex.ru
+copyright 2018-2020 Galinsky Leonid lenq740@yandex.ru
 This project is released under the BSD license
 -->
 <form name="%form%" caption="Описание структуры базы данных" icon="database">

@@ -3,7 +3,7 @@
  * @file
  * G740Server, библиотека функций - базовый набор функций
  *
- * @copyright 2018-2019 Galinsky Leonid lenq740@yandex.ru
+ * @copyright 2018-2020 Galinsky Leonid lenq740@yandex.ru
  * This project is released under the BSD license
  */
 
@@ -92,8 +92,8 @@ function str2Xls($str) {
  * @return	string преобразованная строка
  */
 function str2JavaScript($str) {
-	$from=Array("\\",'"',"'","\n");
-	$to=Array("\\\\",'\"',"\'",'');
+	$from=Array("\\",'"',"'","\n","\r");
+	$to=Array("\\\\",'\"',"\'",'','');
 	return str_replace($from, $to, $str);
 }
 /** Преобразование строки для строки вставки в PHP в одинарные кавычки

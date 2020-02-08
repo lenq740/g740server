@@ -1,7 +1,7 @@
 <!--
 Сервер G740 Типы полей базы данных
 
-copyright 2018-2019 Galinsky Leonid lenq740@yandex.ru
+copyright 2018-2020 Galinsky Leonid lenq740@yandex.ru
 This project is released under the BSD license
 -->
 <form name="formSysFieldType" caption="Типы полей базы данных">

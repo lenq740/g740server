@@ -3,7 +3,7 @@
  * @file
  * G740Server, автоматический генератор объектов доступа к данным DataSource по описанию структуры базы данных.
  *
- * @copyright 2018-2019 Galinsky Leonid lenq740@yandex.ru
+ * @copyright 2018-2020 Galinsky Leonid lenq740@yandex.ru
  * This project is released under the BSD license
  */
 

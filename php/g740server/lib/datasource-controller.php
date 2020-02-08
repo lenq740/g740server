@@ -3,7 +3,7 @@
  * @file
  * G740Server, модель данных.
  *
- * @copyright 2018-2019 Galinsky Leonid lenq740@yandex.ru
+ * @copyright 2018-2020 Galinsky Leonid lenq740@yandex.ru
  * This project is released under the BSD license
  */
 
@@ -44,6 +44,10 @@ class DataSource extends DSConnector{
 	public $permTestReadOnlyOwnerTableName='';
 /// Проверка на ReadOnly строки родительской таблицы - имя поля, по которому осуществляется связь с родительской таблицей
 	public $permTestReadOnlyOwnerLinkFieldName='';
+
+/// Необходимость логирования изменений
+	public $isLog=false;
+
 	
 /// Конструктор - инициализирует константы из конфигурационных настроек
 	function __construct() {
@@ -64,6 +68,15 @@ class DataSource extends DSConnector{
 		if (!$permMode) $permMode=$this->tableName;
 		$result=getPerm($permMode, $permOper);
 		if (!$result) return $result;
+		
+		if ($requestName) {
+			$r=$this->getRequest($requestName=='expand'?'refresh':$requestName);
+			if (!$r) return false;
+			if (isset($r['enabled']) && !$r['enabled']) return false;
+		}
+		// Проверка вне контекста использования - например, при формировании описания источника данных
+		if (!$params['#request.name']) return $result;
+		
 		// Стандартные проверки для write
 		if ($this->isPermTestRowReadOnly && $permOper=='write') {
 			if ($requestName=='append') {
@@ -89,7 +102,7 @@ class DataSource extends DSConnector{
 				$p=Array();
 				$p['filter.id']=$params['id'];
 				foreach($params as $name=>$value) if (substr($name,0,5)=='mode.') $p[$name]=$value;
-				$lst=$this->execRefresh($p);
+				$lst=$this->execRefreshForce($p);
 				$lst=$this->getOwnerReadOnly($lst);
 				
 				foreach($lst as &$row) {
@@ -328,7 +341,23 @@ XML;
  */
 	public function getStrXmlDefinitionRequests($params=Array(), $requests=null) {
 		if (!$requests) $requests=$this->getRequests();
-		return $this->autoGenXmlDefinitionRequests($requests);
+		$doc=xmlCreateDoc();
+		$xmlRequests=$doc->createElement('requests');
+		foreach($requests as $requestName=>$request) {
+			$xmlRequest=$doc->createElement('request');
+			xmlSetAttr($xmlRequest,'name',$request['name']);
+			if ($request['mode']) xmlSetAttr($xmlRequest,'mode',$request['mode']);
+
+			$permOper='read';
+			if ($request['permoper']) $permOper=$request['permoper'];
+			if (!$this->getPerm($permOper, $request['name'])) xmlSetAttr($xmlRequest,'enabled','0');
+			
+			$xmlRequests->appendChild($xmlRequest);
+		}
+		$doc->appendChild($xmlRequests);
+		$result=$doc->saveXML($xmlRequests);
+		$result=str_replace("><",">\n<",$result);
+		return $result;
 	}
 /** Вернуть описание полей источника данных согласно протоколу G740
  *
@@ -405,9 +434,11 @@ XML;
 		$strXmlAddFields=$params['xml.fields'];
 		
 		$requests=$dataSource->getRequests();
-		$r=$requests['refresh'];
-		$r['name']='expand';
-		$requests['expand']=$r;
+		if (!$requests['expand']) {
+			$r=$requests['refresh'];
+			$r['name']='expand';
+			$requests['expand']=$r;
+		}
 		unset($requests['refreshrow']);
 		
 		$strXmlR=$dataSource->getStrXmlDefinitionRequests($params, $requests);
@@ -677,7 +708,7 @@ XML;
 			
 			{ // устаревшие обработчики событий
 				if (method_exists($this, 'onRowReadOnly')) {
-					if ($this->onRowReadOnly($row)) $rowReadOnly=true;
+					if ($this->onRowReadOnly($row)) $row['row.readonly']=1;
 				}
 			}
 			
@@ -731,11 +762,20 @@ XML;
 		// проверка допустимости значений полей
 		$this->doBeforeSave($params);
 
+		// подготовка старых значений для логирования
+		$rowOld=Array();
+		if ($this->isLog && $params['id']) {
+			$p=Array();
+			$p['filter.id']=$params['id'];
+			foreach($params as $name=>$value) if (substr($name,0,5)=='mode.') $p[$name]=$value;
+			$lst=$this->execRefreshForce($p);
+			if (count($lst)>0) $rowOld=&$lst[0];
+		}
+		
 		$result=Array();
 		$fields=$this->getFields();
 		$id=$params['id'];
 		$sqlId=($this->formatId=='guid')?$this->guid2Sql($id):$this->str2Sql($id);
-
 		foreach($fields as $key=>$fld) {
 			$name=$fld['name'];
 			if (!$name) continue;
@@ -821,7 +861,6 @@ XML;
 		$p=Array();
 		$p['filter.id']=$id;
 		foreach($params as $name=>$value) if (substr($name,0,5)=='mode.') $p[$name]=$value;
-		
 		$result=$this->execRefresh($p);
 		
 		// постобработка запроса
@@ -853,6 +892,14 @@ XML;
 				if ($row['row.readonly']) throw new Exception('У Вас нет прав на внесение таких изменений в строку таблицы '.$this->tableCaption);
 			}
 		}
+		
+		// вызов логирования
+		if ($this->isLog) {
+			foreach($result as &$row) {
+				$this->onLog('upd', $row, $rowOld);
+			}
+		}
+		
 		return $result;
 	}
 /** Ветка insert запроса save
@@ -1016,6 +1063,13 @@ XML;
 			$result=$this->getOwnerReadOnly($result);
 			foreach($result as &$row) {
 				if ($row['row.readonly']) throw new Exception('У Вас нет прав на вставку такой строки в таблицу '.$this->tableCaption);			
+			}
+		}
+
+		// вызов логирования
+		if ($this->isLog) {
+			foreach($result as &$row) {
+				$this->onLog('ins', $row, Array());
 			}
 		}
 		return $result;
@@ -1216,6 +1270,13 @@ SQL;
 				$this->pdo($sql);
 			}
 		}
+		
+		// вызов логирования
+		if ($this->isLog) {
+			foreach($result as &$row) {
+				$this->onLog('ins', $row, Array());
+			}
+		}
 
 		if ($params['id'] && count($result)==1) {
 			$recResult=&$result[0];
@@ -1223,7 +1284,6 @@ SQL;
 			$recResult['row.destid']=$params['id'];
 			$recResult['row.focus']=1;
 		}
-
 		return $result;
 	}
 /** Проверить допустимость значений полей до save
@@ -1290,7 +1350,7 @@ SQL;
  * @return	Array row
  */
 	public function getRow($id=-1) {
-		$lst=$this->execRefresh(Array('filter.id'=>$id));
+		$lst=$this->execRefreshForce(Array('filter.id'=>$id));
 		$result=Array();
 		if (count($lst)==1) $result=$lst[0];
 		return $result;
@@ -1312,80 +1372,93 @@ SQL;
  */
 	public function execDelete($params=Array()) {
 		$errorMessage='Ошибка при обращении к DataSource::execDelete';
-		if (!$params['#recursLevel']) {
-			if (!$this->getPerm('write','delete',$params)) throw new Exception('У Вас нет прав на удаление строки таблицы '.$this->tableCaption);
-		}
-		if ($params['#recursLevel']>15) throw new Exception('Удаление невозможно, поскольку обнаружилось зацикливание ссылок при анализе ссылочной целостности');
-		if (!isset($params['id'])) return Array();
-		$idlist=$this->php2SqlIn($params['id']);
-		if (!$idlist) return Array();
-		
-		// предобработка запроса
-		$p=$this->onBeforeDelete($params);
-		if (is_array($p)) foreach($p as $name=>$value) $params[$name]=$value;
-		
-		$refs=$this->getReferences();
-		$driverName=$this->getDriverName();
-		$p=$params;
-		$p['refs']=$refs;
-		$sqlSelect='';
-		$sqlDelete='';
-		
-		$result=Array();
-		if ($driverName=='mysql') {
-			$this->_execDeleteRestrictMySql($p);
-			$this->_execDeleteCascadeMySql($p);
-			$this->_execDeleteClearMySql($p);
-			$sqlSelect=<<<SQL
-select * from `{$this->tableName}` where id in ({$idlist})
-SQL;
-			$sqlDelete=<<<SQL
+		$this->_deleteExecuted++;
+		try {
+			if (!$params['#recursLevel']) {
+				if (!$this->getPerm('write','delete',$params)) throw new Exception('У Вас нет прав на удаление строки таблицы '.$this->tableCaption);
+			}
+			if ($params['#recursLevel']>15) throw new Exception('Удаление невозможно, поскольку обнаружилось зацикливание ссылок при анализе ссылочной целостности');
+			if (!isset($params['id'])) return Array();
+			$idlist=$this->php2SqlIn($params['id']);
+			if (!$idlist) return Array();
+
+			// предобработка запроса
+			$p=Array();
+			$p=$this->onBeforeDelete($params);
+			if (is_array($p)) foreach($p as $name=>$value) $params[$name]=$value;
+
+			// предварительная начитка возвращаемых запросом строк
+			$p=Array();
+			$p['filter.id']=$params['id'];
+			foreach($params as $name=>$value) if (substr($name,0,5)=='mode.') $p[$name]=$value;
+			$result=$this->execRefreshForce($p);
+			
+			$p=$params;
+			$p['refs']=$this->getReferences();
+			$sqlDelete='';
+			$driverName=$this->getDriverName();
+			if ($driverName=='mysql') {
+				$this->_execDeleteRestrictMySql($p);
+				$this->_execDeleteCascadeMySql($p);
+				$this->_execDeleteClearMySql($p);
+				$sqlDelete=<<<SQL
 delete from `{$this->tableName}` where id in ({$idlist})
 SQL;
-		}
-		else if ($driverName=='sqlsrv') {
-			$this->_execDeleteRestrictSqlSrv($p);
-			$this->_execDeleteCascadeSqlSrv($p);
-			$this->_execDeleteClearSqlSrv($p);
-			$sqlSelect=<<<SQL
-select * from [{$this->tableName}] where id in ({$idlist})
-SQL;
-			$sqlDelete=<<<SQL
+			}
+			else if ($driverName=='sqlsrv') {
+				$this->_execDeleteRestrictSqlSrv($p);
+				$this->_execDeleteCascadeSqlSrv($p);
+				$this->_execDeleteClearSqlSrv($p);
+				$sqlDelete=<<<SQL
 delete from [{$this->tableName}] where id in ({$idlist})
 SQL;
-		}
-		else if ($driverName=='pgsql') {
-			$this->_execDeleteRestrictPgSql($p);
-			$this->_execDeleteCascadePgSql($p);
-			$this->_execDeleteClearPgSql($p);
-			$sqlSelect=<<<SQL
-select * from "{$this->tableName}" where id in ({$idlist})
-SQL;
-			$sqlDelete=<<<SQL
+			}
+			else if ($driverName=='pgsql') {
+				$this->_execDeleteRestrictPgSql($p);
+				$this->_execDeleteCascadePgSql($p);
+				$this->_execDeleteClearPgSql($p);
+				$sqlDelete=<<<SQL
 delete from "{$this->tableName}" where id in ({$idlist})
 SQL;
+			}
+			else {
+				throw new Exception("Неизвестный драйвер базы данных '{$driverName}'");
+			}
+			
+			// Удаляем из основной таблицы
+			$this->pdo($sqlDelete);
+			
+			$this->onAfterDelete($result, $params);
+			foreach($result as &$row) {
+				$r=$this->onRowAfterDelete($row, $params);
+				if (is_array($r)) $row=$r;
+			}
+			// вызов логирования
+			if ($this->isLog) {
+				foreach($result as &$row) {
+					$this->onLog('del', Array(), $row);
+				}
+			}
+			foreach($result as &$row) {
+				$r=Array();
+				$r['id']=$row['id'];
+				$r['row.delete']=1;
+				$row=$r;
+			}
 		}
-		else {
-			throw new Exception("Неизвестный драйвер базы данных '{$driverName}'");
+		finally {
+			$this->_deleteExecuted--;
 		}
-		// Удаляем из основной таблицы
-		$q=$this->pdo($sqlSelect);
-		while($row=$this->pdoFetch($q)) {
-			$result[]=$row;
-		}
-		$this->onAfterDelete($result, $params);
-		foreach($result as &$row) {
-			$r=$this->onRowAfterDelete($row, $params);
-			if (is_array($r)) $row=$r;
-		}
-		foreach($result as &$row) {
-			$r=Array();
-			$r['id']=$row['id'];
-			$r['row.delete']=1;
-			$row=$r;
-		}
-		$this->pdo($sqlDelete);
 		return $result;
+	}
+	protected $_deleteExecuted=0;
+	
+/** Проверить, выполняется ли в момент обращения к методу операция удаления
+ *
+ * @return	boolean выполняется ли в момент обращения к методу операция удаления
+ */
+	public function getIsDeleteExecuted() {
+		return $this->_deleteExecuted>0;
 	}
 
 /** Ветка restrict обработки ссылочной целостности при удалении, для SQL сервера MySql
@@ -2041,7 +2114,7 @@ SQL;
 	protected function _goReorder($params=Array(), $isReorderAll=false) {
 		$errorMessage='Ошибка при обращении к DataSource::_goReorder';
 		if (!$this->getField('ord')) return true;
-		if (!$this->getPerm('write','reorder',$params)) throw new Exception('У Вас нет прав на пересортировку строк в таблице '.$this->tableCaption);
+		if (!$this->getPerm('write','shift',$params)) throw new Exception('У Вас нет прав на пересортировку строк в таблице '.$this->tableCaption);
 		$select=$this->_getReorderSelect($params);
 		
 		if (!$isReorderAll) {
@@ -2207,7 +2280,15 @@ SQL;
  */
 	protected function onRowValid(&$row) {
 	}
-
+/** логирование изменений (вызывается, если DataSource::isLog=true)
+ *
+ * @param	string $operation ins|upd|del
+ * @param	Array $rowNew 
+ * @param	Array $rowOld
+ */
+	protected function onLog($operation, $rowNew=Array(), $rowOld=Array()) {
+	}
+	
 // Устаревшие обработчики событий, оставлены для совместимости
 
 /** Устаревший обработчик проверки строки, оставлен для совместимости
@@ -3012,39 +3093,6 @@ PHP;
 		$result=str_replace("\n<change>","\n\t<change>",$result);
 		$result=str_replace("\n</change>","\n\t</change>",$result);
 		$result=str_replace("\n<param ","\n\t\t<param ",$result);
-		return $result;
-	}
-/** Метод для генерации раздела XML описания списка запросов источника данных
- *
- * @param	Array	$requests описания поддерживаемых запросов
- * @param	string	$tableName имя таблицы
- * @return	string раздел XML описания списка запросов источника данных
- */
-	public function autoGenXmlDefinitionRequests($requests=null, $tableName=null) {
-		$errorMessage='Ошибка при обращении к DataSource::autoGenXmlDefinitionRequests';
-		if (!$requests) $requests=$this->getRequests();
-		if (!$tableName) $tableName=$this->tableName;
-		
-		$doc=xmlCreateDoc();
-
-		$xmlRequests=$doc->createElement('requests');
-		foreach($requests as $requestName=>$request) {
-			$xmlRequest=$doc->createElement('request');
-			xmlSetAttr($xmlRequest,'name',$request['name']);
-			if ($request['mode']) xmlSetAttr($xmlRequest,'mode',$request['mode']);
-
-			$permMode=$this->permMode;
-			if (!$permMode) $permMode=$tableName;
-			$permOper='read';
-			if ($request['permoper']) $permOper=$request['permoper'];
-			if (!getPerm($permMode, $permOper)) xmlSetAttr($xmlRequest,'enabled','0');
-
-			$xmlRequests->appendChild($xmlRequest);
-		}
-		$doc->appendChild($xmlRequests);
-		
-		$result=$doc->saveXML($xmlRequests);
-		$result=str_replace("><",">\n<",$result);
 		return $result;
 	}
 	

@@ -4,7 +4,7 @@
  * G740Server, источник данных для таблицы 'systablecategory'.
  * Адаптирован под MySql, PostGreSql, MsSql.
  *
- * @copyright 2018-2019 Galinsky Leonid lenq740@yandex.ru
+ * @copyright 2018-2020 Galinsky Leonid lenq740@yandex.ru
  * This project is released under the BSD license
  */
  

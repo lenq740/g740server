@@ -3,7 +3,7 @@
  * @file
  * G740Server, библиотека функций - расширение базового набора под server G740
  *
- * @copyright 2018-2019 Galinsky Leonid lenq740@yandex.ru
+ * @copyright 2018-2020 Galinsky Leonid lenq740@yandex.ru
  * This project is released under the BSD license
  */
 
@@ -1443,8 +1443,8 @@ SQL;
 		else {
 			if ($rec['form']) $this->xmlWriter->writeAttribute('form', $rec['form']);
 			if ($rec['params']) {
-				$lst=explode("\n",$rec['params']);
-				foreach($lst as $param) {
+				$lstexpl=explode("\n",$rec['params']);
+				foreach($lstexpl as $param) {
 					$param=trim($param);
 					if (!$param) continue;
 					$name=$param;
