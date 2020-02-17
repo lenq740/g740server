@@ -87,6 +87,26 @@ create table sysextlog(
 	iserror int not null default 0
 );
 
+create table sysdblog (
+	id bigint primary key identity,
+	parent varchar(36) not null default '',
+	parentid varchar(36) not null default '',
+	[table] varchar(36) not null default '',
+	[field] varchar(36) not null default '',
+	[rowid] varchar(36) not null default '',
+	[operation] varchar(3) not null default '',
+	[value] varchar(1024) not null default '',
+	[child] varchar(36) not null default '',
+	childid varchar(36) not null default '',
+	[user] varchar(36) not null default '',
+	d datetime,
+	t varchar(8) not null default ''
+);
+create index idx_sysdblog_parent on sysdblog (parent, parentid, [table]);
+create index idx_sysdblog_table on sysdblog ([table], [rowid]);
+create index idx_sysdblog_d on sysdblog (d);
+
+
 create table sysconfig (
 	id int primary key identity,
 	code varchar(32) not null default '',
@@ -118,6 +138,5 @@ insert into [sysappmenu] ([id],[parentid],[name],[form],[icon],[ord]) values ('2
 insert into [sysappmenu] ([id],[parentid],[name],[form],[icon],[ord]) values ('3','1','Главное меню системы','formSysTreeMenu','menu','10');
 insert into [sysappmenu] ([id],[parentid],[name],[form],[icon],[ord]) values ('4','1','Типы полей базы данных','formSysFieldType','ref','20');
 set identity_insert [dbo].[sysappmenu] off;
-
 
 insert into sysconfig (code, val) values ('dbversion','0');

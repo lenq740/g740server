@@ -100,6 +100,12 @@ class PermController extends DSConnector{
 			if (getPP('isadm')) return true;
 			return false;
 		}
+		if ($mode=='sysdblog') {
+			if ($operation=='read') {
+				if (getPP('isadm')) return true;
+			}
+			return false;
+		}
 		return false;
 	}
 /** Выполнить аутентификацию пользователя
@@ -194,6 +200,252 @@ class PermController extends DSConnector{
 	protected function onAfterConnection() {
 		deleteOldLogFiles();
 	}
+
+/** Обработка логирования данных
+ *
+ * @param	Array	$info
+ *
+ * - $info['table'] - таблица
+ * - $info['operation'] - операция (ins, upd, del)
+ * - $info['rowNew'] - ассоциативный массив новых значений
+ * - $info['rowOld'] - ассоциативный массив старых значений
+ * - $info['rowFields'] - список отслеживаемых в rowNew и rowOld полей
+ * - $info['child'] - дочерняя таблица
+ * - $info['childid'] - id дочерней строки
+ * - $info['childname'] - имя поля дочерней строки
+ * - $info['childvalue'] - значение поля дочерней строки
+ */
+	public function doLog($info=Array()) {
+		$errorMessage='Ошибка при обращении к логированию данных';
+		$sqlUser=getPP('login');
+		$table=$info['table'];
+		if (!$table) throw new Exception("{$errorMessage}. Не задан обязательный параметр table");
+		try {
+			$dataSourceTable=getDataSource($table);
+		}
+		catch(Exception $e) {
+		}
+		if (!$dataSourceTable) throw new Exception("{$errorMessage}. Не найден источник данных для таблицы '{$table}'");
+		if (!$dataSourceTable->isLogEnabled) return false;
+		$sqlTable=$this->str2Sql($table);
+		
+		$operation=$info['operation'];
+		$rowOld=$info['rowOld'] ?? Array();
+		$rowNew=$info['rowNew'] ?? Array();
+		$row=($rowNew['id']) ? $rowNew : $rowOld;
+		
+		$lstParentInfo=$dataSourceTable->getLogParentInfo($row);
+		if (is_array($lstParentInfo[0])) {
+			$parentInfo=$lstParentInfo[0];
+		}
+		else {
+			$parentInfo=$lstParentInfo;
+			$lstParentInfo=Array($parentInfo);
+		}
+
+		$sqlParent='';
+		$sqlParentId='';
+		$parentInfo=$lstParentInfo[0];
+		if ($parentInfo && $parentInfo['parent'] && $parentInfo['parentid']) {
+			$sqlParent=$this->str2Sql($parentInfo['parent']);
+			$sqlParentId=$this->str2Sql($parentInfo['parentid']);
+		}
+		
+		$d=new DateTime();
+		$sqlD=$d->format('Y-m-d');
+		$sqlT=$d->format('H:i:s');
+
+		$driverName=$this->getDriverName();
+		$D0='';
+		$D1='';
+		if ($driverName=='mysql') {
+			$D0='`';
+			$D1='`';
+		}
+		else if ($driverName=='sqlsrv') {
+			$D0='[';
+			$D1=']';
+		}
+		else if ($driverName=='pgsql') {
+			$D0='"';
+			$D1='"';
+		}
+		else {
+			throw new Exception("Неизвестный драйвер базы данных '{$driverName}'");
+		}
+
+
+		$isLogExecuted=false;
+		if ($operation=='del') {
+			$sqlRowId=$this->str2Sql($rowOld['id']);
+			if (!$sqlRowId) return false;
+			$value=$dataSourceTable->getLogRow2Text($rowOld);
+			if (!$value) return false;
+			if ($dataSourceTable->isLogEnabled!=='virtual') {
+				$sqlValue=$this->str2Sql(mb_substr($value,0,1024,'utf-8'));
+				$sql=<<<SQL
+insert into sysdblog(
+	{$D0}parent{$D1},
+	{$D0}parentid{$D1},
+	{$D0}table{$D1},
+	{$D0}field{$D1},
+	{$D0}rowid{$D1},
+	{$D0}operation{$D1},
+	{$D0}value{$D1},
+	{$D0}user{$D1},
+	{$D0}d{$D1},
+	{$D0}t{$D1}
+)
+values (
+	'{$sqlParent}',
+	'{$sqlParentId}',
+	'{$sqlTable}',
+	'',
+	'{$sqlRowId}',
+	'del',
+	'{$sqlValue}',
+	'{$sqlUser}',
+	'{$sqlD}',
+	'{$sqlT}'
+)
+SQL;
+				$this->pdo($sql);
+			}
+			$isLogExecuted=true;
+		}
+		else {
+			$sqlRowId=$this->str2Sql($rowNew['id']);
+			if (!$sqlRowId) return false;
+			$lstFields=$dataSourceTable->getLogFields();
+			$sqlOperation=($operation=='ins')?'ins':'upd';
+			$sqlChild='';
+			$sqlChildId='';
+			if ($info['child'] && $info['childid']) {
+				$sqlChild=$this->str2Sql($info['child']);
+				$sqlChildId=$this->str2Sql($info['childid']);
+			}
+			$lstRowFields=Array();
+			if (isset($info['rowFields'])) {
+				if (is_array($info['rowFields'])) {
+					foreach($info['rowFields'] as $fieldName) {
+						$lstRowFields[$fieldName]=$fieldName;
+					}
+				}
+				else {
+					$fieldName=$info['rowFields'];
+					$lstRowFields[$fieldName]=$fieldName;
+				}
+			}
+			
+			foreach($lstFields as $fld) {
+				$field=$fld['name'];
+				if (!$field) continue;
+				if ($lstRowFields && !$lstRowFields[$field]) continue;
+				$value='';
+				if ($operation=='ins') {
+					$value=$rowNew[$field];
+					if (!$value) continue;
+				}
+				else {
+					if ($rowOld && $rowNew[$field]==$rowOld[$field]) continue;
+					$value=$rowNew[$field];
+				}
+				
+				if ($dataSourceTable->isLogEnabled!=='virtual') {
+					if ($fld['type']=='date') {
+						$value=date2Html(mb_substr($value, 0, 10));
+					}
+					if ($fld['type']=='check') {
+						$value=($value) ? 'Да' : 'Нет';
+					}
+					$sqlField=$this->str2Sql($field);
+					$sqlValue=$this->str2Sql($value);
+					$sql=<<<SQL
+insert into sysdblog(
+	{$D0}parent{$D1},
+	{$D0}parentid{$D1},
+	{$D0}table{$D1},
+	{$D0}field{$D1},
+	{$D0}rowid{$D1},
+	{$D0}operation{$D1},
+	{$D0}value{$D1},
+	{$D0}child{$D1},
+	{$D0}childid{$D1},
+	{$D0}user{$D1},
+	{$D0}d{$D1},
+	{$D0}t{$D1}
+)
+values (
+	'{$sqlParent}',
+	'{$sqlParentId}',
+	'{$sqlTable}',
+	'{$sqlField}',
+	'{$sqlRowId}',
+	'{$sqlOperation}',
+	'{$sqlValue}',
+	'{$sqlChild}',
+	'{$sqlChildId}',
+	'{$sqlUser}',
+	'{$sqlD}',
+	'{$sqlT}'
+)
+SQL;
+					$this->pdo($sql);
+				}
+				$isLogExecuted=true;
+			}
+		}
+	
+		if (!$isLogExecuted) return true;
+		
+		if ($operation=='del') {
+			$value='Удалена строка: '.$dataSourceTable->getLogRow2Text($rowOld);
+			$childid=$rowOld['id'];
+		}
+		else if ($operation=='ins') {
+			$value='Добавлена строка: '.$dataSourceTable->getLogRow2Text($rowNew);
+			$childid=$rowNew['id'];
+		}
+		else {
+			$value='Изменена строка: '.$dataSourceTable->getLogRow2Text($rowNew);
+			$childid=$rowNew['id'];
+		}
+
+		foreach($lstParentInfo as $parentInfo) {
+			$parent=$parentInfo['parent'];
+			if (!$parent) continue;
+			$parentid=$parentInfo['parentid'];
+			if (!$parentid) continue;
+			$fieldName=$parentInfo['parentfield'] ? $parentInfo['parentfield'] : $table;
+
+			try {
+				$dataSourceParent=getDataSource($parent);
+			}
+			catch(Exception $e) {
+			}
+			if (!$dataSourceParent) continue;
+			if (!$dataSourceParent->isLogEnabled) continue;
+			if ($operation=='del') {
+				if ($dataSourceParent->getIsDeleteExecuted()) continue;
+			}
+			
+			$rowParent=$dataSourceParent->getRow($parentid);
+			if (!$rowParent['id']) continue;
+			$rowParent[$fieldName]=$value;
+			$p=Array(
+				'operation'=>'upd',
+				'rowNew'=>$rowParent,
+				'rowFields'=>[$fieldName]
+			);
+			if ($dataSourceTable->isLogEnabled!=='virtual' && $childid) {
+				$p['child']=$table;
+				$p['childid']=$childid;
+			}
+			$dataSourceParent->doLog($p);
+		}
+		
+	}
+	
 /// Локальные переменные прав, которые действуют на один сеанс, и не должны быть сохранены в сессии
 	protected $localPP=Array();
 }

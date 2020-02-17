@@ -45,10 +45,6 @@ class DataSource extends DSConnector{
 /// Проверка на ReadOnly строки родительской таблицы - имя поля, по которому осуществляется связь с родительской таблицей
 	public $permTestReadOnlyOwnerLinkFieldName='';
 
-/// Необходимость логирования изменений
-	public $isLog=false;
-
-	
 /// Конструктор - инициализирует константы из конфигурационных настроек
 	function __construct() {
 		if ($this->formatId===null) $this->formatId=getCfg('datasource.formatId','autoincrement');
@@ -764,7 +760,7 @@ XML;
 
 		// подготовка старых значений для логирования
 		$rowOld=Array();
-		if ($this->isLog && $params['id']) {
+		if ($this->isLogEnabled && $params['id']) {
 			$p=Array();
 			$p['filter.id']=$params['id'];
 			foreach($params as $name=>$value) if (substr($name,0,5)=='mode.') $p[$name]=$value;
@@ -894,9 +890,13 @@ XML;
 		}
 		
 		// вызов логирования
-		if ($this->isLog) {
+		if ($this->isLogEnabled) {
 			foreach($result as &$row) {
-				$this->onLog('upd', $row, $rowOld);
+				$this->doLog(Array(
+					'operation'=>'upd',
+					'rowNew'=>$row,
+					'rowOld'=>$rowOld
+				));
 			}
 		}
 		
@@ -916,6 +916,9 @@ XML;
 		if (is_array($p)) foreach($p as $name=>$value) $params[$name]=$value;
 		$p=$this->onBeforeInsert($params);
 		if (is_array($p)) foreach($p as $name=>$value) $params[$name]=$value;
+		$p=$this->onBeforeAppendInsert($params);
+		if (is_array($p)) foreach($p as $name=>$value) $params[$name]=$value;
+
 		// проверка допустимости значений полей
 		$this->doBeforeSave($params);
 
@@ -1067,9 +1070,12 @@ XML;
 		}
 
 		// вызов логирования
-		if ($this->isLog) {
+		if ($this->isLogEnabled) {
 			foreach($result as &$row) {
-				$this->onLog('ins', $row, Array());
+				$this->doLog(Array(
+					'operation'=>'ins',
+					'rowNew'=>$row
+				));
 			}
 		}
 		return $result;
@@ -1272,9 +1278,12 @@ SQL;
 		}
 		
 		// вызов логирования
-		if ($this->isLog) {
+		if ($this->isLogEnabled) {
 			foreach($result as &$row) {
-				$this->onLog('ins', $row, Array());
+				$this->doLog(Array(
+					'operation'=>'ins',
+					'rowNew'=>$row
+				));
 			}
 		}
 
@@ -1434,9 +1443,12 @@ SQL;
 				if (is_array($r)) $row=$r;
 			}
 			// вызов логирования
-			if ($this->isLog) {
+			if ($this->isLogEnabled) {
 				foreach($result as &$row) {
-					$this->onLog('del', Array(), $row);
+					$this->doLog(Array(
+						'operation'=>'del',
+						'rowOld'=>$row
+					));
 				}
 			}
 			foreach($result as &$row) {
@@ -1920,6 +1932,8 @@ SQL;
 		// предобработка запроса
 		$p=$this->onBeforeAppend($params);
 		if (is_array($p)) foreach($p as $name=>$value) $params[$name]=$value;
+		$p=$this->onBeforeAppendInsert($params);
+		if (is_array($p)) foreach($p as $name=>$value) $params[$name]=$value;
 		
 		$mode=$params['#request.mode'];
 		if ($mode!='first' && $mode!='after' && $mode!='before') $mode='last';
@@ -2211,6 +2225,12 @@ SQL;
  */
 	protected function onBeforeUpdate(&$params) {
 	}
+/** предобработка в запросах append и insert
+ *
+ * @param	Array $params
+ */
+	protected function onBeforeAppendInsert(&$params) {
+	}
 /** предобработка в запросе delete
  *
  * @param	Array $params
@@ -2280,14 +2300,6 @@ SQL;
  */
 	protected function onRowValid(&$row) {
 	}
-/** логирование изменений (вызывается, если DataSource::isLog=true)
- *
- * @param	string $operation ins|upd|del
- * @param	Array $rowNew 
- * @param	Array $rowOld
- */
-	protected function onLog($operation, $rowNew=Array(), $rowOld=Array()) {
-	}
 	
 // Устаревшие обработчики событий, оставлены для совместимости
 
@@ -2297,6 +2309,68 @@ SQL;
  */
 	protected function onValid($lst=Array()) {
 	}
+
+
+// Логирование, для работы надо выставить DataSource::isLogEnabled=true
+
+/// Для DataSource включено логирования изменений
+	public $isLogEnabled=false;
+	
+/** Вернуть описание (список описаний) родительских источников данных
+ *
+ * @param	Array $row
+ * @return 	Array описание (список описаний) родительских источников данных
+ */
+	public function getLogParentInfo(&$row) {
+		$result=Array(
+			'parent'=>'',
+			'parentid'=>'',
+			'parentfield'=>''
+		);
+		return $result;
+	}
+/** Вернуть текстовое описание строки таблицы
+ *
+ * @param	Array $row
+ * @return 	string текстовое описание строки таблицы
+ */
+	public function getLogRow2Text(&$row) {
+		$result=$this->getField('name')?$row['name']:$row['id'];
+		return $result;
+	}
+/** Вернуть список логируемых полей
+ *
+ * @param	Array $row
+ * @return 	string текстовое описание строки таблицы
+ */
+	public function getLogFields() {
+		$result=Array();
+		if (!$this->isLogEnabled) return $result;
+		$fields=$this->getFields();
+		foreach($fields as $fld) {
+			if ($fld['type']=='ref') continue;
+			$result[]=$fld;
+		}
+		return $result;
+	}
+/** логирование изменений (вызывается, только если DataSource::isLogEnabled=true)
+ *
+ * @param	Array	$info
+ *
+ * - $info['operation'] - операция (ins, upd, del)
+ * - $info['rowNew'] - ассоциативный массив новых значений
+ * - $info['rowOld'] - ассоциативный массив старых значений
+ * - $info['childid'] - id дочерней строки
+ * - $info['childtable'] - имя дочерней таблицы
+ * - $info['childname'] - имя поля дочерней строки
+ * - $info['childvalue'] - значение поля дочерней строки
+ */
+	public function doLog($info=Array()) {
+		$info['table']=$this->tableName;
+		$objPerm=getPermController();
+		$objPerm->doLog($info);
+	}
+
 	
 /** Вычислить кол-во строк в результате запроса для заданного контекста
  *

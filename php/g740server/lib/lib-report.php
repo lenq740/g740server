@@ -20,7 +20,7 @@
  *		$field['caption']			- заголовок
  *		$field['subcaption']		- заголовок
  *		$field['fieldname']			- имя поля
- *		$field['type']				- str, num, date
+ *		$field['type']				- str, num, date, html
  *		$field['dec']				- количество десятичных знаков после запятой
  *		$field['width']				- ширина колонки
  *
@@ -48,6 +48,8 @@ class ReportBuilder {
 /// наличие итогов
 	protected $isTotal=true;
 	
+	protected $isWord=false;
+	
 	
 /// количество колонок, по которым производится группировка
 	protected $itogCount=0;
@@ -70,6 +72,7 @@ class ReportBuilder {
 		$this->SetFields($para['fields']);
 		if (isset($para['total'])) $this->isTotal=$para['total']?true:false;
 		if ($para['format']=='xls') $this->format='xls';
+		if ($para['format']=='word') $this->isWord=true;
 		
 		if (!($para['rows'] || $para['sql'])) {
 			$rows=Array();
@@ -230,14 +233,29 @@ HTML;
 			if ($fld['tgroup'] && !$fld['tgroup.column']) continue;
 			$caption=str2Html($fld['caption'], $this->format);
 			if (!$caption) $caption=str2Html($fld['fieldname'], $this->format);
-			if ($fld['width']) {
-				$caption=<<<HTML
+			
+			if ($this->isWord) {
+				if ($fld['width']) {
+					$result.="\n".<<<HTML
+<th width=80 style="width:{$fld['width']}">{$caption}</th>
+HTML;
+				}
+				else {
+					$result.="\n".<<<HTML
+<th>{$caption}</th>
+HTML;
+				}
+			}
+			else {
+				if ($fld['width']) {
+					$caption=<<<HTML
 <div style="width:{$fld['width']}">{$caption}</div>
 HTML;
-			}
-			$result.="\n".<<<HTML
-	<th>{$caption}</th>
+				}
+				$result.="\n".<<<HTML
+<th>{$caption}</th>
 HTML;
+			}
 		}
 		$result.="\n".<<<HTML
 </tr>
@@ -277,7 +295,12 @@ HTML;
  */
 	protected function GetTd($value, $type='str', $dec=0) {
 		$result='';
-		$htmlValue=str2Html($value, $this->format);
+		if ($type=='html') {
+			$htmlValue=$value;
+		}
+		else {
+			$htmlValue=str2Html($value, $this->format);
+		}
 		if ($type!='date' && $type!='num') $type='str';
 		if ($type=='date') $htmlValue=date2Html($value);
 		if ($type=='num') {
@@ -619,9 +642,16 @@ HTML;
  */
 	public function GetReportTable() {
 		$result='';
-		$result.="\n".<<<HTML
+		if ($this->isWord) {
+			$result.="\n".<<<HTML
+<table border="1" class="bordered">
+HTML;
+		}
+		else {
+			$result.="\n".<<<HTML
 <table border="1" class="table-report table-hover table-condensed {$this->tableClassName}">
 HTML;
+		}
 		$result.=$this->GetTrCaption();
 		
 		$isFirst=true;

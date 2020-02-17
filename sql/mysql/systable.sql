@@ -93,6 +93,26 @@ create table sysextlog(
   primary key (id)
 );
 
+create table sysdblog (
+  id bigint not null auto_increment,
+  `parent` varchar(36) not null default '',
+  `parentid` varchar(36) not null default '',
+  `table` varchar(36) not null default '',
+  `field` varchar(36) not null default '',
+  `rowid` varchar(36) not null default '',
+  `operation` varchar(3) not null default '',
+  `value` varchar(1024) not null default '',
+  `child` varchar(36) not null default '',
+  `childid` varchar(36) not null default '',
+  `user` varchar(36) not null default '',
+  d date,
+  t varchar(8) not null default '',
+  primary key (id),
+  key parent_parentid_table (`parent`, `parentid`, `table`),
+  key table_rowid (`table`, `rowid`),
+  key d (d)
+);
+
 create table sysconfig (
 	id int not null auto_increment,
 	code varchar(32) not null default '',

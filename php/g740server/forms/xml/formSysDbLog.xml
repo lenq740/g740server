@@ -1,0 +1,79 @@
+<!--
+Сервер G740, история правки
+
+copyright 2018-2020 Galinsky Leonid lenq740@yandex.ru
+This project is released under the BSD license
+-->
+<form name="%form%-%filter.table%" caption="История правки">
+	<rowsets>
+		<rowset name="filter" filter="1">
+			<fields>
+				<field name="datefrom" type="date" caption="с"/>
+				<field name="dateto" type="date" caption="по"/>
+
+				<field name="sysdblogfieldid" type="ref">
+					<ref datasource="sysdblogfields">
+						<param name="filter.table" value="%filter.table%"/>
+					</ref>
+				</field>
+				<field name="field" type="string" len="20" refid="sysdblogfieldid" refname="name" caption="Поле"/>
+				<field name="mode" type="radio" list="%filter.mode.list%" basetype="string" default="%filter.mode%"/>
+				<field name="text" type="string" caption="Поиск по подстроке" len="10" stretch="1"/>
+			</fields>
+			<rowset name="sysdblog" readonly="1" paginator.count="300">
+				<param name="filter.table" value="%filter.table%"/>
+				<param name="filter.rowid" value="%filter.rowid%" notempty="1" js_enabled="get('filter.mode')=='строка'"/>
+				<param name="filter.parent" value="%filter.parent%" notempty="1"/>
+				<param name="filter.parentid" value="%filter.parentid%" notempty="1"/>
+				<param name="filter.operation" value="del" js_enabled="get('filter.mode')=='удаленные'"/>
+				<param name="filter.field" js_value="get('filter.sysdblogfieldid')" notempty="1"/>
+				<param name="filter.text" js_value="get('filter.text')" notempty="1"/>
+				<param name="filter.d.from" js_value="get('filter.datefrom')" notempty="1"/>
+				<param name="filter.d.to" js_value="get('filter.dateto')" notempty="1"/>
+			</rowset>
+		</rowset>
+	</rowsets>
+	
+	<requests>
+		<request name="go-child-sysdblog" icon="logchild" caption="Подробнее" js_enabled="get('sysdblog.child') &amp;&amp; get('sysdblog.childid')">
+			<request name="form" form="formSysDbLog">
+				<param name="table" js_value="get('sysdblog.child')"/>
+				<param name="parent" js_value="get('sysdblog.table')"/>
+				<param name="parentid" js_value="get('sysdblog.rowid')"/>
+				<param name="rowid" js_value="get('sysdblog.childid')" notempty="1"/>
+			</request>
+		</request>
+	</requests>
+	
+	<panels>
+		<panel align="top" color="scheme3" rowset="filter" height="65px">
+			<panel type="fields" captionup="1" padding="10px">
+				<field name="datefrom" line="1"/>
+				<field name="dateto" line="1"/>
+				<field name="field" line="1"/>
+				<field name="text" line="1"/>
+				<field name="worker_tabnom" line="1"/>
+				<field name="worker_fio" line="1"/>
+			</panel>
+			<panel align="right" width="120px" type="fields">
+				<field name="mode" caption=" "/>
+			</panel>
+		</panel>
+		
+		<panel type="html" style="caption" caption="%caption%" align="top" size="large"/>
+		
+		<panel type="grid" rowset="sysdblog">
+			<toolbar>
+				<request name="refresh"/>
+				<separator/>
+				<request name="go-child-sysdblog"/>
+			</toolbar>
+			<field name="iconoperation"/>
+			<field name="d"/>
+			<field name="t"/>
+			<field name="caption"/>
+			<field name="value"/>
+			<field name="user"/>
+		</panel>
+	</panels>
+</form>

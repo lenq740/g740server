@@ -468,10 +468,16 @@ h3 {
 table.bordered{
 	border-collapse: collapse;
 }
+table.bordered th {
+	border-collapse: collapse;
+	border-style: solid;
+	border-color: gray;
+	border-width: 1px
+}
 table.bordered td {
 	border-collapse: collapse;
 	border-style: solid;
-	border-color: black;
+	border-color: gray;
 	border-width: 1px
 }
 	</style>
