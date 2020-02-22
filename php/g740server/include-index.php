@@ -294,13 +294,6 @@ HTML;
 // Конфигурируем визуализатор
 	var conf=g740.config;
 	
-	var regexp = /log=([^&]+)/i;
-    var value = '';
-    if (!!regexp.exec(document.location.search)) {
-        value = regexp.exec(document.location.search)[1];
-	}
-	conf.isTraceEnabled=(value==1)?1:0;
-	
 	var confDialogLogin=conf['dialogLogin'];
 	conf['mainFormDomNode']='FormPanelMain';	// Узел DOM, в ктором размещается главная форма приложения
 {$htmlConfig}

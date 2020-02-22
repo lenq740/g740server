@@ -3584,40 +3584,57 @@ function getDataSource($name) {
 	global $_registerDataSource;
 	if ($name!=str2FileName($name)) throw new Exception("Недопустимое имя источника данных '{$name}'");
 	if ($_registerDataSource[$name]) return $_registerDataSource[$name];
-
-	$fileNameAutoGen=pathConcat(
-		getCfg('path.root'),
-		getCfg('path.root.datasources', pathConcat(getCfg('path.root.php'),'datasources')),
-		'autogen',
-		"{$name}-autogen.php"
-	);
-	if (file_exists($fileNameAutoGen)) {
-		$obj=include_once($fileNameAutoGen);
-		if ($obj instanceof DataSource) $_registerDataSource[$name]=$obj;
-	}
 	
-	$fileNameUserDef=pathConcat(
-		getCfg('path.root'),
-		getCfg('path.root.datasources', pathConcat(getCfg('path.root.php'),'datasources')),
-		"{$name}.php"
-	);
-	if (file_exists($fileNameUserDef)) {
-		$obj=include_once($fileNameUserDef);
-		if ($obj instanceof DataSource) $_registerDataSource[$name]=$obj;
-	}
-	
-	if (!$_registerDataSource[$name]) {
-		$fileNameG740Server=pathConcat(
+	if (strpos($name,'.')===false) {
+		$fileNameAutoGen=pathConcat(
 			getCfg('path.root'),
-			getCfg('path.root.g740server', pathConcat(getCfg('path.root.php'),'g740server')),
-			'datasources',
+			getCfg('path.root.datasources', pathConcat(getCfg('path.root.php'),'datasources')),
+			'autogen',
+			"{$name}-autogen.php"
+		);
+		if (file_exists($fileNameAutoGen)) {
+			$obj=include_once($fileNameAutoGen);
+			if ($obj instanceof DataSource) $_registerDataSource[$name]=$obj;
+		}
+		$fileNameUserDef=pathConcat(
+			getCfg('path.root'),
+			getCfg('path.root.datasources', pathConcat(getCfg('path.root.php'),'datasources')),
 			"{$name}.php"
 		);
-		if (file_exists($fileNameG740Server)) {
-			$obj=include_once($fileNameG740Server);
+		if (file_exists($fileNameUserDef)) {
+			$obj=include_once($fileNameUserDef);
+			if ($obj instanceof DataSource) $_registerDataSource[$name]=$obj;
+		}
+		if (!$_registerDataSource[$name]) {
+			$fileNameG740Server=pathConcat(
+				getCfg('path.root'),
+				getCfg('path.root.g740server', pathConcat(getCfg('path.root.php'),'g740server')),
+				'datasources',
+				"{$name}.php"
+			);
+			if (file_exists($fileNameG740Server)) {
+				$obj=include_once($fileNameG740Server);
+				if ($obj instanceof DataSource) $_registerDataSource[$name]=$obj;
+			}
+		}
+	}
+	else {
+		$lstName=explode('.', $name);
+		$pathName=pathConcat(
+			getCfg('path.root'),
+			getCfg('path.root.forms', pathConcat(getCfg('path.root.php'),'forms'))
+		);
+		foreach($lstName as $itemName) {
+			$pathName=pathConcat($pathName, $itemName);
+		}
+		$pathName.='.php';
+		if (file_exists($pathName)) {
+			$obj=include_once($pathName);
 			if ($obj instanceof DataSource) $_registerDataSource[$name]=$obj;
 		}
 	}
+
+	
 	
 	if (!$_registerDataSource[$name]) throw new Exception("Недопустимое имя источника данных '{$name}'");
 	return $_registerDataSource[$name];

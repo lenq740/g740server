@@ -10,6 +10,11 @@
 /** Класс предок контроллеров экранных форм
  */
 class FormController extends DSConnector {
+/// Имя экранной формы
+	public $form='';
+/// Путь до папки размещения экранной формы
+	public $path='';
+	
 /** Вернуть описание экранной формы
  *
  * Обычно описание экранной формы берется из XML файла, в нем производятся макрозамены
@@ -18,7 +23,12 @@ class FormController extends DSConnector {
  */
 	public function getStrXmlDefinition($params=Array()) {
 		$macro=$this->getDefinitionMacro($params);
+		$macro['$toolBarBase$']=$this->getToolBarRequestsBase();
+		$macro['$toolBarShift$']=$this->getToolBarRequestsShift();
+		$macro['$toolBarBaseShift$']=$macro['$toolBarBase$']."\n".$macro['$toolBarShift$'];
+		
 		$result=$this->getDefinitionTemplate($params, $macro);
+		
 		$from=Array();
 		$to=Array();
 		foreach($macro as $key=>$value) {
@@ -59,14 +69,10 @@ class FormController extends DSConnector {
  */
 	protected function getDefinitionMacro($params=Array()) {
 		$result=Array();
-		$result['%form%']=$params['#request.form'];
+		$result['%form%']=$this->form;
 		$urlRoot=getCfg('urlRoot');
 		if ($urlRoot=='/') $urlRoot='';
 		$result['%urlRoot%']=$urlRoot;
-		
-		$result['$toolBarBase$']=$this->getToolBarRequestsBase();
-		$result['$toolBarShift$']=$this->getToolBarRequestsShift();
-		$result['$toolBarBaseShift$']=$result['$toolBarBase$']."\n".$result['$toolBarShift$'];
 		return $result;
 	}
 /** Вернуть шаблон описания экранной формы, обычно берется из файла
@@ -76,27 +82,25 @@ class FormController extends DSConnector {
  * @return	string шаблон описания экранной формы
  */
 	protected function getDefinitionTemplate($params=Array(), $macro=Array()) {
-		$form=$params['#request.form'];
 		$fileName=$macro['%TemplateFileName%'];
-		if (!$fileName) {
-			$fileName=pathConcat(
-				getCfg('path.root'),
-				getCfg('path.root.forms', pathConcat(getCfg('path.root.php'),'forms')),
-				'xml',
-				"{$form}.xml"
-			);
-			if (!file_exists($fileName)) {
-				$fileNameG740Server=pathConcat(
-					getCfg('path.root'),
-					getCfg('path.root.g740server', pathConcat(getCfg('path.root.php'),'g740server')),
-					'forms',
-					'xml',
-					"{$form}.xml"
+		if ($fileName) {
+			$fileName=str_replace('\\','/',$fileName);
+			if (strpos($fileName,'/')===false) {
+				$fileName=pathConcat(
+					$this->path,
+					$fileName
 				);
-				if (file_exists($fileNameG740Server)) $fileName=$fileNameG740Server;
 			}
 		}
-		if (!file_exists($fileName)) throw new Exception('Не найден файл с XML описанием экранной формы '.$fileName);
+		if (!$fileName) {
+			$lstName=explode('.', $this->form);
+			$formName=$lstName[count($lstName)-1];
+			$fileName=pathConcat(
+				$this->path,
+				$formName.'.xml'
+			);
+		}
+		if (!is_file($fileName)) throw new Exception('Не найден файл с XML описанием экранной формы '.$fileName);
 		$result=file_get_contents($fileName);
 		return $result;
 	}
@@ -242,34 +246,86 @@ XML;
  */
 function getFormController($name) {
 	global $_registerFormController;
-	if ($name!=str2FileName($name)) throw new Exception("Недопустимое имя экранной формы '{$name}'");
 	if ($_registerFormController[$name]) return $_registerFormController[$name];
-
-	$fileName=pathConcat(
+	
+	$lstName=explode('.', $name);
+	foreach($lstName as $itemName) {
+		if ($itemName!=str2FileName($itemName)) throw new Exception("Недопустимое имя экранной формы '{$name}'");
+	}
+	$formName=$lstName[count($lstName)-1];
+	
+	$pathName=pathConcat(
 		getCfg('path.root'),
-		getCfg('path.root.forms', pathConcat(getCfg('path.root.php'),'forms')),
-		"{$name}.php"
+		getCfg('path.root.forms', pathConcat(getCfg('path.root.php'),'forms'))
 	);
-	if (file_exists($fileName)) {
-		$obj=include_once($fileName);
-		if ($obj instanceof FormController) $_registerFormController[$name]=$obj;
+	$pathWithFormName=$pathName;
+	$pathWithoutFormName=$pathName;
+	for($i=0; $i<count($lstName); $i++) {
+		$itemName=$lstName[$i];
+		$pathWithFormName=pathConcat($pathWithFormName, $itemName);
+		if ($i<(count($lstName)-1)) $pathWithoutFormName=$pathWithFormName;
+	}
+	// Найдена папка с именем формы
+	if (is_dir($pathWithFormName)) {
+		$fileName=pathConcat($pathWithFormName, $formName.'.php');
+		if (is_file($fileName)) {
+			$obj=include_once($fileName);
+			if ($obj instanceof FormController) {
+				$_registerFormController[$name]=$obj;
+			}
+		}
+		if (!$_registerFormController[$name]) {
+			$_registerFormController[$name]=new FormController();
+		}
+		$obj=$_registerFormController[$name];
+		if ($obj) $obj->path=$pathWithFormName;
+	}
+
+	if (!$_registerFormController[$name] && is_dir($pathWithoutFormName)) {
+		// Найден файл с именем формы
+		$fileNamePHP=pathConcat($pathWithoutFormName, $formName.'.php');
+		$fileNameXML=pathConcat($pathWithoutFormName, $formName.'.xml');
+		if (is_file($fileNamePHP)) {
+			$obj=include_once($fileNamePHP);
+			if ($obj instanceof FormController) {
+				$_registerFormController[$name]=$obj;
+			}
+		}
+		else if (is_file($fileNameXML)) {
+			$_registerFormController[$name]=new FormController();
+		}
+		$obj=$_registerFormController[$name];
+		if ($obj) $obj->path=$pathWithoutFormName;
 	}
 
 	if (!$_registerFormController[$name]) {
-		$fileNameG740Server=pathConcat(
+		// Описание формы найдено в g740server
+		$pathG740ServerFormName=pathConcat(
 			getCfg('path.root'),
 			getCfg('path.root.g740server', pathConcat(getCfg('path.root.php'),'g740server')),
-			'forms',
-			"{$name}.php"
+			'forms'
 		);
-		if (file_exists($fileNameG740Server)) {
-			$obj=include_once($fileNameG740Server);
-			if ($obj instanceof FormController) $_registerFormController[$name]=$obj;
+		if (is_dir($pathG740ServerFormName)) {
+			$fileNamePHP=pathConcat($pathG740ServerFormName, $formName.'.php');
+			$fileNameXML=pathConcat($pathG740ServerFormName, $formName.'.xml');
+			if (is_file($fileNamePHP)) {
+				$obj=include_once($fileNamePHP);
+				if ($obj instanceof FormController) {
+					$_registerFormController[$name]=$obj;
+				}
+			}
+			else if (is_file($fileNameXML)) {
+				$_registerFormController[$name]=new FormController();
+			}
+			$obj=$_registerFormController[$name];
+			if ($obj) $obj->path=$pathG740ServerFormName;
 		}
 	}
 	
-	if (!$_registerFormController[$name]) $_registerFormController[$name]=new FormController();
-	return $_registerFormController[$name];
+	$obj=$_registerFormController[$name];
+	if (!$obj) throw new Exception("Не найдено описание экранной формы '{$name}'");
+	$obj->form=$name;
+	return $obj;
 }
 /// Кэш контроллеров форм
 $_registerFormController=Array();
