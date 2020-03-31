@@ -555,6 +555,15 @@ function getGUID(){
         return $uuid;
     }
 }
+/** Проверить GUID на корректность
+ *
+ * @param	string	$guid
+ * @return	boolean результат проверки
+ */
+function testGUID($guid) {
+	if (strlen($guid)!=36) return false;
+	return preg_match('/^\{?[A-Z0-9]{8}-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{12}\}?$/', $guid)?true:false;
+}
 /** Шифруем пароль
  *
  * @param	string	$password пароль

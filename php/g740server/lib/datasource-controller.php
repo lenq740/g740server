@@ -44,6 +44,8 @@ class DataSource extends DSConnector{
 	public $permTestReadOnlyOwnerTableName='';
 /// Проверка на ReadOnly строки родительской таблицы - имя поля, по которому осуществляется связь с родительской таблицей
 	public $permTestReadOnlyOwnerLinkFieldName='';
+/// При копировании автоматически копировать содержимое подчиненных таблиц (связь cascade). Требует наличия поля tmpid
+	public $isAutoCopyChildCascadeTables=false;
 
 /// Конструктор - инициализирует константы из конфигурационных настроек
 	function __construct() {
@@ -52,14 +54,13 @@ class DataSource extends DSConnector{
 		if ($this->isShowSqlErrorMessages===null) $this->isShowSqlErrorMessages=getCfg('datasource.showSqlError',false)?true:false;
 	}
 
-/** Проверка доступности выполнения запроса по правам в контексте выполнения запроса
+/** Проверка доступности выполнения запроса по правам вне контекста выполнения запроса
  *
  * @param	string	$permOper опрерация (read, write)
  * @param	string	$requestName запрос
- * @param	Array	$params контекст выполнения запроса
  * @return	boolean доступность выполнения запроса
  */
-	public function getPerm($permOper='read', $requestName='', $params=Array()) {
+	public function getPermForce($permOper='read', $requestName='') {
 		$permMode=$this->permMode;
 		if (!$permMode) $permMode=$this->tableName;
 		$result=getPerm($permMode, $permOper);
@@ -70,8 +71,19 @@ class DataSource extends DSConnector{
 			if (!$r) return false;
 			if (isset($r['enabled']) && !$r['enabled']) return false;
 		}
-		// Проверка вне контекста использования - например, при формировании описания источника данных
-		if (!$params['#request.name']) return $result;
+		return $result;
+	}
+
+/** Проверка доступности выполнения запроса по правам в контексте выполнения запроса
+ *
+ * @param	string	$permOper опрерация (read, write)
+ * @param	string	$requestName запрос
+ * @param	Array	$params контекст выполнения запроса
+ * @return	boolean доступность выполнения запроса
+ */
+	public function getPerm($permOper='read', $requestName='', $params=Array()) {
+		$result=$this->getPermForce($permOper, $requestName);
+		if (!$result) return $result;
 		
 		// Стандартные проверки для write
 		if ($this->isPermTestRowReadOnly && $permOper=='write') {
@@ -115,6 +127,7 @@ class DataSource extends DSConnector{
 		return $result;
 	}
 	
+	
 /** Проверить на ReadOnly анализируя строки родительской таблицы
  *
  * @param	Array	$result массив строк
@@ -122,6 +135,10 @@ class DataSource extends DSConnector{
  */
 	protected function getOwnerReadOnly($result) {
 		if (!$this->isPermTestRowReadOnly) return $result;
+		foreach($result as &$row) {
+			$r=$this->onRowOwnerReadOnly($row);
+			if (is_array($r) && $r['row.readonly']) $row['row.readonly']=1;
+		}
 		if (!$this->permTestReadOnlyOwnerTableName) return $result;
 		if (!$this->permTestReadOnlyOwnerLinkFieldName) return $result;
 		
@@ -307,7 +324,7 @@ class DataSource extends DSConnector{
 		}
 		{	// $attrReadOnly
 			$attrReadOnly='';
-			if (!getPerm($this->permMode?$this->permMode:$this->tableName, 'write')) $attrReadOnly='readonly="1"';
+			if (!$this->getPermForce('write')) $attrReadOnly='readonly="1"';
 		}
 		$result=<<<XML
 <rowset {$attrDataSource} {$attrRowset} {$attrReadOnly}>
@@ -346,7 +363,7 @@ XML;
 
 			$permOper='read';
 			if ($request['permoper']) $permOper=$request['permoper'];
-			if (!$this->getPerm($permOper, $request['name'])) xmlSetAttr($xmlRequest,'enabled','0');
+			if (!$this->getPermForce($permOper, $request['name'])) xmlSetAttr($xmlRequest,'enabled','0');
 			
 			$xmlRequests->appendChild($xmlRequest);
 		}
@@ -741,6 +758,7 @@ XML;
 		}
 		return $result;
 	}
+
 /** Ветка update запроса save
  *
  * @param	Array	$params контекст выполнения
@@ -1276,6 +1294,11 @@ SQL;
 				$this->pdo($sql);
 			}
 		}
+
+		// Копировать дочерние (cascade) таблицы
+		if ($this->isAutoCopyChildCascadeTables) {
+			$this->doCopyChildCascadeTables($result);
+		}
 		
 		// вызов логирования
 		if ($this->isLogEnabled) {
@@ -1286,7 +1309,6 @@ SQL;
 				));
 			}
 		}
-
 		if ($params['id'] && count($result)==1) {
 			$recResult=&$result[0];
 			$recResult['row.destmode']='after';
@@ -1295,6 +1317,35 @@ SQL;
 		}
 		return $result;
 	}
+/** Вспомогательная процедура, копирует подчиненные дочерние таблицы, связанные по cascade. Требует наличия поля tmpid
+ *
+ * @param	Array	$result
+ * @return	boolean успешность выполнения копирования
+ */
+	protected function doCopyChildCascadeTables(&$result=Array()) {
+		if (!$this->getField('tmpid')) return false;
+		if (count($result)==0) return true;
+		$references=$this->getReferences();
+		$lstref=Array();
+		foreach($references as $key=>$ref) {
+			if ($ref['mode']!='cascade') continue;
+			$lstref[$key]=$ref;
+		}
+		if (count($lstref)==0) return true;
+		
+		foreach($result as &$row) {
+			if (!$row['tmpid']) continue;
+			if (!$row['id']) continue;
+			foreach($lstref as $ref) {
+				$dataSource=getDataSource($ref['to.table']);
+				$p=Array();
+				$p['filter.'.$ref['to.field']]=$row['tmpid'];
+				$p[$ref['to.field']]=$row['id'];
+				$dataSource->execCopyForce($p);
+			}
+		}
+	}
+
 /** Проверить допустимость значений полей до save
  *
  * @param	Array	$params
@@ -2299,6 +2350,15 @@ SQL;
  * @param	Array $row
  */
 	protected function onRowValid(&$row) {
+	}
+	
+/** Проверка строки на ReadOnly по состоянию родительского источника данных
+ *
+ * @param	Array $row
+ *
+ * - вызывается только в запросах write, если установлен isPermTestRowReadOnly
+ */
+	protected function onRowOwnerReadOnly(&$row) {
 	}
 	
 // Устаревшие обработчики событий, оставлены для совместимости
