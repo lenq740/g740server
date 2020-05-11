@@ -1346,6 +1346,69 @@ SQL;
 		}
 	}
 
+/** Служебная процедура, заменяет в restrict и clear связях одну ссылку на другую
+ *
+ * @param	string	$fromid
+ * @param	string	$toid
+ */
+	public function doChangeRestrictReferences($fromid, $toid) {
+		if (!$fromid) return;
+
+		$driverName=$this->getDriverName();
+		$D0='';
+		$D1='';
+		if ($driverName=='mysql') {
+			$D0='`';
+			$D1='`';
+		}
+		else if ($driverName=='sqlsrv') {
+			$D0='[';
+			$D1=']';
+		}
+		else if ($driverName=='pgsql') {
+			$D0='"';
+			$D1='"';
+		}
+		else {
+			throw new Exception("Неизвестный драйвер базы данных '{$driverName}'");
+		}
+
+		$sqlFromId=$this->str2Sql($fromid);
+		$references=$this->getReferences();
+		foreach($references as &$ref) {
+			$table='';
+			$field='';
+			if ($ref['mode']=='restrict' || $ref['mode']=='clear') {
+				if ($ref['from.table']!=$this->tableName) {
+					$table=$ref['from.table'];
+					$field=$ref['from.field'];
+				}
+				else {
+					$table=$ref['to.table'];
+					$field=$ref['to.field'];
+				}
+			}
+			if ($table=='' || $field=='' || $field=='id') continue;
+			
+			if ($toid) {
+				$sqlToId=$this->str2Sql($toid);
+				$sql=<<<SQL
+update {$D0}{$table}{$D1} set {$D0}{$field}{$D1}='{$sqlToId}' where {$D0}{$field}{$D1}='{$sqlFromId}'
+SQL;
+				$this->pdo($sql);
+			}
+			else {
+				$sqlToId="''";
+				if ($this->formatEmptyRef=='0') $sqlToId='0';
+				if ($this->formatEmptyRef=='null') $sqlToId='null';
+				$sql=<<<SQL
+update {$D0}{$table}{$D1} set {$D0}{$field}{$D1}={$sqlToId} where {$D0}{$field}{$D1}='{$sqlFromId}'
+SQL;
+				$this->pdo($sql);
+			}
+		}
+	}
+
 /** Проверить допустимость значений полей до save
  *
  * @param	Array	$params
